@@ -453,6 +453,116 @@ html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;backgrou
   .main-tab{padding:5px 7px;font-size:10px}
   #v-templates,#v-systems{padding:14px}
 }
+
+/* ═══ PROPS PANEL TABS ═══ */
+#pp-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.pp-tab{flex:1;padding:7px 2px;text-align:center;font-size:9px;font-weight:700;color:var(--dim);cursor:pointer;transition:all var(--tr);letter-spacing:.5px;border-bottom:2px solid transparent}
+.pp-tab:hover{color:var(--txt)}
+.pp-tab.active{color:var(--acc2);border-bottom-color:var(--acc)}
+.pp-tabcontent{display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0}
+.pp-tabcontent.active{display:flex}
+#ppc-props{overflow-y:auto}
+#ppc-script{overflow:hidden;flex-direction:column}
+#ppc-logic{overflow-y:auto}
+#ppc-folders{overflow:hidden;flex-direction:column}
+#pp-script-body{flex:1;overflow-y:auto;padding:10px 0}
+#pp-logic-body{flex:1;overflow-y:auto;padding:8px}
+#pp-folders-body{flex:1;overflow-y:auto;padding:4px 0}
+#pp-folders-toolbar{display:flex;gap:4px;padding:8px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+
+/* SCRIPT BLOCKS in props */
+.sb-block{margin:0;border-bottom:1px solid rgba(255,255,255,.05)}
+.sb-block-head{display:flex;align-items:center;gap:6px;padding:8px 12px;cursor:pointer;transition:background var(--tr)}
+.sb-block-head:hover{background:rgba(255,255,255,.03)}
+.sb-block-title{font-size:10px;font-weight:700;color:var(--txt);flex:1;font-family:'Orbitron',monospace;letter-spacing:.4px;font-size:9px}
+.sb-block-type{font-size:8px;padding:2px 6px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-weight:700}
+.sb-block-copy{width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:3px;cursor:pointer;color:var(--dim);font-size:10px;transition:all var(--tr);flex-shrink:0}
+.sb-block-copy:hover{background:var(--hover);color:var(--green)}
+.sb-chevron{font-size:9px;color:var(--dark);transition:transform var(--tr);flex-shrink:0}
+.sb-chevron.open{transform:rotate(90deg)}
+.sb-block-body{display:none;background:#04060f;border-top:1px solid rgba(255,255,255,.06)}
+.sb-block-body.open{display:block}
+.sb-code{font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.7;color:#c9d1d9;padding:10px 12px;white-space:pre-wrap;word-break:break-all}
+.sb-where{padding:6px 12px;background:rgba(0,255,157,.05);border-top:1px solid rgba(0,255,157,.1);font-size:9px;color:var(--green);font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:5px}
+.sb-explain{padding:8px 12px;background:rgba(255,255,255,.02);border-top:1px solid rgba(255,255,255,.04)}
+.sb-explain-row{display:flex;align-items:flex-start;gap:6px;margin-bottom:6px;font-size:9px;line-height:1.5}
+.sb-explain-var{color:var(--acc2);font-family:'JetBrains Mono',monospace;font-weight:700;min-width:80px;flex-shrink:0}
+.sb-explain-desc{color:var(--dim)}
+.sb-prop-link{font-size:9px;color:var(--blue);cursor:pointer;text-decoration:underline}
+.sb-prop-link:hover{color:#42b3ff}
+.sb-block-actions{display:flex;gap:4px;padding:6px 12px;border-top:1px solid rgba(255,255,255,.04)}
+
+/* LOGIC BLOCKS */
+.logic-empty{padding:16px 12px;text-align:center;color:var(--dark);font-size:10px;line-height:1.8}
+.logic-node-name{font-size:11px;font-weight:700;color:var(--txt);margin-bottom:10px;font-family:'Orbitron',monospace;font-size:10px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.06)}
+.logic-add-btn{display:flex;align-items:center;gap:6px;padding:8px 12px;cursor:pointer;color:var(--acc2);font-size:11px;font-weight:600;transition:background var(--tr);border:1px dashed rgba(255,77,26,.2);border-radius:6px;margin:8px;justify-content:center}
+.logic-add-btn:hover{background:rgba(255,77,26,.06);border-color:var(--acc)}
+.logic-card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:8px;margin:6px 8px;overflow:hidden}
+.logic-card-head{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.logic-card-icon{font-size:14px}
+.logic-card-title{font-size:10px;font-weight:700;color:var(--txt);flex:1}
+.logic-card-del{font-size:10px;color:var(--dim);cursor:pointer;padding:2px 5px;border-radius:3px;transition:all var(--tr)}
+.logic-card-del:hover{background:rgba(255,77,26,.15);color:var(--acc)}
+.logic-card-body{padding:8px 10px}
+.logic-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.logic-label{font-size:9px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.5px;min-width:32px}
+.logic-select{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 6px;border-radius:4px;outline:none;cursor:pointer;flex:1;min-width:0}
+.logic-select:focus{border-color:var(--acc)}
+.logic-input{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 6px;border-radius:4px;outline:none;flex:1;min-width:0}
+.logic-input:focus{border-color:var(--acc)}
+.logic-then{padding:6px 10px;background:rgba(0,255,157,.04);border-top:1px solid rgba(0,255,157,.1);font-size:9px;color:var(--green);font-family:'JetBrains Mono',monospace;white-space:pre-wrap}
+.logic-gen-btn{width:calc(100% - 16px);margin:4px 8px 8px;padding:7px;background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;color:#fff;border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:filter var(--tr)}
+.logic-gen-btn:hover{filter:brightness(1.1)}
+
+/* FOLDERS SYSTEM */
+.folder-item{user-select:none}
+.folder-head{display:flex;align-items:center;gap:5px;padding:6px 10px;cursor:pointer;transition:background var(--tr);border-left:2px solid transparent}
+.folder-head:hover{background:var(--hover)}
+.folder-head.open{border-left-color:var(--acc)}
+.folder-icon{font-size:13px;width:16px;text-align:center;flex-shrink:0}
+.folder-name{font-size:11px;font-weight:600;color:var(--txt);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-name.editing{background:var(--hover);border:1px solid var(--acc);border-radius:3px;padding:1px 4px;color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;width:100%}
+.folder-count{font-size:9px;color:var(--dark);background:var(--card);padding:1px 5px;border-radius:10px}
+.folder-acts{display:flex;gap:1px;opacity:0;transition:opacity var(--tr)}
+.folder-head:hover .folder-acts{opacity:1}
+.folder-act{width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:3px;cursor:pointer;color:var(--dark);font-size:10px;transition:all var(--tr)}
+.folder-act:hover{background:var(--hover);color:var(--txt)}
+.folder-act.danger:hover{background:rgba(255,77,26,.15);color:var(--acc)}
+.folder-chev{font-size:8px;color:var(--dark);transition:transform var(--tr);flex-shrink:0}
+.folder-head.open .folder-chev{transform:rotate(90deg)}
+.folder-children{display:none;padding-left:14px}
+.folder-head.open~.folder-children{display:block}
+.script-item{display:flex;align-items:center;gap:5px;padding:5px 10px 5px 20px;cursor:pointer;transition:all var(--tr);border-left:2px solid transparent;color:var(--dim);font-size:10px}
+.script-item:hover{background:var(--hover);color:var(--txt);border-left-color:var(--purple)}
+.script-item.active{background:rgba(155,66,255,.08);color:var(--txt);border-left-color:var(--purple)}
+.script-item-ico{font-size:11px;flex-shrink:0}
+.script-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.script-item-type{font-size:8px;padding:1px 5px;border-radius:20px;background:rgba(155,66,255,.15);color:var(--purple);font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.script-item-acts{display:flex;gap:1px;opacity:0;transition:opacity var(--tr)}
+.script-item:hover .script-item-acts{opacity:1}
+
+/* SCRIPT EDITOR MODAL (full) */
+#m-script-editor .cmod{width:900px;max-width:96vw;max-height:90vh}
+.se-layout{display:flex;flex:1;overflow:hidden}
+.se-left{width:220px;background:rgba(8,12,24,.98);border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0}
+.se-left-head{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.06);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;justify-content:space-between}
+.se-left-body{flex:1;overflow-y:auto}
+.se-block-item{display:flex;align-items:center;gap:6px;padding:6px 12px;cursor:pointer;font-size:10px;color:var(--dim);transition:all var(--tr);border-left:2px solid transparent}
+.se-block-item:hover{background:var(--hover);color:var(--txt)}
+.se-block-item.active{background:var(--hover);color:var(--txt);border-left-color:var(--acc)}
+.se-block-ico{font-size:13px;width:18px;text-align:center}
+.se-right{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.se-right-head{padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(8,12,24,.98);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.se-block-title{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--txt);letter-spacing:.5px;flex:1}
+.se-block-where{font-size:9px;color:var(--green);font-family:'JetBrains Mono',monospace;background:rgba(0,255,157,.08);padding:2px 8px;border-radius:20px;border:1px solid rgba(0,255,157,.2)}
+.se-explain{padding:10px 14px;background:rgba(255,255,255,.015);border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0;max-height:120px;overflow-y:auto}
+.se-explain-title{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dark);margin-bottom:7px}
+.se-var-row{display:flex;align-items:baseline;gap:8px;margin-bottom:5px;font-size:10px}
+.se-var-name{color:var(--acc2);font-family:'JetBrains Mono',monospace;font-weight:700;min-width:90px;flex-shrink:0}
+.se-var-type{font-size:8px;background:rgba(26,140,255,.15);color:var(--blue);border-radius:3px;padding:1px 5px;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.se-var-desc{color:var(--dim);line-height:1.5}
+.se-code-area{flex:1;background:#04060f;color:#c9d1d9;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;padding:14px;border:none;outline:none;resize:none;overflow-y:auto}
+
 </style>
 </head>
 <body>
@@ -554,7 +664,28 @@ html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;backgrou
       </div>
       <div id="props-panel">
         <div id="pp-head"><div id="pp-lbl">Propriedades</div><div id="pp-type"></div></div>
-        <div id="pp-body"><div class="pp-empty">Selecione um<br>elemento no canvas</div></div>
+        <div id="pp-tabs">
+          <div class="pp-tab active" id="ppt-props" onclick="PP.switchTab('props',this)">⚙ Props</div>
+          <div class="pp-tab" id="ppt-script" onclick="PP.switchTab('script',this)">📜 Script</div>
+          <div class="pp-tab" id="ppt-logic" onclick="PP.switchTab('logic',this)">⚡ Lógica</div>
+          <div class="pp-tab" id="ppt-folders" onclick="PP.switchTab('folders',this)">📁 Pastas</div>
+        </div>
+        <div class="pp-tabcontent active" id="ppc-props">
+          <div id="pp-body"><div class="pp-empty">Selecione um<br>elemento no canvas</div></div>
+        </div>
+        <div class="pp-tabcontent" id="ppc-script">
+          <div id="pp-script-body"><div class="pp-empty">Selecione um<br>elemento para<br>ver o código</div></div>
+        </div>
+        <div class="pp-tabcontent" id="ppc-logic">
+          <div id="pp-logic-body"><div class="pp-empty">Selecione um<br>elemento para<br>criar condições</div></div>
+        </div>
+        <div class="pp-tabcontent" id="ppc-folders">
+          <div id="pp-folders-toolbar">
+            <button class="btn btn-acc btn-sm" onclick="Folders.newFolder()" style="flex:1;margin:6px 4px 4px">📁 Nova Pasta</button>
+            <button class="btn btn-ghost btn-sm" onclick="Folders.newScript()" style="flex:1;margin:6px 4px 4px">📄 Novo Script</button>
+          </div>
+          <div id="pp-folders-body"></div>
+        </div>
         <div id="pp-foot"><div class="add-script-btn" id="add-script-btn" onclick="App.scripts.openForSelected()">＋ Script</div></div>
       </div>
     </div>
@@ -711,6 +842,52 @@ html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;backgrou
       <div style="display:flex;align-items:center;gap:8px">
         <button class="btn btn-acc" onclick="App.scripts.copyGlobal()">📋 Copiar</button>
         <span id="gcopy-ok" style="font-size:10px;color:var(--green);display:none">✓ Copiado!</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SCRIPT EDITOR MODAL (full-featured) -->
+<div class="cov" id="m-script-editor" onclick="if(event.target===this)closeM('m-script-editor')">
+  <div class="cmod" style="width:900px;max-width:96vw;max-height:90vh">
+    <div class="cmod-head">
+      <div class="cmod-title" id="se-modal-title">📜 Script Editor</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="se-where-badge" style="font-size:9px;color:var(--green);font-family:'JetBrains Mono',monospace;background:rgba(0,255,157,.08);padding:2px 10px;border-radius:20px;border:1px solid rgba(0,255,157,.2)"></span>
+        <div class="cmod-x" onclick="closeM('m-script-editor')">✕</div>
+      </div>
+    </div>
+    <div class="se-layout">
+      <!-- LEFT: block list -->
+      <div class="se-left">
+        <div class="se-left-head">
+          <span>BLOCOS</span>
+          <button class="btn btn-acc btn-sm" onclick="SE.addBlock()" style="padding:2px 7px;font-size:9px">+ Bloco</button>
+        </div>
+        <div class="se-left-body" id="se-block-list"></div>
+      </div>
+      <!-- RIGHT: code + explain -->
+      <div class="se-right">
+        <div class="se-right-head">
+          <div class="se-block-title" id="se-active-title">Selecione um bloco</div>
+          <button class="btn btn-ghost btn-sm" onclick="SE.toggleExplain()">💡 Explicação</button>
+          <button class="btn btn-blue btn-sm" onclick="SE.copyBlock()">📋 Copiar Bloco</button>
+          <button class="btn btn-acc btn-sm" onclick="SE.copyAll()">📋 Copiar Tudo</button>
+        </div>
+        <div id="se-explain-panel" class="se-explain" style="display:none">
+          <div class="se-explain-title">📖 O QUE CADA VARIÁVEL FAZ</div>
+          <div id="se-explain-content"></div>
+        </div>
+        <textarea class="se-code-area" id="se-code-area" spellcheck="false" placeholder="-- Selecione um bloco à esquerda para editar"></textarea>
+      </div>
+    </div>
+    <div class="cmod-foot">
+      <div style="font-size:10px;color:var(--dim)">Ctrl+A → seleciona tudo · Blocos são independentes e copiáveis</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-ghost" onclick="SE.saveBlock()">💾 Salvar Bloco</button>
+        <button class="btn btn-acc" onclick="SE.copyAll()">📋 Copiar Tudo</button>
+        <span id="se-copy-ok" style="font-size:10px;color:var(--green);display:none">✓ Copiado!</span>
       </div>
     </div>
   </div>
@@ -1535,6 +1712,7 @@ init(){
   this.canvas.init();
   this.autosave.init();
   this.shortcuts.init();
+  setTimeout(()=>{if(typeof Folders!=='undefined')Folders.init()},200);
   // Set first tab active
   this.switchView('builder',document.querySelector('.main-tab'));
 },
@@ -1716,16 +1894,31 @@ nodes:{
 
 props:{
   render(){
-    const body=document.getElementById('pp-body'),tp=document.getElementById('pp-type'),sb=document.getElementById('add-script-btn');
-    if(!App.state.selId){body.innerHTML='<div class="pp-empty">Selecione um<br>elemento no canvas</div>';tp.textContent='';sb.classList.remove('show');return}
+    const tp=document.getElementById('pp-type'),sb=document.getElementById('add-script-btn');
+    if(!App.state.selId){
+      document.getElementById('pp-body').innerHTML='<div class="pp-empty">Selecione um<br>elemento no canvas</div>';
+      document.getElementById('pp-script-body').innerHTML='<div class="pp-empty">Selecione um<br>elemento para<br>ver o código</div>';
+      document.getElementById('pp-logic-body').innerHTML='<div class="pp-empty">Selecione um<br>elemento para<br>criar condições</div>';
+      tp.textContent='';sb.classList.remove('show');return;
+    }
     const node=App.state.nodes.find(n=>n.uid===App.state.selId);if(!node)return;
-    tp.textContent=node.type;sb.classList.add('show');body.innerHTML='';
+    tp.textContent=node.type;sb.classList.add('show');
+    // Render props tab
+    const body=document.getElementById('pp-body');body.innerHTML='';
     const pos=document.createElement('div');pos.className='pp-section';
-    pos.innerHTML=`<div class="pp-sec-title">Posição</div><div class="pp-row"><span class="pp-lbl">X</span><input class="pp-in" type="number" value="${Math.round(node.x)}" onchange="App.props.setCoord('x',this.value)"/></div><div class="pp-row"><span class="pp-lbl">Y</span><input class="pp-in" type="number" value="${Math.round(node.y)}" onchange="App.props.setCoord('y',this.value)"/></div>`;
+    pos.innerHTML=`<div class="pp-sec-title">Posição</div><div class="pp-row"><span class="pp-lbl">X</span><input class="pp-in" id="px" type="number" value="${Math.round(node.x)}" onchange="App.props.setCoord('x',this.value)"/></div><div class="pp-row"><span class="pp-lbl">Y</span><input class="pp-in" id="py" type="number" value="${Math.round(node.y)}" onchange="App.props.setCoord('y',this.value)"/></div>`;
     body.appendChild(pos);
     const sec=document.createElement('div');sec.className='pp-section';sec.innerHTML='<div class="pp-sec-title">Propriedades</div>';
     Object.entries(node.props).forEach(([k,v])=>{const row=document.createElement('div');row.className='pp-row';const isBool=typeof v==='boolean';row.innerHTML=`<span class="pp-lbl">${k}</span>${isBool?`<div class="toggle ${v?'on':''}" onclick="this.classList.toggle('on');App.nodes.setProp(${node.uid},'${k}',this.classList.contains('on'))"></div>`:`<input class="pp-in" value="${v}" onchange="App.nodes.setProp(${node.uid},'${k}',this.value)"/>`}`;sec.appendChild(row)});
     body.appendChild(sec);
+    // View script button in props
+    const viewBtn=document.createElement('div');viewBtn.style.cssText='margin:8px;display:flex;gap:4px;flex-direction:column';
+    viewBtn.innerHTML=`<button class="btn btn-blue btn-sm" style="width:100%;justify-content:center" onclick="PP.switchTab('script',document.getElementById('ppt-script'))">📜 Ver Código Lua</button><button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="PP.switchTab('logic',document.getElementById('ppt-logic'))">⚡ Adicionar Lógica</button><button class="btn btn-acc btn-sm" style="width:100%;justify-content:center" onclick="App.scripts.openEditorFor(${node.uid})">✏️ Editor Completo</button>`;
+    body.appendChild(viewBtn);
+    // Render script tab
+    PP.renderScriptTab(node);
+    // Render logic tab
+    PP.renderLogicTab(node);
   },
   setCoord(c,v){const node=App.state.nodes.find(n=>n.uid===App.state.selId);if(!node)return;node[c]=parseInt(v)||0;const div=document.getElementById('n-'+node.uid);if(div)div.style[c==='x'?'left':'top']=node[c]+'px'},
   upPos(node){const px=document.getElementById('px'),py=document.getElementById('py');if(px&&App.state.selId===node.uid){px.value=Math.round(node.x);if(py)py.value=Math.round(node.y)}}
@@ -1915,98 +2108,923 @@ docs:{
   show(id){document.querySelectorAll('.docs-nav-item').forEach(el=>el.classList.remove('active'));const nav=document.getElementById('dn-'+id);if(nav)nav.classList.add('active');document.getElementById('docs-content').innerHTML=DATA.docs.content[id]||'<div style="color:var(--dim);padding:20px">Em breve.</div>'}
 },
 
-scripts:{
-  openForSelected(){if(App.state.selId)this.openFor(App.state.selId)},
-  openFor(uid){
-    App.state.scriptTarget=uid;
-    const node=App.state.nodes.find(n=>n.uid===uid);if(!node)return;
-    document.getElementById('script-modal-title').textContent='📜 Script — '+(node.props.Name||node.type);
-    this._buildGuided(node);
-    document.getElementById('code-area').value=node.script||'-- Escreva Lua aqui\nlocal element = script.Parent\n';
-    // Reset to guided tab
-    document.querySelectorAll('.stab').forEach((t,i)=>t.classList.toggle('active',i===0));
-    document.querySelectorAll('.stab-body').forEach((b,i)=>b.classList.toggle('active',i===0));
-    openM('m-script');App.state.guidedAns={};
+// ═══════════════════════════════════════════════════
+// PP — PROPS PANEL CONTROLLER (tabs, script view, logic)
+// ═══════════════════════════════════════════════════
+const PP={
+  curTab:'props',
+  switchTab(tab,el){
+    this.curTab=tab;
+    document.querySelectorAll('.pp-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.pp-tabcontent').forEach(t=>t.classList.remove('active'));
+    if(el)el.classList.add('active');
+    const content=document.getElementById('ppc-'+tab);
+    if(content)content.classList.add('active');
   },
-  closeModal(){closeM('m-script')},
-  _buildGuided(node){
-    const scroll=document.getElementById('guided-scroll');const qs=this._getQ(node.type);scroll.innerHTML='';
-    qs.forEach((q,i)=>{
-      const block=document.createElement('div');block.className='q-block';
-      block.innerHTML=`<div class="q-title"><span class="q-num">${i+1}</span>${q.q}</div><div class="q-opts"></div>`;
-      q.opts.forEach(opt=>{const btn=document.createElement('div');btn.className='q-opt';btn.textContent=opt;btn.onclick=()=>{block.querySelectorAll('.q-opt').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');App.state.guidedAns[q.id]=opt};block.querySelector('.q-opts').appendChild(btn)});
-      scroll.appendChild(block);
+
+  renderScriptTab(node){
+    const body=document.getElementById('pp-script-body');
+    const blocks=SCRIPT_DB[node.type]||SCRIPT_DB['_default'];
+    body.innerHTML='';
+    // Header
+    const hdr=document.createElement('div');
+    hdr.style.cssText='padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0';
+    hdr.innerHTML=`<div style="font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace;margin-bottom:6px">📍 ${blocks.where}</div><button class="btn btn-acc btn-sm" style="width:100%;justify-content:center" onclick="App.scripts.openEditorFor(${node.uid})">✏️ Abrir Editor Completo</button>`;
+    body.appendChild(hdr);
+    // Each block
+    blocks.blocks.forEach((blk,i)=>{
+      const wrap=document.createElement('div');wrap.className='sb-block';
+      const typeColor={LocalScript:'#1a8cff',Script:'#3ecf8e',ModuleScript:'#9b42ff'}[blk.type]||'#6b7594';
+      wrap.innerHTML=`
+      <div class="sb-block-head" onclick="this.querySelector('.sb-chevron').classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+        <span class="sb-chevron">▶</span>
+        <span class="sb-block-title">${blk.name}</span>
+        <span class="sb-block-type" style="background:${typeColor}18;color:${typeColor};border:1px solid ${typeColor}33">${blk.type}</span>
+        <span class="sb-block-copy" title="Copiar este bloco" onclick="event.stopPropagation();PP.copyBlock(${i},'${node.type}')">📋</span>
+      </div>
+      <div class="sb-block-body">
+        <div class="sb-explain">${blk.vars.map(v=>`<div class="sb-explain-row"><span class="sb-explain-var">${v.n}</span><span class="sb-explain-desc">${v.d}</span></div>`).join('')}</div>
+        <div class="sb-where">📍 Cole em: ${blk.where}</div>
+        <div class="sb-code">${syntaxHL(blk.code)}</div>
+        <div class="sb-block-actions">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="PP.copyBlock(${i},'${node.type}')">📋 Copiar</button>
+          <button class="btn btn-blue btn-sm" style="flex:1" onclick="PP.injectToNode(${node.uid},${i},'${node.type}')">💉 Usar</button>
+        </div>
+      </div>`;
+      body.appendChild(wrap);
     });
   },
-  _getQ(type){const m={WalkSpeed:[{id:'sprint',q:'Incluir sprint (Shift)?',opts:['Sim','Não']},{id:'crouch',q:'Incluir agachamento (Ctrl)?',opts:['Sim','Não']},{id:'stamina',q:'Stamina limitada?',opts:['Sim','Não']}],Dash:[{id:'key',q:'Tecla do Dash?',opts:['Q','E','F','Shift']}],Enemy:[{id:'ai',q:'Tipo de IA?',opts:['Perseguir jogador','Patrulhar área','Ficar parado']},{id:'respawn',q:'Inimigo respawna?',opts:['Sim','Não']}],Currency:[{id:'save',q:'Salvar com DataStore?',opts:['Sim','Não']},{id:'type',q:'Tipo de moeda?',opts:['Coins','Gems','Cash','Tokens']}],Gun:[{id:'mode',q:'Modo de disparo?',opts:['Semi-automático','Automático','Burst']},{id:'ammo',q:'Sistema de munição?',opts:['Sim','Ilimitado']}],SaveLoad:[{id:'what',q:'O que salvar?',opts:['Leaderstats','Inventário','Tudo']}],Shop:[{id:'currency',q:'Moeda usada?',opts:['Coins','Gems','Cash']},{id:'ui',q:'Gerar GUI básica?',opts:['Sim','Não']}]};return m[type]||[{id:'confirm',q:'Gerar script padrão para este sistema?',opts:['Sim, gerar!']}]},
-  generate(){
-    const node=App.state.nodes.find(n=>n.uid===App.state.scriptTarget);
-    if(!node){document.getElementById('output-pre').textContent='-- Selecione um elemento';return}
-    const code=this._buildLua(node);
-    document.getElementById('output-pre').innerHTML=syntaxHL(code);
-    window._finalScript=code;node.script=code;App.nodes.renderOne(node);
-    toast('⚡ Script gerado!');
+
+  copyBlock(blockIdx,type){
+    const blocks=SCRIPT_DB[type]||SCRIPT_DB['_default'];
+    const blk=blocks.blocks[blockIdx];if(!blk)return;
+    navigator.clipboard.writeText(blk.code).then(()=>toast('📋 Bloco copiado!')).catch(()=>toast('Copie manualmente','e'));
   },
-  _buildLua(node){
-    const p=node.props,a=App.state.guidedAns,L=[];
-    L.push(`-- RoForger Studio · ${node.type}`);
-    L.push(`-- 📍 Onde colocar: ${this._getWhere(node.type)}`);L.push('');
-    L.push(`local Players = game:GetService("Players")`);
-    L.push(`local TweenService = game:GetService("TweenService")`);
-    L.push(`local UIS = game:GetService("UserInputService")`);
-    L.push(`local RunService = game:GetService("RunService")`);L.push('');
-    switch(node.type){
-      case'WalkSpeed':
-        L.push(`local DEFAULT = ${p.Speed||16}`);L.push(`local SPRINT = ${p.SprintSpeed||24}`);L.push(`local JUMP = ${p.JumpPower||50}`);L.push('');
-        L.push(`local plr = Players.LocalPlayer`);L.push(`local char = plr.Character or plr.CharacterAdded:Wait()`);
-        L.push(`local hum = char:WaitForChild("Humanoid")`);L.push(`hum.WalkSpeed = DEFAULT; hum.JumpPower = JUMP`);
-        if(a.sprint==='Sim'){L.push('');L.push(`UIS.InputBegan:Connect(function(i, gp) if gp then return end`);L.push(`  if i.KeyCode == Enum.KeyCode.LeftShift then hum.WalkSpeed = SPRINT end`);L.push(`end)`);L.push(`UIS.InputEnded:Connect(function(i)`);L.push(`  if i.KeyCode == Enum.KeyCode.LeftShift then hum.WalkSpeed = DEFAULT end`);L.push(`end)`)}
-        if(a.crouch==='Sim'){L.push('');L.push(`UIS.InputBegan:Connect(function(i, gp) if gp then return end`);L.push(`  if i.KeyCode == Enum.KeyCode.LeftControl then hum.WalkSpeed = ${p.CrouchSpeed||6} end`);L.push(`end)`);L.push(`UIS.InputEnded:Connect(function(i)`);L.push(`  if i.KeyCode == Enum.KeyCode.LeftControl then hum.WalkSpeed = DEFAULT end`);L.push(`end)`)}
-        break;
-      case'Dash':
-        L.push(`local POWER = ${p.Power||60}; local CD = ${p.Cooldown||1}; local canDash = true`);L.push('');
-        L.push(`local char = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()`);
-        L.push(`local hrp = char:WaitForChild("HumanoidRootPart")`);L.push(`local hum = char:WaitForChild("Humanoid")`);L.push('');
-        L.push(`UIS.InputBegan:Connect(function(i, gp) if gp or not canDash then return end`);
-        L.push(`  if i.KeyCode == Enum.KeyCode.${a.key||p.Key||'Q'} then`);
-        L.push(`    canDash = false`);L.push(`    local dir = hum.MoveDirection`);L.push(`    if dir.Magnitude < 0.1 then dir = hrp.CFrame.LookVector end`);
-        L.push(`    hrp.Velocity = dir * POWER`);L.push(`    task.wait(CD); canDash = true`);L.push(`  end`);L.push(`end)`);break;
-      case'Currency':
-        L.push(`local DS = game:GetService("DataStoreService")`);L.push(`local store = DS:GetDataStore("${(a.type||p.CoinName||'Coins')}Store")`);L.push('');
-        L.push(`Players.PlayerAdded:Connect(function(plr)`);L.push(`  local ls = Instance.new("Folder"); ls.Name = "leaderstats"; ls.Parent = plr`);
-        L.push(`  local coins = Instance.new("IntValue")`);L.push(`  coins.Name = "${a.type||p.CoinName||'Coins'}"; coins.Value = ${p.StartAmount||0}; coins.Parent = ls`);
-        if(a.save!=='Não'){L.push(`  local ok, v = pcall(function() return store:GetAsync(tostring(plr.UserId)) end)`);L.push(`  if ok and v then coins.Value = math.min(v, ${p.MaxAmount||999999}) end`)}
-        L.push(`end)`);
-        if(a.save!=='Não'){L.push('');L.push(`Players.PlayerRemoving:Connect(function(plr)`);L.push(`  local ls = plr:FindFirstChild("leaderstats")`);L.push(`  if ls then pcall(function() store:SetAsync(tostring(plr.UserId), ls["${a.type||p.CoinName||'Coins'}"].Value) end) end`);L.push(`end)`)}
-        break;
-      case'Enemy':
-        L.push(`local HP = ${p.HP||100}; local DMG = ${p.Damage||10}`);L.push(`local AGGRO = ${p.AggroRange||30}; local SPD = ${p.Speed||14}`);L.push('');
-        L.push(`local enemy = script.Parent`);L.push(`local hum = enemy:WaitForChild("Humanoid")`);L.push(`local hrp = enemy:WaitForChild("HumanoidRootPart")`);
-        L.push(`hum.MaxHealth = HP; hum.Health = HP; hum.WalkSpeed = SPD`);L.push('');
-        L.push(`RunService.Heartbeat:Connect(function()`);L.push(`  if hum.Health <= 0 then return end`);L.push(`  local nearest, dist = nil, AGGRO`);
-        L.push(`  for _, plr in ipairs(Players:GetPlayers()) do`);L.push(`    local ch = plr.Character`);L.push(`    local p2 = ch and ch:FindFirstChild("HumanoidRootPart")`);
-        L.push(`    if p2 then`);L.push(`      local d = (hrp.Position - p2.Position).Magnitude`);L.push(`      if d < dist then nearest = p2; dist = d end`);L.push(`    end`);L.push(`  end`);
-        L.push(`  if nearest then hum:MoveTo(nearest.Position) end`);L.push(`end)`);L.push('');
-        L.push(`hum.Died:Connect(function()`);if(a.respawn==='Sim')L.push(`  task.wait(5); -- respawn lógica aqui`);L.push(`  task.wait(3); enemy:Destroy()`);L.push(`end)`);break;
-      case'SaveLoad':
-        L.push(`local DS = game:GetService("DataStoreService"):GetDataStore("${p.StoreName||'PlayerData'}")`);L.push('');
-        L.push(`local function save(plr)`);L.push(`  local ls = plr:FindFirstChild("leaderstats"); if not ls then return end`);L.push(`  local data = {}`);L.push(`  for _, v in ipairs(ls:GetChildren()) do data[v.Name] = v.Value end`);L.push(`  pcall(function() DS:SetAsync(tostring(plr.UserId), data) end)`);L.push(`end`);L.push('');
-        L.push(`Players.PlayerAdded:Connect(function(plr)`);L.push(`  local ok, data = pcall(function() return DS:GetAsync(tostring(plr.UserId)) end)`);L.push(`  if ok and data then`);L.push(`    task.wait(1)`);L.push(`    local ls = plr:FindFirstChild("leaderstats")`);L.push(`    if ls then for k, v in pairs(data) do local s = ls:FindFirstChild(k); if s then s.Value = v end end end`);L.push(`  end`);L.push(`  task.spawn(function()`);L.push(`    while plr.Parent do task.wait(${p.AutoSave||60}); save(plr) end`);L.push(`  end)`);L.push(`end)`);L.push(`Players.PlayerRemoving:Connect(save)`);L.push(`game:BindToClose(function() for _, p in ipairs(Players:GetPlayers()) do save(p) end end)`);break;
-      case'DayNight':
-        L.push(`local Lighting = game:GetService("Lighting")`);L.push(`local CYCLE = ${p.CycleMinutes||20}`);L.push(`Lighting.ClockTime = ${p.StartHour||6}`);L.push('');
-        L.push(`task.spawn(function()`);L.push(`  local sph = (CYCLE * 60) / 24`);L.push(`  while true do task.wait(0.1); Lighting.ClockTime = (Lighting.ClockTime + 0.1 / sph) % 24 end`);L.push(`end)`);break;
-      default:
-        L.push(`-- Sistema: ${p.Name||node.type}`);L.push(`print("[RoForger] ${p.Name||node.type} iniciado")`);
+
+  injectToNode(uid,blockIdx,type){
+    const node=App.state.nodes.find(n=>n.uid===uid);if(!node)return;
+    const blocks=SCRIPT_DB[type]||SCRIPT_DB['_default'];
+    const blk=blocks.blocks[blockIdx];if(!blk)return;
+    node.script=(node.script?node.script+'\n\n':'')+'-- === '+blk.name+' ===\n'+blk.code;
+    App.nodes.renderOne(node);toast('💉 Bloco injetado no script!');
+  },
+
+  renderLogicTab(node){
+    const body=document.getElementById('pp-logic-body');
+    body.innerHTML=`<div class="logic-node-name">${node.icon} ${node.props.Name||node.type}</div>`;
+    // Render existing logic
+    (node.logic||[]).forEach((l,i)=>{body.appendChild(this._buildLogicCard(node,l,i))});
+    // Add button
+    const add=document.createElement('div');add.className='logic-add-btn';
+    add.innerHTML='＋ Adicionar Condição';add.onclick=()=>this.addLogic(node.uid);body.appendChild(add);
+    // Generate button
+    if((node.logic||[]).length>0){
+      const gen=document.createElement('button');gen.className='logic-gen-btn';
+      gen.textContent='⚡ Gerar Script das Condições';gen.onclick=()=>this.generateLogicScript(node.uid);
+      body.appendChild(gen);
     }
-    L.push('');L.push(`-- Gerado pelo RoForger Studio`);return L.join('\n');
   },
-  _getWhere(type){const m={WalkSpeed:'StarterCharacterScripts (LocalScript)',Dash:'StarterCharacterScripts (LocalScript)',DoubleJump:'StarterCharacterScripts (LocalScript)',Currency:'ServerScriptService (Script)',SaveLoad:'ServerScriptService (Script)',Leaderboard:'ServerScriptService (Script)',Enemy:'Workspace > NPC (Script)',DayNight:'ServerScriptService (Script)',AdminPanel:'ServerScriptService (Script)'};return m[type]||'ServerScriptService (Script)'},
-  insertSnippet(type){},
-  async copy(){const code=window._finalScript||document.getElementById('code-area').value;try{await navigator.clipboard.writeText(code);document.getElementById('copy-ok').style.display='block';toast('✓ Copiado!');setTimeout(()=>document.getElementById('copy-ok').style.display='none',2000)}catch(e){toast('Copie manualmente','e')}},
+
+  _buildLogicCard(node,l,i){
+    const otherNodes=App.state.nodes.filter(n=>n.uid!==node.uid);
+    const nodeOpts=otherNodes.map(n=>`<option value="${n.uid}" ${l.targetUid==n.uid?'selected':''}>${n.icon} ${n.props.Name||n.type}</option>`).join('');
+    const card=document.createElement('div');card.className='logic-card';
+    card.innerHTML=`
+    <div class="logic-card-head">
+      <span class="logic-card-icon">⚡</span>
+      <span class="logic-card-title">Condição ${i+1}</span>
+      <span class="logic-card-del" onclick="PP.removeLogic(${node.uid},${i})">✕</span>
+    </div>
+    <div class="logic-card-body">
+      <div class="logic-row">
+        <span class="logic-label">SE</span>
+        <select class="logic-select" onchange="PP.updateLogic(${node.uid},${i},'trigger',this.value)">
+          <option value="touch" ${l.trigger==='touch'?'selected':''}>Jogador tocar</option>
+          <option value="key" ${l.trigger==='key'?'selected':''}>Tecla pressionada</option>
+          <option value="hp" ${l.trigger==='hp'?'selected':''}>HP abaixo de</option>
+          <option value="coins" ${l.trigger==='coins'?'selected':''}>Moedas >= </option>
+          <option value="click" ${l.trigger==='click'?'selected':''}>Jogador clicar</option>
+          <option value="time" ${l.trigger==='time'?'selected':''}>Timer (segundos)</option>
+          <option value="level" ${l.trigger==='level'?'selected':''}>Level atingido</option>
+          <option value="near" ${l.trigger==='near'?'selected':''}>Jogador próximo</option>
+        </select>
+      </div>
+      <div class="logic-row">
+        <span class="logic-label">VALOR</span>
+        <input class="logic-input" value="${l.value||''}" placeholder="Ex: E, 50, 100..." onchange="PP.updateLogic(${node.uid},${i},'value',this.value)"/>
+      </div>
+      <div class="logic-row">
+        <span class="logic-label">ENTÃO</span>
+        <select class="logic-select" onchange="PP.updateLogic(${node.uid},${i},'action',this.value)">
+          <option value="show" ${l.action==='show'?'selected':''}>Mostrar elemento</option>
+          <option value="hide" ${l.action==='hide'?'selected':''}>Esconder elemento</option>
+          <option value="damage" ${l.action==='damage'?'selected':''}>Causar dano</option>
+          <option value="heal" ${l.action==='heal'?'selected':''}>Curar HP</option>
+          <option value="tp" ${l.action==='tp'?'selected':''}>Teleportar</option>
+          <option value="give_coins" ${l.action==='give_coins'?'selected':''}>Dar moedas</option>
+          <option value="sound" ${l.action==='sound'?'selected':''}>Tocar som</option>
+          <option value="print" ${l.action==='print'?'selected':''}>Print/Log</option>
+          <option value="kill" ${l.action==='kill'?'selected':''}>Matar jogador</option>
+          <option value="respawn" ${l.action==='respawn'?'selected':''}>Respawnar</option>
+        </select>
+      </div>
+      ${otherNodes.length?`<div class="logic-row"><span class="logic-label">ALVO</span><select class="logic-select" onchange="PP.updateLogic(${node.uid},${i},'targetUid',this.value)"><option value="">-- Esse node --</option>${nodeOpts}</select></div>`:''}
+      <div class="logic-row">
+        <span class="logic-label">PARAM</span>
+        <input class="logic-input" value="${l.param||''}" placeholder="Valor da ação..." onchange="PP.updateLogic(${node.uid},${i},'param',this.value)"/>
+      </div>
+      <div class="logic-then">${this._previewLogic(l)}</div>
+    </div>`;
+    return card;
+  },
+
+  _previewLogic(l){
+    const triggers={touch:'Touched:Connect',key:`InputBegan (${l.value||'?'})`,hp:`HP < ${l.value||'?'}`,coins:`Coins >= ${l.value||'?'}`,click:'MouseButton1Click',time:`task.wait(${l.value||'?'})`,level:`Level >= ${l.value||'?'}`,near:`Magnitude < ${l.value||'50'}`};
+    const actions={show:'part.Transparency = 0',hide:'part.Transparency = 1',damage:`hum:TakeDamage(${l.param||'10'})`,heal:`hum.Health += ${l.param||'20'}`,tp:'hrp.CFrame = dest.CFrame',give_coins:`coins.Value += ${l.param||'50'}`,sound:'sound:Play()',print:`print("${l.param||'evento'}")`,kill:'hum.Health = 0',respawn:'plr:LoadCharacter()'};
+    return `-- ${triggers[l.trigger]||'?'} → ${actions[l.action]||'?'}`;
+  },
+
+  addLogic(uid){
+    const node=App.state.nodes.find(n=>n.uid===uid);if(!node)return;
+    if(!node.logic)node.logic=[];
+    node.logic.push({trigger:'touch',value:'',action:'print',param:'evento',targetUid:''});
+    this.renderLogicTab(node);App.autosave.schedule();
+  },
+
+  removeLogic(uid,i){
+    const node=App.state.nodes.find(n=>n.uid===uid);if(!node||!node.logic)return;
+    node.logic.splice(i,1);this.renderLogicTab(node);App.autosave.schedule();
+  },
+
+  updateLogic(uid,i,key,val){
+    const node=App.state.nodes.find(n=>n.uid===uid);if(!node||!node.logic)return;
+    node.logic[i][key]=val;
+    // Update preview
+    this.renderLogicTab(node);App.autosave.schedule();
+  },
+
+  generateLogicScript(uid){
+    const node=App.state.nodes.find(n=>n.uid===uid);if(!node||!node.logic)return;
+    const lines=['-- Lógica gerada pelo RoForger','-- 📍 Cole em ServerScriptService ou StarterCharacterScripts',''];
+    lines.push('local Players = game:GetService("Players")');
+    lines.push('local UIS = game:GetService("UserInputService")');
+    lines.push('local part = script.Parent -- ajuste para o objeto correto');
+    lines.push('');
+    node.logic.forEach((l,i)=>{
+      lines.push(`-- Condição ${i+1}: SE ${l.trigger} → ${l.action}`);
+      const target=l.targetUid?`-- Alvo: node ${l.targetUid}`:'';
+      if(target)lines.push(target);
+      switch(l.trigger){
+        case'touch':
+          lines.push(`part.Touched:Connect(function(hit)`);
+          lines.push(`  local char=hit.Parent`);
+          lines.push(`  local hum=char:FindFirstChildOfClass("Humanoid")`);
+          lines.push(`  local hrp=char:FindFirstChild("HumanoidRootPart")`);
+          lines.push(`  if not hum then return end`);
+          lines.push(`  ${this._actionLine(l)}`);
+          lines.push(`end)`);break;
+        case'key':
+          lines.push(`UIS.InputBegan:Connect(function(i,gp)`);
+          lines.push(`  if gp then return end`);
+          lines.push(`  if i.KeyCode==Enum.KeyCode.${l.value||'E'} then`);
+          lines.push(`    local plr=Players.LocalPlayer`);
+          lines.push(`    local char=plr.Character; local hum=char and char:FindFirstChildOfClass("Humanoid")`);
+          lines.push(`    ${this._actionLine(l)}`);
+          lines.push(`  end`);lines.push(`end)`);break;
+        case'time':
+          lines.push(`task.delay(${l.value||'5'},function()`);
+          lines.push(`  ${this._actionLine(l)}`);
+          lines.push(`end)`);break;
+        default:
+          lines.push(`-- Evento: ${l.trigger} | Ação: ${l.action}`);
+          lines.push(`-- ${this._actionLine(l)}`);
+      }
+      lines.push('');
+    });
+    const code=lines.join('\n');
+    node.script=(node.script?node.script+'\n\n':'')+code;
+    App.nodes.renderOne(node);App.scripts.openEditorFor(uid);toast('⚡ Script de lógica gerado!');
+  },
+
+  _actionLine(l){
+    switch(l.action){
+      case'show':return'part.Transparency=0';
+      case'hide':return'part.Transparency=1';
+      case'damage':return`hum:TakeDamage(${l.param||10})`;
+      case'heal':return`hum.Health=math.min(hum.MaxHealth,hum.Health+${l.param||20})`;
+      case'tp':return'hrp.CFrame=workspace.TeleportDest.CFrame';
+      case'give_coins':return`local ls=plr:FindFirstChild("leaderstats"); if ls then local c=ls:FindFirstChild("Coins"); if c then c.Value=c.Value+${l.param||50} end end`;
+      case'sound':return'local s=Instance.new("Sound"); s.SoundId="rbxassetid://0"; s.Parent=workspace; s:Play()';
+      case'print':return`print("[RoForger] ${l.param||'evento'}")`;
+      case'kill':return'hum.Health=0';
+      case'respawn':return'plr:LoadCharacter()';
+      default:return`print("ação: ${l.action}")`;
+    }
+  }
+};
+
+// ═══════════════════════════════════════════════════
+// SCRIPT DATABASE — blocos explicados por tipo
+// ═══════════════════════════════════════════════════
+const SCRIPT_DB={
+  _default:{
+    where:'ServerScriptService (Script)',
+    blocks:[{name:'Script Básico',type:'Script',where:'ServerScriptService',
+      vars:[{n:'script.Parent',d:'O objeto pai onde o script está'}],
+      code:`-- Script básico
+print("[RoForger] Sistema iniciado")`}]
+  },
+  WalkSpeed:{
+    where:'StarterCharacterScripts (LocalScript)',
+    blocks:[
+      {name:'Velocidade Base',type:'LocalScript',where:'StarterCharacterScripts',
+        vars:[{n:'DEFAULT',d:'Velocidade normal de caminhada (padrão Roblox: 16)'},{n:'JUMP',d:'Força do pulo (padrão: 50, máx recomendado: 100)'},{n:'hum.WalkSpeed',d:'Propriedade do Humanoid que controla velocidade'}],
+        code:`-- VELOCIDADE BASE
+-- Onde colocar: StarterCharacterScripts > LocalScript
+local Players = game:GetService("Players")
+local plr = Players.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
+local hum = char:WaitForChild("Humanoid")
+
+local DEFAULT = 16  -- ← Mude para alterar velocidade normal
+local JUMP = 50     -- ← Mude para alterar altura do pulo
+
+hum.WalkSpeed = DEFAULT
+hum.JumpPower = JUMP`},
+      {name:'Sprint (Shift)',type:'LocalScript',where:'StarterCharacterScripts',
+        vars:[{n:'SPRINT',d:'Velocidade ao segurar Shift (recomendado: 20-35)'},{n:'STAMINA_MAX',d:'Stamina máxima — 0 para ilimitado'},{n:'DRAIN_RATE',d:'Taxa de gasto de stamina por segundo'}],
+        code:`-- SPRINT COM STAMINA
+-- Onde colocar: StarterCharacterScripts > LocalScript (junto com o bloco de velocidade)
+local UIS = game:GetService("UserInputService")
+local RS = game:GetService("RunService")
+local hum = script.Parent:WaitForChild("Humanoid")
+
+local DEFAULT = 16    -- ← velocidade normal
+local SPRINT = 26     -- ← velocidade ao correr
+local STAMINA_MAX = 100  -- ← stamina máxima (0 = ilimitado)
+local DRAIN_RATE = 20    -- ← quanto drena por segundo
+local REGEN_RATE = 10    -- ← quanto regenera por segundo
+
+local stamina = STAMINA_MAX
+local isSprinting = false
+
+UIS.InputBegan:Connect(function(i, gp)
+  if gp then return end
+  if i.KeyCode == Enum.KeyCode.LeftShift then
+    isSprinting = true
+    hum.WalkSpeed = SPRINT
+  end
+end)
+UIS.InputEnded:Connect(function(i)
+  if i.KeyCode == Enum.KeyCode.LeftShift then
+    isSprinting = false
+    hum.WalkSpeed = DEFAULT
+  end
+end)
+RS.Heartbeat:Connect(function(dt)
+  if isSprinting and stamina > 0 then
+    stamina = math.max(0, stamina - dt * DRAIN_RATE)
+    if stamina <= 0 then isSprinting = false; hum.WalkSpeed = DEFAULT end
+  elseif not isSprinting and stamina < STAMINA_MAX then
+    stamina = math.min(STAMINA_MAX, stamina + dt * REGEN_RATE)
+  end
+end)`},
+      {name:'Agachamento (Ctrl)',type:'LocalScript',where:'StarterCharacterScripts',
+        vars:[{n:'CROUCH_SPEED',d:'Velocidade ao agachar (recomendado: 6-10)'},{n:'LeftControl',d:'Tecla de agachamento — troque por outra tecla se quiser'}],
+        code:`-- AGACHAMENTO
+-- Onde colocar: StarterCharacterScripts > LocalScript
+local UIS = game:GetService("UserInputService")
+local hum = script.Parent:WaitForChild("Humanoid")
+
+local DEFAULT = 16      -- ← velocidade normal
+local CROUCH_SPEED = 7  -- ← velocidade ao agachar
+
+UIS.InputBegan:Connect(function(i, gp)
+  if gp then return end
+  if i.KeyCode == Enum.KeyCode.LeftControl then
+    hum.WalkSpeed = CROUCH_SPEED
+  end
+end)
+UIS.InputEnded:Connect(function(i)
+  if i.KeyCode == Enum.KeyCode.LeftControl then
+    hum.WalkSpeed = DEFAULT
+  end
+end)`}
+    ]
+  },
+  Fly:{
+    where:'StarterCharacterScripts (LocalScript)',
+    blocks:[
+      {name:'Voar (toggle F)',type:'LocalScript',where:'StarterCharacterScripts',
+        vars:[{n:'FLY_SPEED',d:'Velocidade de voo horizontal (recomendado: 30-80)'},{n:'MAX_HEIGHT',d:'Altura máxima permitida em studs (0 = sem limite)'},{n:'ASCEND_SPEED',d:'Velocidade de subida/descida (espaço e Ctrl)'},{n:'F',d:'Tecla para ativar/desativar voo — troque se quiser'}],
+        code:`-- SISTEMA DE VOO
+-- Onde colocar: StarterCharacterScripts > LocalScript
+-- MAX_HEIGHT: altura em studs a partir do chão (0 = sem limite)
+
+local UIS = game:GetService("UserInputService")
+local RS = game:GetService("RunService")
+local plr = game.Players.LocalPlayer
+local char = script.Parent
+local hrp = char:WaitForChild("HumanoidRootPart")
+local hum = char:WaitForChild("Humanoid")
+
+local FLY_SPEED = 50       -- ← velocidade de voo
+local ASCEND_SPEED = 30    -- ← velocidade de subida/descida
+local MAX_HEIGHT = 200     -- ← altura máxima em studs (0 = ilimitado)
+
+local flying = false
+local bodyVel, bodyGyro
+
+local function startFly()
+  flying = true
+  hum.PlatformStand = true
+  bodyVel = Instance.new("BodyVelocity")
+  bodyVel.MaxForce = Vector3.new(1e5,1e5,1e5)
+  bodyVel.Velocity = Vector3.zero
+  bodyVel.Parent = hrp
+  bodyGyro = Instance.new("BodyGyro")
+  bodyGyro.MaxTorque = Vector3.new(1e5,1e5,1e5)
+  bodyGyro.CFrame = hrp.CFrame
+  bodyGyro.Parent = hrp
+end
+
+local function stopFly()
+  flying = false
+  hum.PlatformStand = false
+  if bodyVel then bodyVel:Destroy() end
+  if bodyGyro then bodyGyro:Destroy() end
+end
+
+UIS.InputBegan:Connect(function(i, gp)
+  if gp then return end
+  if i.KeyCode == Enum.KeyCode.F then
+    if flying then stopFly() else startFly() end
+  end
+end)
+
+RS.RenderStepped:Connect(function()
+  if not flying then return end
+  -- Checar altura máxima
+  if MAX_HEIGHT > 0 and hrp.Position.Y >= MAX_HEIGHT then
+    local v = bodyVel.Velocity
+    bodyVel.Velocity = Vector3.new(v.X, math.min(0, v.Y), v.Z)
+  end
+  local cam = workspace.CurrentCamera
+  local dir = Vector3.zero
+  if UIS:IsKeyDown(Enum.KeyCode.W) then dir += cam.CFrame.LookVector end
+  if UIS:IsKeyDown(Enum.KeyCode.S) then dir -= cam.CFrame.LookVector end
+  if UIS:IsKeyDown(Enum.KeyCode.A) then dir -= cam.CFrame.RightVector end
+  if UIS:IsKeyDown(Enum.KeyCode.D) then dir += cam.CFrame.RightVector end
+  if UIS:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.yAxis end
+  if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.yAxis end
+  dir = Vector3.new(dir.X, dir.Y, dir.Z)
+  bodyVel.Velocity = dir.Magnitude > 0 and dir.Unit * FLY_SPEED or Vector3.zero
+  bodyGyro.CFrame = cam.CFrame
+end)`}
+    ]
+  },
+  Dash:{
+    where:'StarterCharacterScripts (LocalScript)',
+    blocks:[
+      {name:'Dash Básico',type:'LocalScript',where:'StarterCharacterScripts',
+        vars:[{n:'POWER',d:'Força do dash — quanto mais alto, mais longe (recomendado: 40-80)'},{n:'COOLDOWN',d:'Tempo em segundos antes de poder dar dash novamente'},{n:'DASH_KEY',d:'Tecla do dash — padrão Q, pode trocar por E, F, etc'}],
+        code:`-- SISTEMA DE DASH
+-- Onde colocar: StarterCharacterScripts > LocalScript
+
+local UIS = game:GetService("UserInputService")
+local char = script.Parent
+local hrp = char:WaitForChild("HumanoidRootPart")
+local hum = char:WaitForChild("Humanoid")
+
+local POWER = 60       -- ← distância do dash
+local COOLDOWN = 1.0   -- ← cooldown em segundos
+local DASH_KEY = Enum.KeyCode.Q  -- ← tecla do dash
+
+local canDash = true
+
+UIS.InputBegan:Connect(function(i, gp)
+  if gp or not canDash then return end
+  if i.KeyCode == DASH_KEY then
+    canDash = false
+    -- Direção do dash (para onde o jogador está se movendo)
+    local dir = hum.MoveDirection
+    if dir.Magnitude < 0.1 then
+      dir = hrp.CFrame.LookVector  -- se parado, dash para frente
+    end
+    hrp.Velocity = dir * POWER
+    task.wait(COOLDOWN)
+    canDash = true
+  end
+end)`},
+      {name:'Dash com Efeito Visual',type:'LocalScript',where:'StarterCharacterScripts',
+        vars:[{n:'TRAIL_TRANS',d:'Transparência do trail (0=sólido, 1=invisível)'},{n:'POWER',d:'Força/distância do dash'},{n:'EFFECT_TIME',d:'Duração do efeito de rastro em segundos'}],
+        code:`-- DASH COM TRAIL
+-- Onde colocar: StarterCharacterScripts > LocalScript
+
+local UIS = game:GetService("UserInputService")
+local TS = game:GetService("TweenService")
+local char = script.Parent
+local hrp = char:WaitForChild("HumanoidRootPart")
+local hum = char:WaitForChild("Humanoid")
+
+local POWER = 60        -- ← distância
+local COOLDOWN = 1.2    -- ← cooldown
+local EFFECT_TIME = 0.3 -- ← duração do trail
+
+-- Criar trail
+local trail = Instance.new("Trail")
+trail.Attachment0 = Instance.new("Attachment", hrp)
+trail.Attachment1 = Instance.new("Attachment", hrp)
+trail.Attachment1.Position = Vector3.new(0,-2,0)
+trail.Lifetime = EFFECT_TIME
+trail.Enabled = false
+trail.Parent = hrp
+
+local canDash = true
+UIS.InputBegan:Connect(function(i, gp)
+  if gp or not canDash then return end
+  if i.KeyCode == Enum.KeyCode.Q then
+    canDash = false
+    trail.Enabled = true
+    local dir = hum.MoveDirection
+    if dir.Magnitude < 0.1 then dir = hrp.CFrame.LookVector end
+    hrp.Velocity = dir * POWER
+    task.wait(EFFECT_TIME)
+    trail.Enabled = false
+    task.wait(COOLDOWN - EFFECT_TIME)
+    canDash = true
+  end
+end)`}
+    ]
+  },
+  Enemy:{
+    where:'Workspace > NPC Model (Script)',
+    blocks:[
+      {name:'IA: Perseguir Jogador',type:'Script',where:'NPC Model > Script',
+        vars:[{n:'HP',d:'Vida do inimigo — ao zerar ele morre'},{n:'DMG',d:'Dano causado por ataque'},{n:'AGGRO_RANGE',d:'Distância em studs para detectar o jogador'},{n:'SPEED',d:'Velocidade de movimento do inimigo'},{n:'ATTACK_RANGE',d:'Distância para atacar o jogador'}],
+        code:`-- INIMIGO COM IA
+-- Onde colocar: Workspace > [NomeDoPNJ] > Script (NÃO LocalScript)
+-- O model do NPC precisa ter: Humanoid, HumanoidRootPart
+
+local Players = game:GetService("Players")
+local RS = game:GetService("RunService")
+local enemy = script.Parent
+local hum = enemy:WaitForChild("Humanoid")
+local hrp = enemy:WaitForChild("HumanoidRootPart")
+
+local HP = 100          -- ← vida do inimigo
+local DMG = 10          -- ← dano por ataque
+local AGGRO_RANGE = 30  -- ← raio de detecção (studs)
+local SPEED = 14        -- ← velocidade de movimento
+local ATTACK_RANGE = 5  -- ← distância para atacar
+local ATTACK_CD = 1.5   -- ← cooldown entre ataques
+
+hum.MaxHealth = HP
+hum.Health = HP
+hum.WalkSpeed = SPEED
+
+local lastAttack = 0
+RS.Heartbeat:Connect(function()
+  if hum.Health <= 0 then return end
+  local nearest, dist = nil, AGGRO_RANGE
+  for _, plr in ipairs(Players:GetPlayers()) do
+    local ch = plr.Character
+    local p = ch and ch:FindFirstChild("HumanoidRootPart")
+    if p then
+      local d = (hrp.Position - p.Position).Magnitude
+      if d < dist then nearest = p; dist = d end
+    end
+  end
+  if nearest then
+    hum:MoveTo(nearest.Position)
+    -- Atacar se perto o suficiente
+    if dist <= ATTACK_RANGE and tick()-lastAttack >= ATTACK_CD then
+      lastAttack = tick()
+      local victimHum = nearest.Parent:FindFirstChildOfClass("Humanoid")
+      if victimHum then victimHum:TakeDamage(DMG) end
+    end
+  end
+end)
+
+hum.Died:Connect(function()
+  task.wait(3)
+  enemy:Destroy()  -- ← remova essa linha se quiser respawn
+end)`},
+      {name:'Drop de Itens ao Morrer',type:'Script',where:'NPC Model > Script',
+        vars:[{n:'DROP_CHANCE',d:'Chance de dropar item (0 a 1 = 0% a 100%)'},{n:'COINS_AMOUNT',d:'Quantidade de moedas dadas ao matar'},{n:'XP_AMOUNT',d:'XP concedido ao jogador que matou'}],
+        code:`-- DROP AO MORRER
+-- Adicione junto com o script de IA do inimigo
+-- Onde colocar: NPC Model > Script
+
+local Players = game:GetService("Players")
+local enemy = script.Parent
+local hum = enemy:WaitForChild("Humanoid")
+
+local DROP_CHANCE = 0.5   -- ← 50% de chance de dropar
+local COINS_AMOUNT = 25   -- ← moedas dadas ao matar
+local XP_AMOUNT = 100     -- ← XP dado ao matar
+
+hum.Died:Connect(function()
+  -- Encontrar quem matou (último dano)
+  local tag = hum:FindFirstChild("creator")
+  local killer = tag and tag.Value
+  if killer and killer:IsA("Player") then
+    local ls = killer:FindFirstChild("leaderstats")
+    if ls then
+      local coins = ls:FindFirstChild("Coins")
+      local xp = ls:FindFirstChild("XP")
+      if coins then coins.Value += COINS_AMOUNT end
+      if xp then xp.Value += XP_AMOUNT end
+    end
+  end
+  -- Drop aleatório
+  if math.random() < DROP_CHANCE then
+    local drop = Instance.new("Part")
+    drop.Size = Vector3.new(1,1,1)
+    drop.Position = enemy.HumanoidRootPart.Position
+    drop.BrickColor = BrickColor.new("Bright yellow")
+    drop.Parent = workspace
+    game:GetService("Debris"):AddItem(drop, 10)  -- some após 10s
+  end
+end)`}
+    ]
+  },
+  Currency:{
+    where:'ServerScriptService (Script)',
+    blocks:[
+      {name:'Sistema de Moedas',type:'Script',where:'ServerScriptService',
+        vars:[{n:'COIN_NAME',d:'Nome da moeda no leaderstats (aparece no placar)'},{n:'START_AMOUNT',d:'Moedas iniciais de cada jogador'},{n:'MAX_AMOUNT',d:'Limite máximo de moedas por jogador'},{n:'StoreName',d:'Nome do DataStore — mude se quiser resetar dados'}],
+        code:`-- SISTEMA DE MOEDAS COM SAVE
+-- Onde colocar: ServerScriptService > Script
+
+local Players = game:GetService("Players")
+local DS = game:GetService("DataStoreService")
+
+local COIN_NAME = "Coins"     -- ← nome da moeda
+local START_AMOUNT = 0        -- ← moedas iniciais
+local MAX_AMOUNT = 999999     -- ← limite máximo
+local StoreName = "CoinsStore_v1"  -- ← mude para resetar dados
+
+local store = DS:GetDataStore(StoreName)
+
+Players.PlayerAdded:Connect(function(plr)
+  -- Criar leaderstats
+  local ls = Instance.new("Folder")
+  ls.Name = "leaderstats"
+  ls.Parent = plr
+  local coins = Instance.new("IntValue")
+  coins.Name = COIN_NAME
+  coins.Value = START_AMOUNT
+  coins.Parent = ls
+  -- Carregar dados salvos
+  local ok, saved = pcall(function()
+    return store:GetAsync(tostring(plr.UserId))
+  end)
+  if ok and saved then
+    coins.Value = math.min(saved, MAX_AMOUNT)
+  end
+end)
+
+Players.PlayerRemoving:Connect(function(plr)
+  local ls = plr:FindFirstChild("leaderstats")
+  if not ls then return end
+  local coins = ls:FindFirstChild(COIN_NAME)
+  if not coins then return end
+  pcall(function()
+    store:SetAsync(tostring(plr.UserId), coins.Value)
+  end)
+end)
+
+-- Função para dar moedas (use em outros scripts)
+-- local MoneyModule = require(script)
+-- MoneyModule.GiveCoins(player, 100)`}
+    ]
+  },
+  SaveLoad:{
+    where:'ServerScriptService (Script)',
+    blocks:[
+      {name:'Auto-Save Completo',type:'Script',where:'ServerScriptService',
+        vars:[{n:'StoreName',d:'Nome do DataStore — altere para criar save novo'},{n:'AUTO_SAVE_INTERVAL',d:'Tempo em segundos entre saves automáticos'},{n:'MAX_RETRIES',d:'Tentativas em caso de falha na conexão'}],
+        code:`-- AUTO-SAVE COMPLETO
+-- Onde colocar: ServerScriptService > Script
+-- Salva TODOS os valores do leaderstats automaticamente
+
+local Players = game:GetService("Players")
+local DS = game:GetService("DataStoreService")
+
+local StoreName = "PlayerData_v1"    -- ← mude para resetar dados
+local AUTO_SAVE_INTERVAL = 60        -- ← save a cada N segundos
+local MAX_RETRIES = 3                -- ← tentativas em falha
+
+local store = DS:GetDataStore(StoreName)
+
+local function save(plr)
+  local ls = plr:FindFirstChild("leaderstats")
+  if not ls then return end
+  local data = {}
+  for _, v in ipairs(ls:GetChildren()) do
+    data[v.Name] = v.Value
+  end
+  for i = 1, MAX_RETRIES do
+    local ok = pcall(function()
+      store:SetAsync(tostring(plr.UserId), data)
+    end)
+    if ok then break end
+    task.wait(1)
+  end
+end
+
+local function load(plr)
+  local ok, data = pcall(function()
+    return store:GetAsync(tostring(plr.UserId))
+  end)
+  if ok and data then
+    task.wait(0.5)
+    local ls = plr:FindFirstChild("leaderstats")
+    if ls then
+      for k, v in pairs(data) do
+        local stat = ls:FindFirstChild(k)
+        if stat then stat.Value = v end
+      end
+    end
+  end
+end
+
+Players.PlayerAdded:Connect(function(plr)
+  load(plr)
+  -- Auto-save loop
+  task.spawn(function()
+    while plr.Parent do
+      task.wait(AUTO_SAVE_INTERVAL)
+      save(plr)
+    end
+  end)
+end)
+
+Players.PlayerRemoving:Connect(save)
+game:BindToClose(function()
+  for _, p in ipairs(Players:GetPlayers()) do
+    save(p)
+  end
+end)`}
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════════════
+// SCRIPT EDITOR (SE) — full editor com blocos separados
+// ═══════════════════════════════════════════════════
+const SE={
+  node:null,
+  activeBlockIdx:0,
+
+  openFor(uid){
+    const node=App.state.nodes.find(n=>n.uid===uid);if(!node)return;
+    this.node=node;
+    const blocks=SCRIPT_DB[node.type]||SCRIPT_DB['_default'];
+    document.getElementById('se-modal-title').textContent='✏️ Editor — '+(node.props.Name||node.type);
+    document.getElementById('se-where-badge').textContent='📍 '+blocks.where;
+    this.renderBlockList();
+    this.selectBlock(0);
+    openM('m-script-editor');
+  },
+
+  renderBlockList(){
+    const list=document.getElementById('se-block-list');list.innerHTML='';
+    const blocks=(SCRIPT_DB[this.node.type]||SCRIPT_DB['_default']).blocks;
+    blocks.forEach((blk,i)=>{
+      const el=document.createElement('div');el.className='se-block-item'+(i===this.activeBlockIdx?' active':'');
+      el.id='se-bi-'+i;
+      const typeColor={LocalScript:'#1a8cff',Script:'#3ecf8e',ModuleScript:'#9b42ff'}[blk.type]||'#6b7594';
+      el.innerHTML=`<span class="se-block-ico" style="color:${typeColor}">▣</span><div style="flex:1"><div style="font-size:10px;font-weight:600;color:var(--txt)">${blk.name}</div><div style="font-size:8px;color:${typeColor};font-family:'JetBrains Mono',monospace">${blk.type}</div></div>`;
+      el.onclick=()=>this.selectBlock(i);
+      list.appendChild(el);
+    });
+    // Custom blocks
+    if(this.node.customBlocks){
+      this.node.customBlocks.forEach((blk,i)=>{
+        const el=document.createElement('div');el.className='se-block-item';
+        el.innerHTML=`<span class="se-block-ico" style="color:var(--purple)">✎</span><div style="flex:1"><div style="font-size:10px;font-weight:600;color:var(--txt)">${blk.name}</div><div style="font-size:8px;color:var(--dim)">Custom</div></div><span style="font-size:10px;color:var(--dark);cursor:pointer;padding:2px" onclick="SE.removeCustomBlock(${i});event.stopPropagation()">✕</span>`;
+        el.onclick=()=>this.selectCustomBlock(i);list.appendChild(el);
+      });
+    }
+  },
+
+  selectBlock(i){
+    this.activeBlockIdx=i;
+    const blocks=(SCRIPT_DB[this.node.type]||SCRIPT_DB['_default']).blocks;
+    const blk=blocks[i];if(!blk)return;
+    document.querySelectorAll('.se-block-item').forEach((el,j)=>el.classList.toggle('active',j===i));
+    document.getElementById('se-active-title').textContent=blk.name;
+    // Update code area — with node props injected
+    const code=this.injectProps(blk.code,this.node.props);
+    document.getElementById('se-code-area').value=code;
+    // Explain panel
+    const ec=document.getElementById('se-explain-content');
+    ec.innerHTML=blk.vars.map(v=>`<div class="se-var-row"><span class="se-var-name">${v.n}</span><span class="se-var-type">var</span><span class="se-var-desc">${v.d}</span></div>`).join('');
+  },
+
+  selectCustomBlock(i){
+    if(!this.node.customBlocks||!this.node.customBlocks[i])return;
+    const blk=this.node.customBlocks[i];
+    document.getElementById('se-active-title').textContent=blk.name+' (custom)';
+    document.getElementById('se-code-area').value=blk.code||'';
+    document.getElementById('se-explain-content').innerHTML='<div style="font-size:10px;color:var(--dim)">Bloco personalizado — edite livremente.</div>';
+  },
+
+  injectProps(code,props){
+    // Replace placeholders like ${p.Speed} with actual prop values
+    let result=code;
+    Object.entries(props).forEach(([k,v])=>{
+      result=result.replace(new RegExp('\\$\\{p\\.'+k+'\\}','g'),v);
+    });
+    return result;
+  },
+
+  toggleExplain(){
+    const p=document.getElementById('se-explain-panel');
+    p.style.display=p.style.display==='none'?'block':'none';
+  },
+
+  saveBlock(){
+    if(!this.node)return;
+    const code=document.getElementById('se-code-area').value;
+    const title=document.getElementById('se-active-title').textContent;
+    if(!this.node.customBlocks)this.node.customBlocks=[];
+    // Update if editing existing, or save as new
+    this.node.script=code;
+    App.nodes.renderOne(this.node);App.autosave.schedule();
+    toast('💾 Bloco salvo no node!');
+  },
+
+  addBlock(){
+    if(!this.node)return;
+    const name=prompt('Nome do novo bloco:','Meu Script');if(!name)return;
+    if(!this.node.customBlocks)this.node.customBlocks=[];
+    this.node.customBlocks.push({name,code:'-- Seu código aqui\n'});
+    this.renderBlockList();toast('📄 Bloco criado!');
+  },
+
+  removeCustomBlock(i){
+    if(!this.node||!this.node.customBlocks)return;
+    this.node.customBlocks.splice(i,1);this.renderBlockList();
+  },
+
+  async copyBlock(){
+    const code=document.getElementById('se-code-area').value;
+    try{await navigator.clipboard.writeText(code);document.getElementById('se-copy-ok').style.display='block';toast('📋 Bloco copiado!');setTimeout(()=>document.getElementById('se-copy-ok').style.display='none',2000)}
+    catch(e){toast('Copie manualmente','e')}
+  },
+
+  async copyAll(){
+    if(!this.node)return;
+    const blocks=(SCRIPT_DB[this.node.type]||SCRIPT_DB['_default']).blocks;
+    const allCode=['-- ═══════════════════════════════════════════','-- RoForger Studio — '+( this.node.props.Name||this.node.type),'-- Gerado em '+new Date().toLocaleString('pt-BR'),'-- ═══════════════════════════════════════════',''];
+    blocks.forEach(blk=>{
+      allCode.push('-- ─── '+blk.name+' ('+blk.type+') ───');
+      allCode.push('-- 📍 Cole em: '+blk.where);
+      allCode.push(this.injectProps(blk.code,this.node.props));
+      allCode.push('');
+    });
+    if(this.node.customBlocks){
+      this.node.customBlocks.forEach(blk=>{allCode.push('-- ─── '+blk.name+' (Custom) ───');allCode.push(blk.code||'');allCode.push('')});
+    }
+    const code=allCode.join('\n');
+    try{await navigator.clipboard.writeText(code);document.getElementById('se-copy-ok').style.display='block';toast('📋 Todos os blocos copiados!');setTimeout(()=>document.getElementById('se-copy-ok').style.display='none',2000)}
+    catch(e){toast('Copie manualmente','e')}
+  }
+};
+
+// ═══════════════════════════════════════════════════
+// FOLDERS SYSTEM
+// ═══════════════════════════════════════════════════
+const Folders={
+  data:[], // [{id, name, open, scripts:[{id,name,type,nodeUid,code}]}]
+  activeScript:null,
+
+  init(){
+    try{const raw=localStorage.getItem('rf-folders');if(raw)this.data=JSON.parse(raw)}catch(e){}
+    this.render();
+  },
+
+  save(){
+    try{localStorage.setItem('rf-folders',JSON.stringify(this.data))}catch(e){}
+  },
+
+  render(){
+    const body=document.getElementById('pp-folders-body');if(!body)return;
+    body.innerHTML='';
+    if(!this.data.length){
+      body.innerHTML='<div style="padding:20px 12px;text-align:center;color:var(--dark);font-size:10px;line-height:1.8">Nenhuma pasta criada.<br>Organize seus scripts<br>em pastas de projeto.</div>';
+      return;
+    }
+    this.data.forEach((folder,fi)=>{
+      const wrap=document.createElement('div');wrap.className='folder-item';
+      const head=document.createElement('div');head.className='folder-head'+(folder.open?' open':'');
+      head.innerHTML=`<span class="folder-chev">▶</span><span class="folder-icon">${folder.open?'📂':'📁'}</span><span class="folder-name">${folder.name}</span><span class="folder-count">${(folder.scripts||[]).length}</span><div class="folder-acts"><span class="folder-act" title="Renomear" onclick="Folders.renameFolder(${fi});event.stopPropagation()">✎</span><span class="folder-act" title="Novo script" onclick="Folders.newScriptIn(${fi});event.stopPropagation()">+</span><span class="folder-act danger" title="Excluir" onclick="Folders.deleteFolder(${fi});event.stopPropagation()">✕</span></div>`;
+      head.onclick=()=>{folder.open=!folder.open;this.render()};
+      wrap.appendChild(head);
+      const ch=document.createElement('div');ch.className='folder-children';
+      (folder.scripts||[]).forEach((scr,si)=>{
+        const sel=this.activeScript&&this.activeScript.fi===fi&&this.activeScript.si===si;
+        const el=document.createElement('div');el.className='script-item'+(sel?' active':'');
+        const typeColor={LocalScript:'#1a8cff',Script:'#3ecf8e',ModuleScript:'#9b42ff'}[scr.type]||'#6b7594';
+        el.innerHTML=`<span class="script-item-ico" style="color:${typeColor}">📄</span><span class="script-item-name">${scr.name}</span><span class="script-item-type" style="background:${typeColor}18;color:${typeColor}">${scr.type||'Script'}</span><div class="script-item-acts"><span class="folder-act" title="Renomear" onclick="Folders.renameScript(${fi},${si});event.stopPropagation()">✎</span><span class="folder-act danger" title="Excluir" onclick="Folders.deleteScript(${fi},${si});event.stopPropagation()">✕</span></div>`;
+        el.onclick=()=>this.openScript(fi,si);
+        ch.appendChild(el);
+      });
+      if(folder.open)head.classList.add('open');
+      wrap.appendChild(ch);body.appendChild(wrap);
+    });
+  },
+
+  newFolder(){
+    const name=prompt('Nome da pasta:','Meu Projeto');if(!name)return;
+    this.data.push({id:Date.now(),name,open:true,scripts:[]});
+    this.save();this.render();toast('📁 Pasta criada!');
+  },
+
+  renameFolder(fi){
+    const name=prompt('Novo nome:',this.data[fi].name);if(!name)return;
+    this.data[fi].name=name;this.save();this.render();
+  },
+
+  deleteFolder(fi){
+    if(!confirm('Excluir pasta "'+this.data[fi].name+'" e todos os scripts?'))return;
+    this.data.splice(fi,1);this.save();this.render();
+  },
+
+  newScript(){
+    if(!this.data.length){toast('Crie uma pasta primeiro!','w');return}
+    const names=this.data.map((f,i)=>i+': '+f.name).join('\n');
+    const idx=parseInt(prompt('Em qual pasta? (número)\n'+names,'0'));
+    if(isNaN(idx))return;
+    this.newScriptIn(idx);
+  },
+
+  newScriptIn(fi){
+    const folder=this.data[fi];if(!folder)return;
+    const name=prompt('Nome do script:','MeuScript');if(!name)return;
+    const type=prompt('Tipo (Script / LocalScript / ModuleScript):','LocalScript')||'LocalScript';
+    if(!folder.scripts)folder.scripts=[];
+    folder.scripts.push({id:Date.now(),name,type,code:'-- '+name+'\n-- Tipo: '+type+'\n\n'});
+    folder.open=true;this.save();this.render();
+    this.openScript(fi,folder.scripts.length-1);
+    toast('📄 Script criado!');
+  },
+
+  renameScript(fi,si){
+    const name=prompt('Novo nome:',this.data[fi].scripts[si].name);if(!name)return;
+    this.data[fi].scripts[si].name=name;this.save();this.render();
+  },
+
+  deleteScript(fi,si){
+    if(!confirm('Excluir script "'+this.data[fi].scripts[si].name+'"?'))return;
+    this.data[fi].scripts.splice(si,1);this.save();this.render();
+  },
+
+  openScript(fi,si){
+    this.activeScript={fi,si};
+    const scr=this.data[fi].scripts[si];
+    // Open in script editor modal (reuse SE but for folder scripts)
+    document.getElementById('se-modal-title').textContent='📄 '+scr.name+' — '+this.data[fi].name;
+    document.getElementById('se-where-badge').textContent=scr.type;
+    const list=document.getElementById('se-block-list');list.innerHTML='';
+    const el=document.createElement('div');el.className='se-block-item active';
+    el.innerHTML=`<span class="se-block-ico" style="color:var(--purple)">📄</span><div><div style="font-size:10px;font-weight:600;color:var(--txt)">${scr.name}</div><div style="font-size:8px;color:var(--dim)">${scr.type}</div></div>`;
+    list.appendChild(el);
+    document.getElementById('se-active-title').textContent=scr.name;
+    document.getElementById('se-code-area').value=scr.code||'';
+    document.getElementById('se-explain-content').innerHTML='<div style="font-size:10px;color:var(--dim)">Script de pasta — edite livremente e clique em Salvar.</div>';
+    // Override save to save to folder
+    SE.node=null;SE._folderRef={fi,si};
+    openM('m-script-editor');
+    this.render();
+  },
+
+  saveActiveScript(code){
+    if(!this._folderRef)return;
+    const{fi,si}=this._folderRef||{};
+    if(fi===undefined||!this.data[fi])return;
+    this.data[fi].scripts[si].code=code;
+    this.save();toast('💾 Script salvo!');
+  }
+};
+// Extend SE.saveBlock to also handle folder scripts
+const _origSaveBlock=SE.saveBlock.bind(SE);
+SE.saveBlock=function(){
+  if(Folders._folderRef){const code=document.getElementById('se-code-area').value;Folders.saveActiveScript(code);return}
+  _origSaveBlock();
+};
+
+scripts:{
+  openForSelected(){if(App.state.selId)this.openEditorFor(App.state.selId)},
+  openFor(uid){this.openEditorFor(uid)},
+  openEditorFor(uid){SE.openFor(uid)},
   openGlobal(){
     if(!App.state.nodes.length){toast('⚠️ Adicione elementos primeiro!','w');return}
-    const L=[];L.push(`-- RoForger Studio — Projeto Completo`);L.push(`-- ${App.state.nodes.length} sistemas · ${new Date().toLocaleString('pt-BR')}`);L.push(`-- 📍 Cole em ServerScriptService ou StarterPlayerScripts`);L.push('');
-    App.state.nodes.forEach(n=>{L.push(`-- ${'─'.repeat(44)}`);L.push(`-- ${n.icon} ${n.props.Name||n.type} · ${this._getWhere(n.type)}`);if(n.script)L.push(n.script);else L.push(`print("[RoForger] ${n.props.Name||n.type} ativo")`);L.push('')});
+    const L=['-- RoForger Studio — Projeto Completo','-- '+App.state.nodes.length+' sistemas · '+new Date().toLocaleString('pt-BR'),'-- 📍 Cole em ServerScriptService ou StarterPlayerScripts',''];
+    App.state.nodes.forEach(n=>{L.push('-- ─── '+n.icon+' '+(n.props.Name||n.type)+' ───');if(n.script)L.push(n.script);else L.push('print("[RoForger] '+(n.props.Name||n.type)+' ativo")');L.push('')});
     const code=L.join('\n');document.getElementById('gmodal-pre').innerHTML=syntaxHL(code);window._globalScript=code;openM('m-global');
   },
   async copyGlobal(){try{await navigator.clipboard.writeText(window._globalScript||'');document.getElementById('gcopy-ok').style.display='block';toast('✓ Copiado!');setTimeout(()=>document.getElementById('gcopy-ok').style.display='none',2000)}catch(e){}}
@@ -2050,7 +3068,7 @@ function switchStab(btn,id){
   document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.stab-body').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');document.getElementById(id).classList.add('active');
-  if(id==='s-output')App.scripts.generate();
+  if(id==='s-output')App.scripts.generate&&App.scripts.generate();
 }
 function insertSnippet(type){const s={click:`element.MouseButton1Click:Connect(function()\n  \nend)`,tween:`local tw = TweenService:Create(element, TweenInfo.new(0.5), {})\ntw:Play()`,remote:`local re = game.ReplicatedStorage:WaitForChild("MeuEvento")\nre:FireServer("argumento")`,sound:`local s = Instance.new("Sound"); s.SoundId = "rbxassetid://0"; s.Parent = workspace; s:Play()`,ds:`local DS = game:GetService("DataStoreService"):GetDataStore("Store")\nDS:SetAsync(key, value)`};const ta=document.getElementById('code-area');const pos=ta.selectionStart||0;ta.value=ta.value.slice(0,pos)+'\n'+s[type]+'\n'+ta.value.slice(pos)}
 
