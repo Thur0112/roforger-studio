@@ -12,7 +12,7 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import{getFirestore,collection,addDoc,getDocs,doc,updateDoc,deleteDoc,query,where,orderBy}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-const cfg={apiKey:"AIzaSyAOR6UGedU-0yUgQ9I6QsOyTYwkH9z6TkA",authDomain:"roforger-ca0c4.firebaseapp.com",projectId:"roforger-ca0c4",storageBucket:"roforger-ca0c4.firebasestorage.app",messagingSenderId:"999264568857",appId:"1:999264568857:web:741ab9ea0656e7cbb60c88"};
+const cfg={apiKey:"AIzaSyArX9iaqsb1TE82YzpTP21KC14YOy8I_wg",authDomain:"roforger-studio.firebaseapp.com",projectId:"roforger-studio",storageBucket:"roforger-studio.firebasestorage.app",messagingSenderId:"724972965811",appId:"1:724972965811:web:521eda28e74005cc9f45c6"};
 const app=initializeApp(cfg);const auth=getAuth(app);const db=getFirestore(app);const gp=new GoogleAuthProvider();
 window._fb={auth,db,gp,signInWithPopup,signOut,onAuthStateChanged,collection,addDoc,getDocs,doc,updateDoc,deleteDoc,query,where,orderBy};
 window.dispatchEvent(new Event("fb-ready"));
