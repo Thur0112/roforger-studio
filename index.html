@@ -6,7 +6,6 @@
 <meta name="theme-color" content="#050810"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <title>RoForger Studio</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=JetBrains+Mono:wght@300;400;600&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
@@ -15,506 +14,479 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp }
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
 const firebaseConfig = {
-  apiKey: "AIzaSyArX9iaqsb1TE82YzpTP21KC14YOy8I_wg",
-  authDomain: "roforger-studio.firebaseapp.com",
-  projectId: "roforger-studio",
-  storageBucket: "roforger-studio.firebasestorage.app",
-  messagingSenderId: "724972965811",
-  appId: "1:724972965811:web:88cabafd84c64d7e9f45c6",
-  measurementId: "G-QXF4RV7TYN"
+  apiKey: "AIzaSyAOR6UGedU-0yUgQ9I6QsOyTYwkH9z6TkA",
+  authDomain: "roforger-ca0c4.firebaseapp.com",
+  projectId: "roforger-ca0c4",
+  storageBucket: "roforger-ca0c4.firebasestorage.app",
+  messagingSenderId: "999264568857",
+  appId: "1:999264568857:web:741ab9ea0656e7cbb60c88"
 };
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
-const gp   = new GoogleAuthProvider();
-window._fb = { auth, db, gp, signInWithPopup, signOut, onAuthStateChanged,
-  collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp };
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app); const db=getFirestore(app); const gp=new GoogleAuthProvider();
+window._fb={auth,db,gp,signInWithPopup,signOut,onAuthStateChanged,collection,addDoc,getDocs,doc,updateDoc,deleteDoc,query,where,orderBy};
 window.dispatchEvent(new Event("fb-ready"));
 </script>
 
 <style>
-/* ── RESET & BASE ── */
+/* ── TOKENS ── */
 :root{
-  --bg:#050810;--card:#0f1629;--hover:#141c35;
-  --acc:#ff4d1a;--acc2:#ff8c42;
-  --blue:#1a8cff;--blue2:#42b3ff;
-  --green:#00ff9d;--purple:#9b42ff;--yellow:#ffd600;
-  --txt:#e8eaf0;--dim:#6b7594;--mid:#9ba3c0;
-  --bord:rgba(255,77,26,.2);
+  --bg:#050810;--card:#0f1629;--hover:#141c35;--surface:#0a0d1a;
+  --acc:#ff4d1a;--acc2:#ff8c42;--acc-glow:rgba(255,77,26,.25);
+  --blue:#1a8cff;--blue2:#42b3ff;--green:#00ff9d;--purple:#9b42ff;
+  --yellow:#ffd600;--cyan:#06b6d4;--orange:#ff7b42;
+  --txt:#e8eaf0;--dim:#6b7594;--mid:#9ba3c0;--dark:#363a5c;
+  --border:rgba(255,77,26,.18);--border2:rgba(255,77,26,.35);
   --glow:0 0 20px rgba(255,77,26,.4);
-  --panel-w: 220px;
-  --panel-r-w: 240px;
-  --bottom-h: 140px;
+  --shadow-md:0 4px 20px rgba(0,0,0,.5);
+  --shadow-lg:0 8px 40px rgba(0,0,0,.7);
+  --r:6px; --tr:.15s cubic-bezier(.4,0,.2,1);
+  --panel-w:220px; --props-w:240px;
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);overflow:hidden}
-::-webkit-scrollbar{width:3px;height:3px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);font-size:12px}
+::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:rgba(255,77,26,.3);border-radius:2px}
 
 /* ── ANIMS ── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes glitch{
-  0%,92%{clip-path:none;transform:none}
-  93%{clip-path:inset(20% 0 30% 0);transform:translateX(-3px)}
-  95%{clip-path:inset(60% 0 10% 0);transform:translateX(3px)}
-  97%{clip-path:none;transform:none}
-}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glitch{0%,92%{clip-path:none;transform:none}93%{clip-path:inset(20% 0 30% 0);transform:translateX(-3px)}95%{clip-path:inset(60% 0 10% 0);transform:translateX(3px)}97%{clip-path:none;transform:none}}
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 15px var(--acc-glow)}50%{box-shadow:0 0 30px var(--acc-glow),0 0 50px rgba(255,77,26,.1)}}
+@keyframes pulse{50%{opacity:.4}}
+@keyframes tipIn{from{opacity:0;transform:translateX(-50%) translateY(3px)}}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(8px)}}
 @keyframes flicker{0%{transform:scaleY(1) rotate(-2deg)}100%{transform:scaleY(1.1) rotate(2deg)}}
 @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes effectPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.7}}
+@keyframes efPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.7}}
 @keyframes rotSpin{to{transform:rotate(360deg)}}
 
 /* ── LOADING ── */
 #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:9999;transition:opacity .4s}
 .ld-logo{font-family:'Orbitron',monospace;font-size:42px;font-weight:900;color:var(--acc);letter-spacing:6px;text-shadow:var(--glow)}
 .ld-bar{width:180px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
-.ld-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:2px;background-size:200% 100%;animation:shimmer 1.2s infinite}
+.ld-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));background-size:200% 100%;animation:shimmer 1.2s infinite}
 .ld-txt{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:2px}
 
-/* ── SCREEN SYSTEM ── */
+/* ── SCREENS ── */
 .screen{display:none}
 .screen.active{display:flex;flex-direction:column;height:100dvh;overflow:hidden;animation:fadeUp .3s ease}
 
-/* ── GRID / GLOW BG ── */
+/* ── BG DECO ── */
 .grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:linear-gradient(rgba(255,77,26,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,77,26,.035) 1px,transparent 1px);
+  background-image:linear-gradient(rgba(255,77,26,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,77,26,.03) 1px,transparent 1px);
   background-size:48px 48px;mask-image:radial-gradient(ellipse at center,black 20%,transparent 75%)}
 .glow-bg{position:fixed;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse at 15% 20%,rgba(255,77,26,.07) 0%,transparent 55%),
              radial-gradient(ellipse at 85% 80%,rgba(26,140,255,.05) 0%,transparent 55%)}
 
-/* ── NAVBAR (HOME) ── */
-.navbar{height:54px;background:rgba(5,8,16,.95);border-bottom:1px solid rgba(255,77,26,.15);
-  display:flex;align-items:center;padding:0 16px;gap:10px;
-  backdrop-filter:blur(12px);position:relative;z-index:10;flex-shrink:0}
-.nav-logo{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--acc);
-  letter-spacing:3px;text-shadow:var(--glow);animation:glitch 10s infinite}
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--r);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all var(--tr);border:none;white-space:nowrap;letter-spacing:.4px}
+.btn:active{transform:scale(.97)}
+.btn-acc{background:linear-gradient(135deg,var(--acc),#c93300);color:#fff;box-shadow:0 4px 15px var(--acc-glow)}
+.btn-acc:hover{filter:brightness(1.12);box-shadow:0 0 25px var(--acc-glow)}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--mid);border:1px solid rgba(255,255,255,.1)}
+.btn-ghost:hover{background:rgba(255,255,255,.09);color:var(--txt);border-color:rgba(255,255,255,.2)}
+.btn-blue{background:linear-gradient(135deg,var(--blue),#1a6acc);color:#fff}
+.btn-green{background:linear-gradient(135deg,var(--green),#00cc7a);color:#0a1a10}
+.btn-sm{padding:4px 10px;font-size:10px;border-radius:4px}
+[data-tip]{position:relative}
+[data-tip]:hover::before{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);padding:4px 10px;background:var(--card);border:1px solid var(--border2);border-radius:4px;font-size:10px;color:var(--txt);white-space:nowrap;z-index:9999;pointer-events:none;animation:tipIn .12s ease}
+.input{background:var(--card);border:1px solid rgba(255,255,255,.1);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 8px;border-radius:4px;outline:none;transition:border var(--tr);width:100%}
+.input:focus{border-color:var(--acc)}
+.input::placeholder{color:var(--dark)}
+.toggle{width:32px;height:17px;background:rgba(255,255,255,.12);border-radius:9px;cursor:pointer;position:relative;transition:background var(--tr);flex-shrink:0;border:none}
+.toggle.on{background:var(--acc)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;background:#fff;border-radius:50%;transition:transform var(--tr)}
+.toggle.on::after{transform:translateX(15px)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.badge-green{background:var(--green);color:#0a1a10}
+.badge-blue{background:var(--blue);color:#fff}
+.badge-red{background:var(--acc);color:#fff}
+
+/* ═══ HOME ═══ */
+.navbar{height:52px;background:rgba(5,8,16,.95);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;backdrop-filter:blur(12px);position:relative;z-index:10;flex-shrink:0}
+.nav-logo{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--acc);letter-spacing:3px;text-shadow:var(--glow);animation:glitch 10s infinite;display:flex;align-items:center;gap:8px}
+.nav-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--acc),#c93300);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;animation:logoPulse 3s ease-in-out infinite}
 .nav-logo span{color:var(--acc2)}
 .nav-sp{flex:1}
-.nav-user{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;
-  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s}
-.nav-user:hover{background:rgba(255,77,26,.08);border-color:rgba(255,77,26,.3)}
+.nav-user{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all var(--tr)}
+.nav-user:hover{background:rgba(255,77,26,.08);border-color:var(--border2)}
 .nav-av{width:26px;height:26px;border-radius:50%;border:2px solid var(--acc);object-fit:cover}
-.nav-av-ph{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));
-  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;border:2px solid var(--acc)}
+.nav-av-ph{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
 .nav-nm{font-size:11px;font-weight:600;color:var(--mid)}
-.nbtn{padding:7px 16px;border-radius:7px;cursor:pointer;font-family:'Rajdhani',sans-serif;
-  font-size:12px;font-weight:700;letter-spacing:.5px;transition:all .2s;border:none}
-.nbtn.login{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;box-shadow:0 4px 15px rgba(255,77,26,.35)}
-.nbtn.login:active{transform:scale(.97)}
-.nbtn.out{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--mid)}
-
-/* ── HERO ── */
-.hero{padding:52px 20px 36px;text-align:center;position:relative;z-index:1;flex-shrink:0}
-.hero-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;
-  background:rgba(255,77,26,.1);border:1px solid rgba(255,77,26,.3);
-  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--acc2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px}
+.hero{padding:48px 20px 32px;text-align:center;position:relative;z-index:1;flex-shrink:0}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(255,77,26,.1);border:1px solid rgba(255,77,26,.3);font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--acc2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:18px}
 .hdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-.hero h1{font-family:'Orbitron',monospace;font-size:clamp(26px,8vw,50px);font-weight:900;
-  line-height:1.08;margin-bottom:14px;letter-spacing:3px;
-  background:linear-gradient(135deg,var(--txt) 0%,var(--acc2) 50%,var(--acc) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{font-size:12px;color:var(--dim);max-width:340px;margin:0 auto 28px;line-height:1.6;font-family:'JetBrains Mono',monospace}
+.hero h1{font-family:'Orbitron',monospace;font-size:clamp(24px,8vw,48px);font-weight:900;line-height:1.08;margin-bottom:12px;letter-spacing:3px;background:linear-gradient(135deg,var(--txt) 0%,var(--acc2) 50%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:12px;color:var(--dim);max-width:340px;margin:0 auto 24px;line-height:1.6;font-family:'JetBrains Mono',monospace}
 .hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.btn-p{padding:13px 28px;border-radius:9px;cursor:pointer;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;
-  letter-spacing:1.5px;border:none;background:linear-gradient(135deg,var(--acc),var(--acc2));
-  color:#fff;box-shadow:0 6px 20px rgba(255,77,26,.4);transition:all .2s}
-.btn-p:active{transform:scale(.97)}
-.btn-s{padding:12px 22px;border-radius:9px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;
-  background:transparent;border:1px solid rgba(255,255,255,.15);color:var(--mid);transition:all .2s}
-
-/* ── STATS ── */
-.stats{display:flex;justify-content:center;gap:0;flex-shrink:0;
-  border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);position:relative;z-index:1}
-.stat{flex:1;text-align:center;padding:14px 8px;border-right:1px solid rgba(255,255,255,.05)}
+.stats{display:flex;flex-shrink:0;border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);position:relative;z-index:1}
+.stat{flex:1;text-align:center;padding:12px 8px;border-right:1px solid rgba(255,255,255,.05)}
 .stat:last-child{border-right:none}
-.sv{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--acc2)}
+.sv{font-family:'Orbitron',monospace;font-size:15px;font-weight:900;color:var(--acc2)}
 .sl{font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace;letter-spacing:.8px;margin-top:2px}
-
-/* ── HOME CONTENT ── */
 .home-scroll{flex:1;overflow-y:auto;position:relative;z-index:1}
-.content{padding:24px 16px}
-.sec-h{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.content{padding:22px 16px}
+.sec-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .sec-t{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--txt);letter-spacing:2px;white-space:nowrap}
 .sec-t span{color:var(--acc)}
 .sec-l{flex:1;height:1px;background:rgba(255,255,255,.06)}
-.sec-btn{padding:5px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;
-  background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border:none;font-family:'Rajdhani',sans-serif;letter-spacing:.5px}
-
-/* ── PROJECT GRID ── */
-.proj-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:28px}
+.sec-btn{padding:5px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border:none;font-family:'Rajdhani',sans-serif}
+.proj-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
 @media(max-width:360px){.proj-grid{grid-template-columns:1fr}}
-.proj-card{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s;animation:fadeUp .4s ease}
+.proj-card{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden;cursor:pointer;transition:all var(--tr);animation:fadeUp .4s ease}
+.proj-card:hover{border-color:var(--border2);transform:translateY(-2px)}
 .proj-card:active{transform:scale(.97)}
-.proj-thumb{height:80px;display:flex;align-items:center;justify-content:center;font-size:34px;position:relative;overflow:hidden}
+.proj-thumb{height:76px;display:flex;align-items:center;justify-content:center;font-size:32px;position:relative;overflow:hidden}
 .proj-thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(5,8,16,.7))}
 .proj-body{padding:10px 12px}
-.proj-name{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--txt);letter-spacing:.8px;margin-bottom:3px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.proj-name{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--txt);letter-spacing:.8px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .proj-date{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:6px}
 .proj-tags{display:flex;gap:4px;flex-wrap:wrap}
-.ptag{padding:2px 6px;border-radius:3px;font-size:8px;font-family:'JetBrains Mono',monospace;
-  background:rgba(255,77,26,.1);color:var(--acc2);border:1px solid rgba(255,77,26,.2)}
+.ptag{padding:2px 6px;border-radius:3px;font-size:8px;font-family:'JetBrains Mono',monospace;background:rgba(255,77,26,.1);color:var(--acc2);border:1px solid rgba(255,77,26,.2)}
 .proj-actions{display:flex;gap:6px;padding:8px 12px;border-top:1px solid rgba(255,255,255,.05)}
-.pact{flex:1;padding:6px;border-radius:6px;text-align:center;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:'Rajdhani',sans-serif;letter-spacing:.3px;transition:all .15s}
+.pact{flex:1;padding:6px;border-radius:6px;text-align:center;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:'Rajdhani',sans-serif;transition:all var(--tr)}
 .pact.open{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
 .pact.del{background:rgba(255,255,255,.05);color:var(--dim);border:1px solid rgba(255,255,255,.07)}
-.pact.del:active{background:rgba(255,77,26,.15);color:var(--acc)}
-.new-card{background:rgba(255,77,26,.04);border:1px dashed rgba(255,77,26,.25);border-radius:12px;
-  cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:155px;gap:8px;transition:all .2s}
+.pact.del:hover{background:rgba(255,77,26,.15);color:var(--acc)}
+.new-card{background:rgba(255,77,26,.04);border:1px dashed rgba(255,77,26,.25);border-radius:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:148px;gap:8px;transition:all var(--tr)}
 .new-card:active{background:rgba(255,77,26,.1);transform:scale(.97)}
-.new-icon{font-size:28px}.new-lbl{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--acc2);letter-spacing:1.5px}
-
-/* ── FEATURES ── */
+.new-icon{font-size:28px}
+.new-lbl{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--acc2);letter-spacing:1.5px}
 .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:28px}
 .feat-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 12px}
-.fi{font-size:22px;margin-bottom:6px}.ft{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--txt);letter-spacing:.8px;margin-bottom:3px}
+.fi{font-size:20px;margin-bottom:6px}
+.ft{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--txt);letter-spacing:.8px;margin-bottom:3px}
 .fd{font-size:11px;color:var(--dim);line-height:1.5}
-
-/* ── EMPTY ── */
-.empty{text-align:center;padding:40px 20px}
-.empty-i{font-size:48px;margin-bottom:12px}
-.empty-t{font-family:'Orbitron',monospace;font-size:12px;color:var(--mid);letter-spacing:2px;margin-bottom:6px}
+.empty{text-align:center;padding:36px 20px}
+.empty-i{font-size:44px;margin-bottom:10px}
+.empty-t{font-family:'Orbitron',monospace;font-size:11px;color:var(--mid);letter-spacing:2px;margin-bottom:6px}
 .empty-s{font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace}
 
-/* ── MODAL ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;
-  align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
-.overlay.show{display:flex;animation:fadeUp .2s ease}
-.modal{background:#0a0f1e;border:1px solid rgba(255,77,26,.25);border-radius:16px 16px 0 0;
-  padding:24px 20px 32px;width:100%;max-width:480px;box-shadow:0 -20px 60px rgba(0,0,0,.8)}
-.modal-bar{width:40px;height:3px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 20px}
+/* ═══ OVERLAY / MODAL ═══ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
+.overlay.open{display:flex}
+.modal-sheet{background:#080d1c;border:1px solid var(--border2);border-radius:16px 16px 0 0;padding:22px 20px 30px;width:100%;max-width:480px;box-shadow:0 -20px 60px rgba(0,0,0,.8)}
+.modal-bar{width:40px;height:3px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 18px}
 .modal-t{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--txt);letter-spacing:1.5px;margin-bottom:4px}
-.modal-s{font-size:11px;color:var(--dim);margin-bottom:20px;font-family:'JetBrains Mono',monospace}
+.modal-s{font-size:11px;color:var(--dim);margin-bottom:18px;font-family:'JetBrains Mono',monospace}
 .field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
 .field label{font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.8px}
-.field input,.field select{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
-  border-radius:8px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;
-  color:var(--txt);outline:none;width:100%;transition:border .15s}
+.field input,.field select{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--txt);outline:none;width:100%;transition:border var(--tr)}
 .field input:focus,.field select:focus{border-color:var(--acc)}
-.field select{cursor:pointer}
-.emoji-row{display:flex;gap:8px;flex-wrap:wrap;padding:4px 0}
-.emoji-opt{font-size:24px;cursor:pointer;padding:5px;border-radius:8px;border:2px solid transparent;transition:all .15s}
+.emoji-row{display:flex;gap:6px;flex-wrap:wrap;padding:4px 0}
+.emoji-opt{font-size:22px;cursor:pointer;padding:5px;border-radius:8px;border:2px solid transparent;transition:all var(--tr)}
 .emoji-opt.sel{border-color:var(--acc);background:rgba(255,77,26,.15)}
-.modal-acts{display:flex;gap:8px;margin-top:20px}
-.mbt{flex:1;padding:12px;border-radius:8px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;border:none;transition:all .15s}
+.modal-acts{display:flex;gap:8px;margin-top:18px}
+.mbt{flex:1;padding:12px;border-radius:8px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;border:none;transition:all var(--tr)}
 .mbt.cancel{background:rgba(255,255,255,.06);color:var(--mid);border:1px solid rgba(255,255,255,.1)}
 .mbt.confirm{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
 .mbt:active{transform:scale(.97)}
-#modal-confirm .overlay{align-items:center}
-#modal-confirm .modal{border-radius:16px;max-width:320px;margin:auto;padding:28px 24px}
+/* Center modal */
+.overlay-center{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.overlay-center.open{display:flex}
+.modal-center{background:#080d1c;border:1px solid var(--border2);border-radius:14px;box-shadow:var(--shadow-lg);animation:modalIn .2s ease;display:flex;flex-direction:column;overflow:hidden}
+.modal-head{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title-txt{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:1px}
+.modal-x{width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:4px;color:var(--dim);font-size:14px;transition:all var(--tr)}
+.modal-x:hover{background:rgba(255,77,26,.15);color:var(--acc)}
+.modal-foot{padding:10px 16px;border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 
-/* ── TOAST ── */
-.toast-wrap{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;
-  display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:90%;max-width:340px}
-.toast{background:#0d1226;border-radius:10px;padding:11px 18px;font-family:'JetBrains Mono',monospace;
-  font-size:11px;box-shadow:0 8px 28px rgba(0,0,0,.7);animation:fadeUp .3s ease;
-  display:flex;align-items:center;gap:8px;white-space:nowrap}
-.toast.s{border:1px solid rgba(0,255,157,.3);color:var(--green)}
+/* ═══ TOAST ═══ */
+.toast-wrap{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:90%;max-width:320px}
+.toast{background:#0a0f20;border-radius:10px;padding:10px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;box-shadow:var(--shadow-lg);animation:fadeUp .3s ease;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.toast.s{border:1px solid rgba(0,255,157,.35);color:var(--green)}
 .toast.e{border:1px solid rgba(255,77,26,.4);color:var(--acc)}
 .toast.w{border:1px solid rgba(255,214,0,.3);color:var(--yellow)}
+.toast.i{border:1px solid rgba(26,140,255,.35);color:var(--blue2)}
 
-/* ══════════════════════════════════════════════
-   EDITOR
-══════════════════════════════════════════════ */
+/* ═══════════════════ EDITOR ═══════════════════ */
 #screen-editor{background:var(--bg)}
 
-/* ── ED TITLEBAR ── */
-.ed-tb{height:44px;background:rgba(5,8,16,.98);border-bottom:1px solid rgba(255,77,26,.15);
-  display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;z-index:50}
-.ed-logo{font-family:'Orbitron',monospace;font-size:12px;font-weight:900;color:var(--acc);letter-spacing:3px;animation:glitch 10s infinite}
-.ed-pname{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+/* TOPBAR */
+#ed-topbar{height:46px;background:rgba(5,8,16,.98);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0;z-index:50}
+.ed-logo{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;color:var(--acc);letter-spacing:3px;animation:glitch 10s infinite;display:flex;align-items:center;gap:7px}
+.ed-logo-icon{width:26px;height:26px;background:linear-gradient(135deg,var(--acc),#c93300);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;animation:logoPulse 3s ease-in-out infinite}
+.ed-pname{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ed-pname span{color:var(--acc2)}
 .ed-sp{flex:1}
-.ed-btn{padding:5px 12px;border-radius:6px;cursor:pointer;border:none;
-  font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:.5px;transition:all .15s}
-.ed-btn.home{background:rgba(255,255,255,.06);color:var(--mid);border:1px solid rgba(255,255,255,.08)}
-.ed-btn.save{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
-.ed-btn.gen{background:linear-gradient(135deg,var(--purple),#6b00ff);color:#fff}
-.ed-btn:active{transform:scale(.96)}
+.main-tabs-wrap{display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:3px}
+.main-tab{padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;color:var(--dim);transition:all var(--tr);white-space:nowrap;position:relative;letter-spacing:.3px}
+.main-tab:hover{color:var(--txt)}
+.main-tab.active{background:var(--card);color:var(--txt)}
+.main-tab.active::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:16px;height:2px;background:var(--acc);border-radius:1px}
 
-/* ── ED MODULE TABS (Scripts, Interface, Efeitos, etc.) ── */
-.ed-tabs{display:flex;background:rgba(8,12,24,.99);border-bottom:1px solid var(--bord);
-  padding:0;flex-shrink:0;overflow-x:auto}
-.ed-tabs::-webkit-scrollbar{display:none}
-.etab{padding:10px 14px;font-size:11px;font-weight:600;color:var(--dim);cursor:pointer;
-  border:none;border-bottom:2px solid transparent;background:none;
-  white-space:nowrap;transition:all .15s;font-family:'Rajdhani',sans-serif;letter-spacing:.3px}
-.etab.active{color:var(--acc);border-bottom-color:var(--acc)}
-.etab:hover:not(.active){color:var(--mid)}
+/* VIEWS container */
+#views{flex:1;overflow:hidden;height:calc(100dvh - 46px)}
+.view{display:none;height:100%}
+.view.active{display:flex}
 
-/* ── ED BODY (3 columns) ── */
-.ed-body{flex:1;display:flex;overflow:hidden;position:relative}
+/* ═══ BUILDER VIEW ═══ */
+#v-builder{flex-direction:row}
 
-/* ── LEFT PANEL (Propriedades) ── */
-.ed-panel-left{width:var(--panel-w);min-width:var(--panel-w);background:rgba(8,12,24,.98);
-  border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;
-  overflow:hidden;transition:width .2s,min-width .2s;flex-shrink:0}
-.ed-panel-left.hidden{width:0;min-width:0;border-right:none}
+/* Explorer (left) */
+#explorer{width:var(--panel-w);background:rgba(8,12,24,.98);border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:width .2s,min-width .2s}
+#explorer.hidden{width:0;border:none;overflow:hidden}
+#explorer-header{padding:10px 12px 8px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+#explorer-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;justify-content:space-between}
+#explorer-search{background:var(--hover);border:1px solid rgba(255,255,255,.08);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 8px 6px 28px;border-radius:var(--r);outline:none;width:100%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e7494' stroke-width='2.5'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:8px center;transition:border var(--tr)}
+#explorer-search:focus{border-color:var(--acc)}
+#explorer-body{flex:1;overflow-y:auto;padding:4px 0}
+.exp-group{user-select:none}
+.exp-group-header{display:flex;align-items:center;gap:6px;padding:6px 10px;cursor:pointer;color:var(--dim);font-size:11px;font-weight:600;transition:all var(--tr);border-left:2px solid transparent}
+.exp-group-header:hover{background:var(--hover);color:var(--txt)}
+.exp-group-header.open{color:var(--txt)}
+.exp-group-icon{font-size:14px;width:20px;text-align:center}
+.exp-count{margin-left:auto;font-size:9px;color:var(--dark);background:var(--card);padding:1px 6px;border-radius:10px}
+.exp-chevron{font-size:9px;transition:transform var(--tr);color:var(--dark);margin-left:4px}
+.exp-group-header.open .exp-chevron{transform:rotate(90deg)}
+.exp-children{display:none}
+.exp-group-header.open~.exp-children{display:block}
+.exp-item{display:flex;align-items:center;gap:7px;padding:5px 10px 5px 24px;cursor:grab;color:var(--dim);font-size:11px;transition:all var(--tr);border-left:2px solid transparent;user-select:none}
+.exp-item:hover{background:var(--hover);color:var(--txt);border-left-color:var(--acc)}
+.exp-item:active{cursor:grabbing}
+.exp-item-ico{font-size:13px;width:18px;text-align:center}
+.exp-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* ── RIGHT PANEL (Elementos) ── */
-.ed-panel-right{width:var(--panel-r-w);min-width:var(--panel-r-w);background:rgba(8,12,24,.98);
-  border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;
-  overflow:hidden;transition:width .2s,min-width .2s;flex-shrink:0}
-.ed-panel-right.hidden{width:0;min-width:0;border-left:none}
+/* Builder center */
+#builder-center{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+#builder-toolbar{height:36px;background:rgba(8,12,24,.98);border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;padding:0 12px;gap:4px;flex-shrink:0}
+.tb-btn{padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;color:var(--dim);transition:all var(--tr);border:1px solid transparent;display:flex;align-items:center;gap:4px;user-select:none}
+.tb-btn:hover{background:var(--card);color:var(--txt)}
+.tb-btn.active{background:var(--card);color:var(--txt);border-color:rgba(255,255,255,.1)}
+.tb-sep{width:1px;height:18px;background:rgba(255,255,255,.06);margin:0 4px}
+#infinite-canvas{flex:1;overflow:hidden;position:relative;cursor:default;background-color:var(--bg);background-image:radial-gradient(circle,rgba(255,77,26,.08) .8px,transparent .8px);background-size:24px 24px}
+#canvas-viewport{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
+.canvas-node{position:absolute;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:9px;cursor:move;user-select:none;min-width:210px;box-shadow:var(--shadow-md);transition:box-shadow var(--tr),border-color var(--tr)}
+.canvas-node:hover{box-shadow:var(--shadow-lg);border-color:rgba(255,255,255,.2)}
+.canvas-node.selected{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc-glow),var(--shadow-lg)}
+.node-header{padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.06);border-radius:9px 9px 0 0;cursor:move}
+.node-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.node-title-area{flex:1;min-width:0}
+.node-name{font-size:12px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Orbitron',monospace;letter-spacing:.5px;font-size:10px}
+.node-type{font-size:9px;color:var(--dark);font-family:'JetBrains Mono',monospace;margin-top:1px}
+.node-actions{display:flex;gap:2px;opacity:0;transition:opacity var(--tr)}
+.canvas-node:hover .node-actions,.canvas-node.selected .node-actions{opacity:1}
+.node-act{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:pointer;color:var(--dark);font-size:11px;transition:all var(--tr)}
+.node-act:hover{background:var(--hover);color:var(--txt)}
+.node-act.danger:hover{background:rgba(255,77,26,.15);color:var(--acc)}
+.node-body{padding:8px 12px 10px}
+.node-prop-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.node-prop-label{font-size:10px;color:var(--dim);width:72px;flex-shrink:0}
+.node-prop-input{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 7px;border-radius:4px;outline:none;min-width:0;transition:border var(--tr)}
+.node-prop-input:focus{border-color:var(--acc)}
+.node-script-badge{margin:8px 0 2px;display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(255,255,255,.03);border-radius:5px;border:1px dashed rgba(255,255,255,.12);cursor:pointer;transition:all var(--tr);font-size:10px;color:var(--dim)}
+.node-script-badge:hover{border-color:var(--acc);color:var(--acc)}
+.node-script-badge.has{border-style:solid;border-color:var(--green);color:var(--green);background:rgba(0,255,157,.04)}
+#connections-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.conn-line{fill:none;stroke:var(--acc);stroke-width:2;stroke-dasharray:6 4;opacity:.35}
+#minimap{position:absolute;bottom:12px;right:12px;width:160px;height:100px;background:rgba(8,12,24,.95);border:1px solid rgba(255,77,26,.2);border-radius:6px;overflow:hidden;z-index:100;box-shadow:var(--shadow-md)}
+#minimap-canvas{width:100%;height:100%}
+#minimap-viewport{position:absolute;border:1px solid var(--acc);background:rgba(255,77,26,.08);border-radius:2px;pointer-events:none}
 
-/* ── PANEL HEADER ── */
-.pnl-head{padding:8px 12px;background:rgba(5,8,16,.9);border-bottom:1px solid rgba(255,255,255,.06);
-  font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--acc2);letter-spacing:1.5px;
-  display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.pnl-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:14px;padding:2px 4px;transition:color .15s}
-.pnl-close:hover{color:var(--acc)}
-.pnl-body{flex:1;overflow-y:auto;padding:8px}
-.pnl-search{width:calc(100% - 16px);margin:8px;padding:6px 10px;background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.08);border-radius:6px;font-family:'JetBrains Mono',monospace;
-  font-size:11px;color:var(--txt);outline:none;transition:border .15s}
-.pnl-search:focus{border-color:var(--acc)}
+/* Props panel (right) */
+#props-panel{width:var(--props-w);background:rgba(8,12,24,.98);border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:width .2s}
+#props-panel.hidden{width:0;border:none;overflow:hidden}
+#props-header{padding:10px 12px 8px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#props-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+#props-type{font-size:9px;background:var(--card);padding:2px 8px;border-radius:20px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+#props-body{flex:1;overflow-y:auto;padding:10px}
+.props-empty{padding:36px 14px;text-align:center;color:var(--dark);font-size:11px;line-height:2}
+.props-section{margin-bottom:14px}
+.props-section-title{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dark);padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,.05);margin-bottom:8px}
+.prop-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.prop-lbl{font-size:10px;color:var(--mid);width:74px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prop-in{flex:1;background:var(--card);border:1px solid rgba(255,255,255,.08);color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 7px;border-radius:4px;outline:none;min-width:0;transition:border var(--tr)}
+.prop-in:focus{border-color:var(--acc)}
+#props-footer{padding:10px;border-top:1px solid rgba(255,255,255,.06)}
+.add-script-btn{width:100%;padding:8px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.1);color:var(--dim);border-radius:var(--r);cursor:pointer;font-size:11px;font-weight:600;text-align:center;transition:all var(--tr);display:none;align-items:center;justify-content:center;gap:5px}
+.add-script-btn:hover{border-color:var(--acc);color:var(--acc)}
+.add-script-btn.show{display:flex}
 
-/* ── PROPERTIES ── */
-.prop-group{margin-bottom:14px}
-.prop-group-title{font-family:'Orbitron',monospace;font-size:8px;font-weight:700;color:var(--acc);
-  letter-spacing:1.2px;padding:4px 6px;margin-bottom:6px;border-left:2px solid var(--acc)}
-.prop-row{display:flex;align-items:center;margin-bottom:4px;gap:4px}
-.prop-label{font-size:10px;color:var(--mid);width:88px;flex-shrink:0;padding:3px 4px;font-family:'JetBrains Mono',monospace}
-.prop-input{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:5px;
-  color:var(--txt);font-size:10px;padding:4px 7px;font-family:'JetBrains Mono',monospace;outline:none;transition:border .15s}
-.prop-input:focus{border-color:var(--acc)}
-.prop-color{width:24px;height:24px;border-radius:4px;border:1px solid rgba(255,255,255,.15);cursor:pointer;flex-shrink:0}
-.prop-check{accent-color:var(--acc);cursor:pointer}
+/* ═══ EFFECTS VIEW ═══ */
+#v-effects{flex-direction:row}
+#fx-sidebar{width:var(--panel-w);background:rgba(8,12,24,.98);border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0}
+#fx-sidebar-header{padding:12px 14px 10px;border-bottom:1px solid rgba(255,255,255,.06)}
+#fx-sidebar-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+#fx-list{flex:1;overflow-y:auto;padding:8px}
+.fx-group-title{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dark);padding:10px 4px 4px}
+.fx-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--r);cursor:pointer;color:var(--dim);font-size:11px;font-weight:500;transition:all var(--tr);border:1px solid transparent;margin-bottom:2px}
+.fx-item:hover{background:var(--card);color:var(--txt);border-color:rgba(255,255,255,.08)}
+.fx-item.active{background:var(--hover);color:var(--txt);border-color:var(--acc)}
+.fx-ico{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+#fx-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#fx-toolbar{height:40px;background:rgba(8,12,24,.98);border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0}
+#fx-workspace{flex:1;display:flex;overflow:hidden}
+#fx-preview{flex:1;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+#fx-preview::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,77,26,.08) .8px,transparent .8px);background-size:24px 24px;opacity:.4}
+#fx-canvas-wrap{position:relative;z-index:1;width:320px;height:320px;background:rgba(255,255,255,.02);border:1px solid rgba(255,77,26,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:var(--shadow-md)}
+#fx-canvas{width:100%;height:100%}
+#fx-preview-label{position:absolute;bottom:14px;font-size:10px;color:var(--dark);font-family:'JetBrains Mono',monospace;z-index:2}
+#fx-props{width:270px;background:rgba(8,12,24,.98);border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;overflow:hidden}
+#fx-props-header{padding:12px 14px 10px;border-bottom:1px solid rgba(255,255,255,.06)}
+#fx-props-title{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:2px}
+#fx-props-sub{font-size:10px;color:var(--dim)}
+#fx-props-body{flex:1;overflow-y:auto;padding:12px}
+.fx-prop-section{margin-bottom:16px}
+.fx-prop-section-title{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dark);padding:4px 0 8px;border-bottom:1px solid rgba(255,255,255,.05);margin-bottom:10px}
+.fx-prop-row{margin-bottom:10px}
+.fx-prop-lbl{font-size:10px;color:var(--mid);margin-bottom:4px;display:flex;justify-content:space-between}
+.fx-prop-lbl span{color:var(--dark);font-family:'JetBrains Mono',monospace}
+.fx-slider{width:100%;-webkit-appearance:none;height:4px;background:rgba(255,255,255,.1);border-radius:2px;outline:none}
+.fx-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--acc);cursor:pointer;box-shadow:0 0 6px var(--acc-glow)}
+#fx-saved-area{padding:10px;border-top:1px solid rgba(255,255,255,.06)}
+.fx-saved-title{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dark);margin-bottom:8px}
+#fx-saved-list{display:flex;flex-direction:column;gap:4px;max-height:130px;overflow-y:auto}
+.fx-saved-item{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);font-size:10px;color:var(--dim);cursor:pointer;transition:all var(--tr)}
+.fx-saved-item:hover{border-color:var(--border2);color:var(--txt)}
+.fx-saved-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 
-/* ── CENTER WORKSPACE ── */
-.ed-workspace{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+/* ═══ TEMPLATES VIEW ═══ */
+#v-templates{flex-direction:column;overflow-y:auto;padding:24px}
+.tpl-header{font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--txt);margin-bottom:6px;letter-spacing:1px}
+.tpl-sub{font-size:12px;color:var(--dim);margin-bottom:20px}
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.tpl-card{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:18px;cursor:pointer;transition:all var(--tr);position:relative;overflow:hidden}
+.tpl-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--acc),var(--purple));opacity:0;transition:opacity var(--tr)}
+.tpl-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.tpl-card:hover::before{opacity:1}
+.tpl-icon{font-size:30px;margin-bottom:10px}
+.tpl-name{font-size:14px;font-weight:700;margin-bottom:4px;font-family:'Orbitron',monospace;font-size:11px;letter-spacing:.5px}
+.tpl-desc{font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:12px}
+.tpl-tags{display:flex;flex-wrap:wrap;gap:4px}
+.tpl-tag{font-size:8px;padding:2px 7px;border-radius:20px;background:rgba(255,77,26,.1);color:var(--acc2);font-family:'JetBrains Mono',monospace;border:1px solid rgba(255,77,26,.2)}
 
-/* Script editor */
-.ws-script{flex:1;display:none;overflow:auto;background:rgba(5,8,16,.98)}
-.ws-script.active{display:flex}
-.code-area{display:flex;min-height:100%;min-width:100%}
-.line-nums{background:rgba(8,12,24,.98);color:var(--dim);padding:14px 10px 14px 6px;
-  text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;
-  user-select:none;border-right:1px solid rgba(255,255,255,.05);min-width:38px;flex-shrink:0}
-.code-editor{flex:1;padding:14px 16px;color:var(--txt);line-height:1.7;white-space:pre;
-  outline:none;min-height:100%;caret-color:var(--acc);font-family:'JetBrains Mono',monospace;font-size:11px}
-.kw{color:#ff79c6}.fn{color:var(--blue2)}.str{color:var(--yellow)}.num{color:var(--acc2)}
-.cm{color:var(--dim);font-style:italic}.var{color:var(--green)}
+/* ═══ DOCS VIEW ═══ */
+#v-docs{flex-direction:row;overflow:hidden}
+#docs-nav{width:200px;background:rgba(8,12,24,.98);border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;padding:12px 0}
+#docs-content{flex:1;overflow-y:auto;padding:28px 36px;max-width:760px}
+.docs-nav-section{padding:14px 16px 5px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dark)}
+.docs-nav-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;font-size:11px;font-weight:500;color:var(--dim);transition:all var(--tr);border-left:2px solid transparent}
+.docs-nav-item:hover{color:var(--txt);background:var(--hover)}
+.docs-nav-item.active{color:var(--txt);background:var(--hover);border-left-color:var(--acc)}
+.docs-h1{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:var(--txt);margin-bottom:8px;letter-spacing:1px}
+.docs-lead{font-size:13px;color:var(--dim);line-height:1.9;margin-bottom:20px}
+.docs-h2{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:var(--txt);margin:24px 0 10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.docs-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.docs-card{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:14px}
+.docs-card-icon{font-size:20px;margin-bottom:8px}
+.docs-card-title{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:4px}
+.docs-card-desc{font-size:10px;color:var(--dim);line-height:1.7}
+.docs-tip-box{background:rgba(0,255,157,.05);border:1px solid rgba(0,255,157,.2);border-radius:6px;padding:12px 16px;margin:12px 0;font-size:11px;color:var(--dim);line-height:1.8}
+.docs-code{background:#04060f;border:1px solid rgba(255,255,255,.07);border-radius:6px;overflow:hidden;margin:12px 0}
+.docs-code-header{padding:6px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dark)}
+.docs-code-body{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;color:#c9d1d9;padding:14px;overflow-x:auto;white-space:pre}
+.docs-key{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:3px;padding:2px 7px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--txt)}
 
-/* UI Workspace */
-.ws-ui{flex:1;display:none;align-items:center;justify-content:center;
-  background:rgba(5,8,16,.98);position:relative;overflow:hidden;flex-direction:column;gap:0}
-.ws-ui.active{display:flex}
-.ui-toolbar{width:100%;padding:8px 14px;background:rgba(8,12,24,.99);border-bottom:1px solid rgba(255,255,255,.05);
-  display:flex;align-items:center;gap:10px;flex-shrink:0}
-.ui-tb-btn{padding:4px 10px;border-radius:5px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;
-  font-size:11px;font-weight:600;letter-spacing:.3px;transition:all .15s}
-.ui-tb-btn.active{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
-.ui-tb-btn:not(.active){background:rgba(255,255,255,.05);color:var(--mid);border:1px solid rgba(255,255,255,.08)}
-.ui-tb-sep{width:1px;height:18px;background:rgba(255,255,255,.08)}
-.ui-canvas-wrap{flex:1;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;padding:16px}
+/* ═══ SCRIPT MODAL ═══ */
+#smodal .modal-center{width:820px;max-width:95vw;max-height:88vh}
+.stabs{display:flex;gap:2px;padding:10px 18px 0;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(8,12,24,.98);flex-shrink:0}
+.stab{padding:6px 16px;border-radius:6px 6px 0 0;cursor:pointer;font-size:11px;font-weight:600;color:var(--dim);transition:all var(--tr)}
+.stab:hover{color:var(--txt)}
+.stab.active{background:var(--card);color:var(--txt)}
+.stab-body{display:none;flex:1;flex-direction:column;overflow:hidden}
+.stab-body.active{display:flex}
+#guided-scroll{flex:1;overflow-y:auto;padding:16px}
+.q-block{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.q-title{font-size:12px;font-weight:600;margin-bottom:10px;color:var(--txt);display:flex;align-items:center;gap:7px}
+.q-num{width:20px;height:20px;background:linear-gradient(135deg,var(--acc),#c93300);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:700;flex-shrink:0}
+.q-opts{display:flex;flex-wrap:wrap;gap:6px}
+.q-opt{padding:5px 13px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:var(--dim);font-size:11px;cursor:pointer;transition:all var(--tr)}
+.q-opt:hover{border-color:var(--acc2);color:var(--acc2)}
+.q-opt.sel{background:var(--acc);border-color:var(--acc);color:#fff}
+#code-area{flex:1;background:#04060f;color:#c9d1d9;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;padding:16px;border:none;outline:none;resize:none;overflow-y:auto}
+#output-pre{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;color:#c9d1d9;padding:16px;white-space:pre-wrap;word-break:break-all}
+.lua-kw{color:#ff79c6}.lua-str{color:#a5d6ff}.lua-num{color:#f0883e}.lua-cmt{color:#6c7086;font-style:italic}.lua-bool{color:var(--blue2)}
 
-/* Screen simulator */
-.sim-container{position:relative;transition:all .3s ease}
-.sim-screen{background:#1a2a4a;border:2px solid rgba(255,77,26,.4);border-radius:10px;
-  position:relative;overflow:hidden;box-shadow:0 0 40px rgba(255,77,26,.1),0 0 80px rgba(26,140,255,.05)}
-.sim-titlebar{height:26px;background:rgba(0,0,0,.5);display:flex;align-items:center;padding:0 10px;
-  font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,.4);
-  border-bottom:1px solid rgba(255,255,255,.08);gap:6px;flex-shrink:0}
-.sim-dot{width:7px;height:7px;border-radius:50%}
-.sim-content{position:relative;flex:1;overflow:hidden}
-.sim-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.15);font-family:'JetBrains Mono',monospace;font-size:10px;gap:6px;pointer-events:none}
-.sim-empty-ico{font-size:28px;opacity:.3}
+/* Global script modal */
+#gmodal .modal-center{width:820px;max-width:95vw;max-height:88vh}
 
-/* Sim Frame elements */
-.sim-elem{position:absolute;border:2px solid var(--acc);background:rgba(255,77,26,.08);
-  border-radius:4px;cursor:move;user-select:none;display:flex;align-items:center;justify-content:center;
-  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--acc);transition:border-color .15s;min-width:40px;min-height:20px}
-.sim-elem.selected{border-color:var(--blue);background:rgba(26,140,255,.1);box-shadow:0 0 0 1px rgba(26,140,255,.4)}
-.sim-elem-label{position:absolute;top:-1px;left:-1px;background:var(--acc);color:#000;
-  font-size:8px;padding:1px 4px;border-radius:0 0 4px 0;font-family:'JetBrains Mono',monospace;font-weight:700;pointer-events:none}
-.sim-elem.selected .sim-elem-label{background:var(--blue)}
-.sim-elem-text{pointer-events:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 6px}
-.resize-handle{position:absolute;bottom:1px;right:1px;width:8px;height:8px;cursor:se-resize;
-  border-right:2px solid var(--acc);border-bottom:2px solid var(--acc);opacity:.6}
-.sim-elem.selected .resize-handle{border-color:var(--blue)}
+/* ═══ CMD PALETTE ═══ */
+#cmd-palette{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9000;align-items:flex-start;justify-content:center;padding-top:15vh;backdrop-filter:blur(6px)}
+#cmd-palette.open{display:flex}
+#cmd-box{width:520px;max-width:92vw;background:rgba(10,14,28,.98);border:1px solid var(--border2);border-radius:12px;box-shadow:var(--shadow-lg);overflow:hidden;animation:modalIn .15s ease}
+#cmd-input{width:100%;background:transparent;border:none;color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:15px;padding:16px 20px;outline:none}
+#cmd-input::placeholder{color:var(--dark)}
+#cmd-results{border-top:1px solid rgba(255,255,255,.06);max-height:320px;overflow-y:auto}
+.cmd-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;transition:background var(--tr)}
+.cmd-item:hover{background:var(--card)}
+.cmd-item-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.cmd-item-name{font-size:12px;font-weight:600;color:var(--txt)}
+.cmd-item-desc{font-size:10px;color:var(--dim)}
 
-/* Device frames */
-.device-frame-mobile{border-radius:20px;border-width:4px;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 0 40px rgba(255,77,26,.1)}
-.device-frame-pc{border-radius:6px}
-.device-frame-tablet{border-radius:12px;border-width:3px}
+/* ═══ UNDO BAR ═══ */
+#undo-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(10,14,28,.96);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);box-shadow:var(--shadow-md);z-index:800;transition:transform .25s ease}
+#undo-bar.show{transform:translateX(-50%) translateY(0)}
+.undo-btn{padding:3px 10px;border-radius:4px;cursor:pointer;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:var(--txt);font-size:10px;transition:all var(--tr)}
+.undo-btn:hover{border-color:var(--acc);color:var(--acc)}
+.undo-btn:disabled{opacity:.3;cursor:default}
+#autosave-indicator{position:fixed;top:54px;right:12px;font-size:10px;color:var(--dark);z-index:200;display:flex;align-items:center;gap:4px;opacity:0;transition:opacity .3s}
+#autosave-indicator.show{opacity:1}
+.autosave-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1s ease infinite}
 
-/* Effects workspace */
-.ws-effects{flex:1;display:none;overflow-y:auto;padding:16px;
-  display:none;flex-wrap:wrap;gap:12px;align-content:flex-start}
-.ws-effects.active{display:flex}
-.effect-card{width:140px;height:110px;border-radius:10px;border:1px solid rgba(255,255,255,.08);
-  background:var(--card);cursor:pointer;overflow:hidden;transition:all .2s;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:6px;color:var(--mid);font-family:'Orbitron',monospace;font-size:8px;font-weight:700;letter-spacing:.8px}
-.effect-card:active,.effect-card.selected{border-color:var(--acc);background:rgba(255,77,26,.08);color:var(--acc2)}
-.effect-preview{font-size:30px;height:50px;display:flex;align-items:center;justify-content:center}
-.ef-fire{animation:flicker .5s alternate infinite}
-.ef-spin{animation:rotSpin 2s linear infinite}
-.ef-pulse{animation:effectPulse 1s ease-in-out infinite}
-.ef-float{animation:floatY 2s ease-in-out infinite}
-
-/* Sounds / Physics / Light / Overview workspaces */
-.ws-generic{flex:1;display:none;overflow-y:auto;padding:16px}
-.ws-generic.active{display:block}
-.sys-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.sys-card{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:10px;
-  padding:14px 12px;cursor:pointer;transition:all .2s}
-.sys-card:active{border-color:rgba(255,77,26,.4);transform:scale(.97)}
-.sys-ico{font-size:22px;margin-bottom:6px}
-.sys-name{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--txt);letter-spacing:.8px;margin-bottom:4px}
-.sys-badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:8px;font-family:'JetBrains Mono',monospace;
-  background:rgba(255,77,26,.1);color:var(--acc2);border:1px solid rgba(255,77,26,.2);margin-bottom:6px}
-.sys-desc{font-size:10px;color:var(--dim);line-height:1.4}
-
-/* Overview (Gerar Script) */
-.ws-overview{flex:1;display:none;overflow-y:auto;flex-direction:column}
-.ws-overview.active{display:flex}
-.overview-code{flex:1;padding:16px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;
-  color:var(--txt);white-space:pre-wrap;background:rgba(5,8,16,.98)}
-.overview-footer{padding:12px 16px;background:rgba(8,12,24,.98);border-top:1px solid rgba(255,77,26,.15);
-  display:flex;align-items:center;gap:10px;flex-shrink:0}
-.overview-hint{flex:1;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);line-height:1.5}
-.overview-hint strong{color:var(--acc2)}
-
-/* Script lib items (right panel) */
-.script-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;
-  padding:10px;margin-bottom:8px;cursor:grab;transition:all .15s}
-.script-item:active{cursor:grabbing}
-.script-item:hover{border-color:rgba(255,77,26,.3);background:rgba(255,77,26,.04)}
-.script-item h4{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--txt);letter-spacing:.5px;margin-bottom:3px}
-.script-item p{font-size:10px;color:var(--dim);line-height:1.4}
-.script-item .si-tag{font-size:8px;padding:1px 5px;border-radius:3px;background:rgba(255,77,26,.1);color:var(--acc2);font-family:'JetBrains Mono',monospace}
-
-/* Element list (right panel - UI mode) */
-.elem-cat{font-family:'Orbitron',monospace;font-size:8px;color:var(--dim);letter-spacing:1.2px;
-  padding:8px 4px 4px;text-transform:uppercase}
-.elem-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;
-  cursor:grab;font-size:11px;color:var(--mid);transition:all .15s;font-family:'Rajdhani',sans-serif;font-weight:600}
-.elem-item:hover{background:rgba(255,77,26,.07);color:var(--txt)}
-.elem-item:active{cursor:grabbing}
-.elem-icon{font-size:14px}
-
-/* ── BOTTOM PANEL ── */
-.ed-bottom{height:var(--bottom-h);background:rgba(5,8,16,.99);border-top:1px solid rgba(255,77,26,.15);
-  display:flex;flex-direction:column;flex-shrink:0;transition:height .2s}
-.ed-bottom.hidden{height:0;overflow:hidden}
-.bottom-tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.05);padding:0 10px;background:rgba(8,12,24,.99);flex-shrink:0}
-.btab{padding:6px 14px;font-size:10px;font-weight:600;color:var(--dim);cursor:pointer;
-  background:none;border:none;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;font-family:'Rajdhani',sans-serif}
-.btab.active{color:var(--acc);border-bottom-color:var(--acc)}
-.bottom-close{margin-left:auto;background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;padding:6px 8px;transition:color .15s}
-.bottom-close:hover{color:var(--acc)}
-.bottom-body{flex:1;padding:6px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;
-  line-height:1.6;overflow-y:auto;color:var(--mid);white-space:pre-wrap}
-
-/* ── CONSOLE ── */
-.con-wrap{flex:1;padding:5px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
-.cl{display:flex;gap:6px;line-height:1.5}
-.ct{color:var(--dim);opacity:.4;flex-shrink:0}
-.cm-log.s{color:var(--green)}.cm-log.i{color:var(--blue2)}.cm-log.w{color:var(--yellow)}.cm-log.e{color:var(--acc)}
-
-/* ── PANEL TOGGLE BUTTONS ── */
-.panel-toggles{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
-  display:flex;gap:6px;z-index:20;background:rgba(8,12,24,.9);
-  border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:4px}
-.ptgl{background:none;border:none;cursor:pointer;font-size:10px;color:var(--dim);
-  padding:4px 8px;border-radius:5px;transition:all .15s;font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
-.ptgl:hover{background:rgba(255,77,26,.1);color:var(--acc)}
-.ptgl.on{color:var(--acc)}
-
-/* ── SETTINGS OVERLAY ── */
-.settings-ov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;display:none;
-  align-items:center;justify-content:center;backdrop-filter:blur(8px)}
-.settings-ov.show{display:flex}
-.settings-box{background:#0a0f1e;border:1px solid rgba(255,77,26,.25);border-radius:16px;
-  width:92%;max-width:420px;max-height:85dvh;display:flex;flex-direction:column;overflow:hidden;
-  box-shadow:0 20px 60px rgba(0,0,0,.8)}
-.settings-head{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.06);
-  display:flex;align-items:center;justify-content:space-between}
-.settings-head h2{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--txt);letter-spacing:2px}
-.settings-body{flex:1;overflow-y:auto;padding:20px}
-.sett-section{margin-bottom:24px}
-.sett-section h3{font-family:'Orbitron',monospace;font-size:9px;color:var(--acc2);letter-spacing:1.5px;margin-bottom:12px}
+/* ═══ SETTINGS ═══ */
+.settings-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.settings-ov.open{display:flex}
+.settings-box{background:#080d1c;border:1px solid var(--border2);border-radius:14px;width:92%;max-width:420px;max-height:85dvh;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg);animation:modalIn .2s ease}
+.settings-head{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between}
+.settings-head h2{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--txt);letter-spacing:2px}
+.settings-body{flex:1;overflow-y:auto;padding:18px}
+.sett-sec{margin-bottom:22px}
+.sett-sec h3{font-family:'Orbitron',monospace;font-size:9px;color:var(--acc2);letter-spacing:1.5px;margin-bottom:12px}
 .theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-.theme-card{border:2px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 8px;cursor:pointer;
-  text-align:center;font-family:'Orbitron',monospace;font-size:8px;color:var(--mid);transition:all .15s;letter-spacing:.8px}
+.theme-card{border:2px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 8px;cursor:pointer;text-align:center;font-family:'Orbitron',monospace;font-size:8px;color:var(--mid);transition:all var(--tr);letter-spacing:.8px}
 .theme-card:hover,.theme-card.selected{border-color:var(--acc);color:var(--acc2)}
-.theme-preview{height:40px;border-radius:6px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.theme-preview{height:38px;border-radius:6px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font-size:16px}
 .accent-row{display:flex;gap:8px;flex-wrap:wrap}
-.accent-dot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s}
+.accent-dot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all var(--tr)}
 .accent-dot:hover,.accent-dot.selected{border-color:#fff;transform:scale(1.15)}
 .sett-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 .sett-label{font-size:12px;color:var(--mid);font-family:'Rajdhani',sans-serif;font-weight:600}
-.sett-val{font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace}
-.toggle{width:36px;height:20px;border-radius:10px;background:rgba(255,255,255,.1);cursor:pointer;position:relative;transition:background .2s;border:none;flex-shrink:0}
-.toggle.on{background:linear-gradient(135deg,var(--acc),var(--acc2))}
-.toggle::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left .2s}
-.toggle.on::after{left:19px}
 
-/* ── RESPONSIVE: editor mobile ── */
+/* ═══ RESPONSIVE ═══ */
 @media(max-width:600px){
-  :root{--panel-w:0px;--panel-r-w:0px;--bottom-h:110px}
-  .ed-panel-left,.ed-panel-right{display:none}
-  .ed-panel-left.mobile-show,.ed-panel-right.mobile-show{display:flex;position:fixed;top:0;bottom:0;z-index:100;width:240px;min-width:240px}
-  .ed-panel-left.mobile-show{left:0;border-right:1px solid rgba(255,77,26,.2)}
-  .ed-panel-right.mobile-show{right:0;border-left:1px solid rgba(255,77,26,.2)}
-  .ed-btn.gen{display:none}
-  .panel-toggles{bottom:calc(var(--bottom-h) + 6px)}
+  :root{--panel-w:0px;--props-w:0px}
+  #explorer,#props-panel,#fx-props,#docs-nav{display:none}
+  .main-tab{padding:5px 8px;font-size:10px}
+  #v-templates{padding:14px}
+  #v-docs{flex-direction:column}
 }
 </style>
 </head>
 <body>
 
-<div id="loading">
-  <div class="ld-logo">RF</div>
-  <div class="ld-bar"><div class="ld-fill"></div></div>
-  <div class="ld-txt">INICIALIZANDO...</div>
-</div>
-
+<div id="loading"><div class="ld-logo">RF</div><div class="ld-bar"><div class="ld-fill"></div></div><div class="ld-txt">INICIALIZANDO...</div></div>
 <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- ═══════════════════════════════════
-     HOME SCREEN
-═══════════════════════════════════ -->
+<!-- ════════════════════════════════════
+     HOME
+════════════════════════════════════ -->
 <div class="screen" id="screen-home">
-  <div class="glow-bg"></div>
-  <div class="grid-bg"></div>
-
+  <div class="glow-bg"></div><div class="grid-bg"></div>
   <nav class="navbar">
-    <div class="nav-logo">RO<span>FORGER</span></div>
+    <div class="nav-logo"><div class="nav-logo-icon">⚒</div>RO<span>FORGER</span></div>
     <div class="nav-sp"></div>
+    <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙ Config</button>
     <div id="nav-user-area"></div>
   </nav>
-
   <div class="hero">
-    <div class="hero-tag"><div class="hdot"></div> ROBLOX STUDIO BUILDER</div>
+    <div class="hero-tag"><div class="hdot"></div>ROBLOX STUDIO BUILDER</div>
     <h1>BUILD<br/>ROBLOX<br/>VISUALLY</h1>
-    <p>// Scripts, Interfaces, Efeitos. Tudo numa IDE visual.</p>
+    <p>// Scripts, Efeitos, Templates. Tudo numa IDE visual para Roblox.</p>
     <div class="hero-btns">
-      <button class="btn-p" id="hero-main-btn">⚡ COMEÇAR AGORA</button>
-      <button class="btn-s" onclick="openSettings()">⚙ Config</button>
+      <button class="btn btn-acc" id="hero-main-btn">⚡ COMEÇAR AGORA</button>
+      <button class="btn btn-ghost" onclick="openSettings()">⚙ Config</button>
     </div>
   </div>
-
   <div class="stats">
-    <div class="stat"><div class="sv">7</div><div class="sl">MÓDULOS</div></div>
-    <div class="stat"><div class="sv">50+</div><div class="sl">SCRIPTS</div></div>
-    <div class="stat"><div class="sv">PWA</div><div class="sl">QUALQUER DEVICE</div></div>
-    <div class="stat"><div class="sv">☁️</div><div class="sl">CLOUD SYNC</div></div>
+    <div class="stat"><div class="sv">50+</div><div class="sl">SISTEMAS</div></div>
+    <div class="stat"><div class="sv">12</div><div class="sl">EFEITOS</div></div>
+    <div class="stat"><div class="sv">6</div><div class="sl">TEMPLATES</div></div>
+    <div class="stat"><div class="sv">☁️</div><div class="sl">CLOUD</div></div>
   </div>
-
   <div class="home-scroll">
     <div class="content">
       <div class="sec-h">
@@ -523,311 +495,251 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
         <button class="sec-btn" id="btn-new-proj">+ Novo</button>
       </div>
       <div id="proj-area"></div>
-
       <div class="sec-h" style="margin-top:4px">
-        <span class="sec-t"><span>//</span> RECURSOS</span>
-        <div class="sec-l"></div>
+        <span class="sec-t"><span>//</span> RECURSOS</span><div class="sec-l"></div>
       </div>
       <div class="feat-grid">
-        <div class="feat-card"><div class="fi">📝</div><div class="ft">SCRIPTS</div><div class="fd">Editor Lua com destaque de sintaxe e scripts prontos.</div></div>
-        <div class="feat-card"><div class="fi">🖥️</div><div class="ft">INTERFACE UI</div><div class="fd">Simulador responsivo de tela — PC, Mobile e Tablet.</div></div>
-        <div class="feat-card"><div class="fi">✨</div><div class="ft">EFEITOS</div><div class="fd">Galeria de partículas, brilho, rastro e muito mais.</div></div>
-        <div class="feat-card"><div class="fi">📋</div><div class="ft">GERAR SCRIPT</div><div class="fd">Código Lua pronto com guia de onde colar no Studio.</div></div>
+        <div class="feat-card"><div class="fi">🔨</div><div class="ft">BUILDER VISUAL</div><div class="fd">Canvas infinito com drag & drop, pan, zoom e minimap.</div></div>
+        <div class="feat-card"><div class="fi">✨</div><div class="ft">EFEITOS AO VIVO</div><div class="fd">Preview animado em tempo real de partículas e luzes.</div></div>
+        <div class="feat-card"><div class="fi">⚡</div><div class="ft">GERADOR LUA</div><div class="fd">Scripts Lua completos gerados pelo modo guiado.</div></div>
+        <div class="feat-card"><div class="fi">📦</div><div class="ft">TEMPLATES</div><div class="fd">Projetos prontos: RPG, FPS, Simulator e mais.</div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     EDITOR SCREEN
-═══════════════════════════════════ -->
+<!-- ════════════════════════════════════
+     EDITOR
+════════════════════════════════════ -->
 <div class="screen" id="screen-editor">
-
-  <!-- Titlebar -->
-  <div class="ed-tb">
-    <div class="ed-logo">RF</div>
+  <!-- TOPBAR -->
+  <div id="ed-topbar">
+    <div class="ed-logo"><div class="ed-logo-icon">⚒</div>RO<span style="color:var(--acc2)">FORGER</span></div>
     <div class="ed-pname">// <span id="ed-proj-name">Projeto</span></div>
     <div class="ed-sp"></div>
-    <button class="ed-btn gen" onclick="showModule('overview')">📋 Gerar</button>
-    <button class="ed-btn save" onclick="editorSave()">💾</button>
-    <button class="ed-btn home" onclick="goHome()">🏠</button>
+    <div class="main-tabs-wrap" id="main-tabs"></div>
+    <div class="ed-sp"></div>
+    <button class="btn btn-ghost btn-sm" data-tip="Ctrl+K" onclick="App.cmdPalette.open()">🔍</button>
+    <button class="btn btn-ghost btn-sm" onclick="App.project.exportJSON()">📤</button>
+    <button class="btn btn-ghost btn-sm" onclick="App.project.importJSON()">📥</button>
+    <button class="btn btn-acc btn-sm" onclick="App.scripts.openGlobal()">⚡ Gerar</button>
+    <button class="btn btn-ghost btn-sm" onclick="goHome()">🏠</button>
   </div>
 
-  <!-- Module Tabs -->
-  <div class="ed-tabs" id="ed-tabs">
-    <button class="etab active" onclick="showModule('scripts',this)">📝 Scripts</button>
-    <button class="etab" onclick="showModule('interface',this)">🖥️ Interface</button>
-    <button class="etab" onclick="showModule('efeitos',this)">✨ Efeitos</button>
-    <button class="etab" onclick="showModule('sons',this)">🎵 Sons</button>
-    <button class="etab" onclick="showModule('fisica',this)">⚙️ Física</button>
-    <button class="etab" onclick="showModule('iluminacao',this)">💡 Iluminação</button>
-    <button class="etab" onclick="showModule('overview',this)">📋 Gerar Script</button>
-  </div>
-
-  <!-- Body -->
-  <div class="ed-body">
-
-    <!-- LEFT PANEL: Propriedades -->
-    <div class="ed-panel-left" id="panel-left">
-      <div class="pnl-head">PROPRIEDADES <button class="pnl-close" onclick="togglePanel('left')">✕</button></div>
-      <input class="pnl-search" placeholder="🔍 Filtrar…" oninput="filterProps(this.value)">
-      <div class="pnl-body" id="props-panel">
-        <div class="prop-group">
-          <div class="prop-group-title">APARÊNCIA</div>
-          <div class="prop-row"><span class="prop-label">Nome</span><input class="prop-input" value="Frame" id="prop-name"></div>
-          <div class="prop-row"><span class="prop-label">BgColor</span><input type="color" class="prop-color" value="#3b82f6" id="prop-color"><input class="prop-input" value="(59,130,246)" style="width:72px"></div>
-          <div class="prop-row"><span class="prop-label">Transparency</span><input class="prop-input" value="0" type="number" min="0" max="1" step="0.1"></div>
-          <div class="prop-row"><span class="prop-label">ZIndex</span><input class="prop-input" value="1" type="number"></div>
-          <div class="prop-row"><span class="prop-label">Visible</span><input type="checkbox" class="prop-check" checked></div>
-          <div class="prop-row"><span class="prop-label">BorderRadius</span><input class="prop-input" value="0"></div>
+  <!-- VIEWS -->
+  <div id="views">
+    <!-- BUILDER -->
+    <div class="view active" id="v-builder">
+      <div id="explorer">
+        <div id="explorer-header">
+          <div id="explorer-title">Explorer <span style="font-size:9px;cursor:pointer;color:var(--dim)" onclick="toggleExplorer()">✕</span></div>
+          <input id="explorer-search" placeholder="Buscar sistema..." oninput="App.explorer.filter(this.value)"/>
         </div>
-        <div class="prop-group">
-          <div class="prop-group-title">LAYOUT (UDim2)</div>
-          <div class="prop-row"><span class="prop-label">Position X</span><input class="prop-input" value="{0.3, 0}" id="prop-px"></div>
-          <div class="prop-row"><span class="prop-label">Position Y</span><input class="prop-input" value="{0.3, 0}" id="prop-py"></div>
-          <div class="prop-row"><span class="prop-label">Size X</span><input class="prop-input" value="{0.4, 0}" id="prop-sx"></div>
-          <div class="prop-row"><span class="prop-label">Size Y</span><input class="prop-input" value="{0.4, 0}" id="prop-sy"></div>
-          <div class="prop-row"><span class="prop-label">AnchorPoint</span><input class="prop-input" value="0, 0"></div>
+        <div id="explorer-body"></div>
+      </div>
+      <div id="builder-center">
+        <div id="builder-toolbar">
+          <div class="tb-btn active" id="tb-select" onclick="App.canvas.setTool('select',this)">↖ Selecionar</div>
+          <div class="tb-btn" id="tb-pan" onclick="App.canvas.setTool('pan',this)">✋ Pan</div>
+          <div class="tb-sep"></div>
+          <div class="tb-btn" onclick="App.canvas.zoom(0.15)">🔍+</div>
+          <span id="zoom-lbl" style="font-size:10px;color:var(--dim);min-width:36px;text-align:center;font-family:'JetBrains Mono',monospace;">100%</span>
+          <div class="tb-btn" onclick="App.canvas.zoom(-0.15)">🔍−</div>
+          <div class="tb-btn" onclick="App.canvas.resetView()">⊡ Reset</div>
+          <div class="tb-sep"></div>
+          <div class="tb-btn" id="tb-grid" onclick="App.canvas.toggleGrid()">⊞ Grid</div>
+          <div class="tb-btn" onclick="App.nodes.deleteSelected()">🗑 Del</div>
+          <div class="tb-btn" onclick="App.nodes.duplicateSelected()">⧉ Dup</div>
+          <div class="tb-sep"></div>
+          <div class="tb-btn" onclick="App.connections.toggle()">🔗 Links</div>
+          <div class="tb-btn" onclick="App.minimap.toggle()">🗺</div>
+          <div style="margin-left:auto;font-size:10px;color:var(--dark);font-family:'JetBrains Mono',monospace;" id="node-count">0 elementos</div>
         </div>
-        <div class="prop-group">
-          <div class="prop-group-title">COMPORTAMENTO</div>
-          <div class="prop-row"><span class="prop-label">ClipsDesc</span><input type="checkbox" class="prop-check"></div>
-          <div class="prop-row"><span class="prop-label">Active</span><input type="checkbox" class="prop-check" checked></div>
-          <div class="prop-row"><span class="prop-label">Selectable</span><input type="checkbox" class="prop-check" checked></div>
+        <div id="infinite-canvas">
+          <svg id="connections-svg"></svg>
+          <div id="canvas-viewport"></div>
         </div>
-        <div class="prop-group" id="props-extra" style="display:none">
-          <div class="prop-group-title">EFEITO SELECIONADO</div>
-          <div class="prop-row"><span class="prop-label">Enabled</span><input type="checkbox" class="prop-check" checked></div>
-          <div class="prop-row"><span class="prop-label">Rate</span><input class="prop-input" value="20" type="number"></div>
-          <div class="prop-row"><span class="prop-label">Lifetime</span><input class="prop-input" value="1.5" type="number" step="0.1"></div>
-          <div class="prop-row"><span class="prop-label">Speed</span><input class="prop-input" value="5" type="number"></div>
-        </div>
+        <div id="minimap"><canvas id="minimap-canvas" width="160" height="100"></canvas><div id="minimap-viewport"></div></div>
+      </div>
+      <div id="props-panel">
+        <div id="props-header"><div id="props-label">Propriedades</div><div id="props-type"></div></div>
+        <div id="props-body"><div class="props-empty">Selecione um<br>elemento no canvas</div></div>
+        <div id="props-footer"><div class="add-script-btn" id="add-script-btn" onclick="App.scripts.openForSelected()">＋ Script</div></div>
       </div>
     </div>
 
-    <!-- CENTER WORKSPACE -->
-    <div class="ed-workspace">
-
-      <!-- Scripts workspace -->
-      <div class="ws-script active" id="ws-scripts">
-        <div class="code-area">
-          <div class="line-nums" id="line-nums">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20</div>
-          <div class="code-editor" contenteditable="true" spellcheck="false" id="code-editor" oninput="onCodeInput()">
-<span class="kw">local</span> <span class="var">Players</span> = game:GetService(<span class="str">"Players"</span>)
-<span class="kw">local</span> <span class="var">player</span> = Players.LocalPlayer
-<span class="kw">local</span> <span class="var">gui</span> = player.PlayerGui
-
-<span class="cm">-- Aguardar GUI carregar</span>
-<span class="var">player</span>.CharacterAdded:<span class="fn">Connect</span>(<span class="kw">function</span>(character)
-  <span class="kw">local</span> <span class="var">humanoid</span> = character:WaitForChild(<span class="str">"Humanoid"</span>)
-
-  <span class="cm">-- Detectar morte do personagem</span>
-  <span class="var">humanoid</span>.Died:<span class="fn">Connect</span>(<span class="kw">function</span>()
-    print(<span class="str">"Personagem morreu!"</span>)
-  <span class="kw">end</span>)
-<span class="kw">end</span>)
-
-<span class="cm">-- Botão principal</span>
-<span class="kw">local</span> <span class="var">button</span> = gui:WaitForChild(<span class="str">"MainGui"</span>):WaitForChild(<span class="str">"Button"</span>)
-<span class="var">button</span>.MouseButton1Click:<span class="fn">Connect</span>(<span class="kw">function</span>()
-  print(<span class="str">"Clicado!"</span>)
-<span class="kw">end</span>)
-</div>
+    <!-- EFFECTS -->
+    <div class="view" id="v-effects">
+      <div id="fx-sidebar">
+        <div id="fx-sidebar-header">
+          <div id="fx-sidebar-title">EFEITOS ROBLOX</div>
+          <input class="input" placeholder="🔍 Buscar efeito..." oninput="App.fx.filter(this.value)"/>
         </div>
+        <div id="fx-list"></div>
       </div>
-
-      <!-- Interface / UI Simulator workspace -->
-      <div class="ws-ui" id="ws-interface">
-        <div class="ui-toolbar">
-          <button class="ui-tb-btn active" id="sim-btn-pc" onclick="setDevice('pc',this)">💻 PC</button>
-          <button class="ui-tb-btn" id="sim-btn-mobile" onclick="setDevice('mobile',this)">📱 Mobile</button>
-          <button class="ui-tb-btn" id="sim-btn-tablet" onclick="setDevice('tablet',this)">📋 Tablet</button>
-          <div class="ui-tb-sep"></div>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim)" id="sim-size-label">1366 × 768</span>
-          <div class="ui-tb-sep"></div>
-          <button class="ui-tb-btn" onclick="clearSimulator()" style="font-size:10px">🗑️ Limpar</button>
+      <div id="fx-main">
+        <div id="fx-toolbar">
+          <button class="btn btn-acc btn-sm" onclick="App.fx.save()">💾 Salvar</button>
+          <button class="btn btn-blue btn-sm" onclick="App.fx.addToBuilder()">➕ Ao Builder</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.fx.reset()">↺ Reset</button>
+          <div style="margin-left:auto;font-size:10px;color:var(--dim);" id="fx-current">← Selecione um efeito</div>
         </div>
-        <div class="ui-canvas-wrap" id="ui-canvas-wrap">
-          <div class="sim-container" id="sim-container">
-            <div class="sim-screen device-frame-pc" id="sim-screen">
-              <div class="sim-titlebar">
-                <div class="sim-dot" style="background:#ff5f57"></div>
-                <div class="sim-dot" style="background:#febc2e"></div>
-                <div class="sim-dot" style="background:#28c840"></div>
-                <span style="margin-left:6px">🎮 Roblox — PlayerGui Simulator</span>
-              </div>
-              <div class="sim-content" id="sim-content"
-                   ondragover="event.preventDefault()"
-                   ondrop="onSimDrop(event)">
-                <div class="sim-empty" id="sim-empty">
-                  <div class="sim-empty-ico">🖥️</div>
-                  <span>Arraste elementos do painel direito</span>
-                  <span style="opacity:.5">ou clique em um elemento para adicionar</span>
-                </div>
-              </div>
+        <div id="fx-workspace">
+          <div id="fx-preview">
+            <div id="fx-canvas-wrap"><canvas id="fx-canvas" width="320" height="320"></canvas></div>
+            <div id="fx-preview-label">Preview ao vivo</div>
+          </div>
+          <div id="fx-props">
+            <div id="fx-props-header"><div id="fx-props-title">Selecione um efeito</div><div id="fx-props-sub">Configure abaixo</div></div>
+            <div id="fx-props-body"><div style="padding:36px 14px;text-align:center;color:var(--dark);font-size:11px;">← Clique num efeito</div></div>
+            <div id="fx-saved-area">
+              <div class="fx-saved-title">EFEITOS SALVOS</div>
+              <div id="fx-saved-list"><div style="font-size:10px;color:var(--dark);padding:6px;">Nenhum salvo.</div></div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Effects workspace -->
-      <div class="ws-effects" id="ws-efeitos">
-        <div class="effect-card" onclick="selectEffect(this,'Fire','🔥')"><div class="effect-preview ef-fire">🔥</div>Fire</div>
-        <div class="effect-card" onclick="selectEffect(this,'Smoke','💨')"><div class="effect-preview ef-float">💨</div>Smoke</div>
-        <div class="effect-card" onclick="selectEffect(this,'Sparkles','⚡')"><div class="effect-preview ef-spin">⚡</div>Sparkles</div>
-        <div class="effect-card" onclick="selectEffect(this,'Explosion','💥')"><div class="effect-preview ef-pulse">💥</div>Explosion</div>
-        <div class="effect-card" onclick="selectEffect(this,'Brilho','✨')"><div class="effect-preview ef-pulse">✨</div>Brilho</div>
-        <div class="effect-card" onclick="selectEffect(this,'Trail','🌈')"><div class="effect-preview ef-float">🌈</div>Trail</div>
-        <div class="effect-card" onclick="selectEffect(this,'Chuva','🌧️')"><div class="effect-preview ef-float">🌧️</div>Chuva</div>
-        <div class="effect-card" onclick="selectEffect(this,'Gelo','❄️')"><div class="effect-preview ef-pulse">❄️</div>Gelo/Neve</div>
-        <div class="effect-card" onclick="selectEffect(this,'Magia','🔮')"><div class="effect-preview ef-spin">🔮</div>Magia</div>
-        <div class="effect-card" onclick="selectEffect(this,'Portal','🌀')"><div class="effect-preview ef-spin">🌀</div>Portal</div>
-        <div class="effect-card" onclick="selectEffect(this,'Bolhas','🫧')"><div class="effect-preview ef-float">🫧</div>Bolhas</div>
-        <div class="effect-card" onclick="selectEffect(this,'Sangue','🩸')"><div class="effect-preview ef-pulse">🩸</div>Sangue</div>
-      </div>
-
-      <!-- Sons workspace -->
-      <div class="ws-generic" id="ws-sons">
-        <div class="sys-grid">
-          <div class="sys-card" onclick="addSysNode('SoundService','🔊')"><div class="sys-ico">🔊</div><div class="sys-name">SOUNDSERVICE</div><div class="sys-badge">SERVICE</div><div class="sys-desc">Serviço principal de sons do jogo.</div></div>
-          <div class="sys-card" onclick="addSysNode('Sound','🎵')"><div class="sys-ico">🎵</div><div class="sys-name">SOUND</div><div class="sys-badge">OBJECT</div><div class="sys-desc">Reproduz um áudio específico.</div></div>
-          <div class="sys-card" onclick="addSysNode('SoundGroup','📻')"><div class="sys-ico">📻</div><div class="sys-name">SOUNDGROUP</div><div class="sys-badge">GROUP</div><div class="sys-desc">Agrupa sons com volume único.</div></div>
-          <div class="sys-card" onclick="addSysNode('BackgroundMusic','🎼')"><div class="sys-ico">🎼</div><div class="sys-name">BG MUSIC</div><div class="sys-badge">SCRIPT</div><div class="sys-desc">Música de fundo com loop.</div></div>
-          <div class="sys-card" onclick="addSysNode('SoundEffect','🎚️')"><div class="sys-ico">🎚️</div><div class="sys-name">SOUND FX</div><div class="sys-badge">EFFECT</div><div class="sys-desc">Efeitos de áudio (reverb, distorção).</div></div>
-          <div class="sys-card" onclick="addSysNode('ProximitySound','📢')"><div class="sys-ico">📢</div><div class="sys-name">PROXIMITY</div><div class="sys-badge">SCRIPT</div><div class="sys-desc">Som que aumenta ao se aproximar.</div></div>
-        </div>
-      </div>
-
-      <!-- Física workspace -->
-      <div class="ws-generic" id="ws-fisica">
-        <div class="sys-grid">
-          <div class="sys-card" onclick="addSysNode('Anchor','⚓')"><div class="sys-ico">⚓</div><div class="sys-name">ANCORAR</div><div class="sys-badge">PROPERTY</div><div class="sys-desc">Impede a parte de se mover.</div></div>
-          <div class="sys-card" onclick="addSysNode('Weld','🔗')"><div class="sys-ico">🔗</div><div class="sys-name">WELD</div><div class="sys-badge">CONSTRAINT</div><div class="sys-desc">Une duas partes rigidamente.</div></div>
-          <div class="sys-card" onclick="addSysNode('SpringConstraint','🔩')"><div class="sys-ico">🔩</div><div class="sys-name">SPRING</div><div class="sys-badge">CONSTRAINT</div><div class="sys-desc">Mola entre duas partes.</div></div>
-          <div class="sys-card" onclick="addSysNode('VectorForce','💨')"><div class="sys-ico">💨</div><div class="sys-name">VECTOR FORCE</div><div class="sys-badge">FORCE</div><div class="sys-desc">Aplica força contínua em direção.</div></div>
-          <div class="sys-card" onclick="addSysNode('Torque','🌀')"><div class="sys-ico">🌀</div><div class="sys-name">TORQUE</div><div class="sys-badge">FORCE</div><div class="sys-desc">Rotaciona uma parte continuamente.</div></div>
-          <div class="sys-card" onclick="addSysNode('HingeConstraint','🪝')"><div class="sys-ico">🪝</div><div class="sys-name">HINGE</div><div class="sys-badge">CONSTRAINT</div><div class="sys-desc">Dobradiça entre duas partes.</div></div>
-        </div>
-      </div>
-
-      <!-- Iluminação workspace -->
-      <div class="ws-generic" id="ws-iluminacao">
-        <div class="sys-grid">
-          <div class="sys-card" onclick="addSysNode('PointLight','💡')"><div class="sys-ico">💡</div><div class="sys-name">POINT LIGHT</div><div class="sys-badge">LIGHT</div><div class="sys-desc">Luz pontual em todas direções.</div></div>
-          <div class="sys-card" onclick="addSysNode('SpotLight','🔦')"><div class="sys-ico">🔦</div><div class="sys-name">SPOT LIGHT</div><div class="sys-badge">LIGHT</div><div class="sys-desc">Feixe de luz direcional.</div></div>
-          <div class="sys-card" onclick="addSysNode('SurfaceLight','🌅')"><div class="sys-ico">🌅</div><div class="sys-name">SURFACE LIGHT</div><div class="sys-badge">LIGHT</div><div class="sys-desc">Luz que emana de uma superfície.</div></div>
-          <div class="sys-card" onclick="addSysNode('Atmosphere','🌫️')"><div class="sys-ico">🌫️</div><div class="sys-name">ATMOSPHERE</div><div class="sys-badge">ENV</div><div class="sys-desc">Neblina e dispersão do ar.</div></div>
-          <div class="sys-card" onclick="addSysNode('Clouds','☁️')"><div class="sys-ico">☁️</div><div class="sys-name">CLOUDS</div><div class="sys-badge">ENV</div><div class="sys-desc">Nuvens volumétricas no céu.</div></div>
-          <div class="sys-card" onclick="addSysNode('Sky','🌃')"><div class="sys-ico">🌃</div><div class="sys-name">SKYBOX</div><div class="sys-badge">ENV</div><div class="sys-desc">Textura customizada do céu.</div></div>
-        </div>
-      </div>
-
-      <!-- Overview / Gerar Script workspace -->
-      <div class="ws-overview" id="ws-overview">
-        <div class="overview-code" id="overview-code"></div>
-        <div class="overview-footer">
-          <div class="overview-hint" id="overview-hint">
-            <strong>📍 Onde colocar:</strong> StarterPlayerScripts → LocalScript<br>
-            <strong>✅ Por que:</strong> Scripts locais acessam PlayerGui e eventos do personagem.
-          </div>
-          <button class="ed-btn save" onclick="copyOverviewScript()">📋 Copiar</button>
-        </div>
-      </div>
-
-      <!-- Panel toggle buttons -->
-      <div class="panel-toggles">
-        <button class="ptgl on" id="ptgl-left" onclick="togglePanel('left')" title="Propriedades">◀ Props</button>
-        <button class="ptgl on" id="ptgl-bottom" onclick="togglePanel('bottom')" title="Painel Inferior">▼ Script</button>
-        <button class="ptgl on" id="ptgl-right" onclick="togglePanel('right')" title="Elementos">Elem ▶</button>
-      </div>
     </div>
 
-    <!-- RIGHT PANEL: Elementos -->
-    <div class="ed-panel-right" id="panel-right">
-      <div class="pnl-head">ELEMENTOS <button class="pnl-close" onclick="togglePanel('right')">✕</button></div>
-      <input class="pnl-search" placeholder="🔍 Buscar…" id="right-search">
-      <div class="pnl-body" id="right-panel-body">
-        <!-- conteúdo muda conforme a aba -->
+    <!-- TEMPLATES -->
+    <div class="view" id="v-templates">
+      <div class="tpl-header">📦 TEMPLATES PRONTOS</div>
+      <div class="tpl-sub">// Comece com um projeto pré-montado. Clique para carregar no Builder.</div>
+      <div class="tpl-grid" id="templates-grid"></div>
+    </div>
+
+    <!-- DOCS -->
+    <div class="view" id="v-docs">
+      <div id="docs-nav">
+        <div style="padding:8px 16px 12px;font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--txt);letter-spacing:1px;">📖 DOCS</div>
+        <div id="docs-nav-links"></div>
       </div>
+      <div id="docs-content"></div>
     </div>
-
-  </div><!-- ed-body -->
-
-  <!-- BOTTOM PANEL -->
-  <div class="ed-bottom" id="ed-bottom">
-    <div class="bottom-tabs">
-      <button class="btab active" onclick="switchBtab(this,'script-preview')">Script do Elemento</button>
-      <button class="btab" onclick="switchBtab(this,'console')">Console</button>
-      <button class="btab" onclick="switchBtab(this,'erros')">Erros</button>
-      <button class="bottom-close" onclick="togglePanel('bottom')">✕</button>
-    </div>
-    <div class="bottom-body" id="btab-script-preview"><span class="cm">-- Selecione um elemento para ver o script</span></div>
-    <div class="con-wrap" id="btab-console" style="display:none">
-      <div class="cl"><span class="ct">00:00</span><span class="cm-log s">✔ RoForger Studio iniciado</span></div>
-    </div>
-    <div class="bottom-body" id="btab-erros" style="display:none"><span style="color:var(--green)">✔ Nenhum erro encontrado</span></div>
   </div>
+</div>
 
-</div><!-- screen-editor -->
-
-<!-- ═══ MODAL: NOVO PROJETO ═══ -->
-<div class="overlay" id="modal-new" onclick="closeModal('new')">
-  <div class="modal" onclick="event.stopPropagation()">
+<!-- ════ HOME MODALS ════ -->
+<div class="overlay" id="modal-new" onclick="if(event.target===this)closeNewModal()">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-bar"></div>
     <div class="modal-t">NOVO PROJETO</div>
     <div class="modal-s">// Configure seu projeto RoForger</div>
     <div class="field"><label>Nome do Projeto</label><input id="np-name" placeholder="MeuJogoEpico" maxlength="40"/></div>
-    <div class="field">
-      <label>Tipo de Jogo</label>
-      <select id="np-type">
-        <option>Game</option><option>Simulator</option><option>RPG</option>
-        <option>Battle Royale</option><option>Tower Defense</option><option>Obby</option><option>Outro</option>
-      </select>
-    </div>
+    <div class="field"><label>Tipo</label><select id="np-type"><option>Game</option><option>Simulator</option><option>RPG</option><option>Battle Royale</option><option>Tower Defense</option><option>Obby</option><option>Outro</option></select></div>
     <div class="field"><label>Ícone</label><div class="emoji-row" id="emojiRow"></div></div>
     <div class="modal-acts">
-      <button class="mbt cancel" onclick="closeModal('new')">Cancelar</button>
+      <button class="mbt cancel" onclick="closeNewModal()">Cancelar</button>
       <button class="mbt confirm" onclick="createProject()">⚡ Criar</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ MODAL: CONFIRMAR DELETE ═══ -->
-<div class="overlay" id="modal-confirm" onclick="closeModal('confirm')">
-  <div class="modal" onclick="event.stopPropagation()" style="border-radius:16px;max-width:320px;margin:auto;padding:28px 24px">
+<div class="overlay" id="modal-confirm" onclick="if(event.target===this)closeModal('modal-confirm')">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="border-radius:14px;max-width:320px;margin:auto;padding:26px 22px">
     <div class="modal-bar"></div>
     <div class="modal-t">EXCLUIR PROJETO</div>
-    <div class="modal-s" id="confirm-msg">// Tem certeza? Essa ação não pode ser desfeita.</div>
+    <div class="modal-s" id="confirm-msg">// Tem certeza?</div>
     <div class="modal-acts">
-      <button class="mbt cancel" onclick="closeModal('confirm')">Cancelar</button>
-      <button class="mbt confirm" style="background:linear-gradient(135deg,#cc2200,#ff4d1a)" onclick="confirmDelete()">🗑️ Excluir</button>
+      <button class="mbt cancel" onclick="closeModal('modal-confirm')">Cancelar</button>
+      <button class="mbt confirm" style="background:linear-gradient(135deg,#cc2200,var(--acc))" onclick="confirmDelete()">🗑️ Excluir</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ SETTINGS ═══ -->
+<!-- ════ SCRIPT MODAL ════ -->
+<div class="overlay-center" id="smodal" onclick="if(event.target===this)App.scripts.closeModal()">
+  <div class="modal-center" style="width:820px;max-width:95vw;max-height:88vh;">
+    <div class="modal-head">
+      <div class="modal-title-txt" id="smodal-title">📜 Script Builder</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div id="script-loc-badge" class="badge badge-green" style="display:none;"></div>
+        <div class="modal-x" onclick="App.scripts.closeModal()">✕</div>
+      </div>
+    </div>
+    <div class="stabs">
+      <div class="stab active" onclick="App.scripts.switchTab(this,'s-guided')">🧩 Guiado</div>
+      <div class="stab" onclick="App.scripts.switchTab(this,'s-manual')">✏️ Manual</div>
+      <div class="stab" onclick="App.scripts.switchTab(this,'s-output')">⚡ Resultado</div>
+    </div>
+    <div class="stab-body active" id="s-guided"><div id="guided-scroll"></div></div>
+    <div class="stab-body" id="s-manual">
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="height:34px;background:rgba(8,12,24,.98);border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;padding:0 12px;gap:5px;flex-shrink:0;">
+          <span style="font-size:10px;color:var(--dark);">Snippets:</span>
+          <button class="btn btn-ghost btn-sm" onclick="App.scripts.insertSnippet('click')">onClick</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.scripts.insertSnippet('tween')">Tween</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.scripts.insertSnippet('remote')">Remote</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.scripts.insertSnippet('sound')">Som</button>
+          <button class="btn btn-ghost btn-sm" onclick="App.scripts.insertSnippet('ds')">DataStore</button>
+        </div>
+        <textarea id="code-area" spellcheck="false" placeholder="-- Escreva Lua aqui..."></textarea>
+      </div>
+    </div>
+    <div class="stab-body" id="s-output">
+      <div style="flex:1;overflow-y:auto;background:#04060f;"><pre id="output-pre" style="padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;color:#c9d1d9;">-- Gere via Guiado ou Manual</pre></div>
+    </div>
+    <div class="modal-foot">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost" onclick="App.scripts.generate()">⚙️ Gerar</button>
+        <button class="btn btn-acc" onclick="App.scripts.copy()">📋 Copiar</button>
+      </div>
+      <span id="copy-ok" style="font-size:10px;color:var(--green);display:none;">✓ Copiado!</span>
+    </div>
+  </div>
+</div>
+
+<!-- GLOBAL SCRIPT MODAL -->
+<div class="overlay-center" id="gmodal" onclick="if(event.target===this)closeModal('gmodal')">
+  <div class="modal-center" style="width:820px;max-width:95vw;max-height:88vh;">
+    <div class="modal-head">
+      <div class="modal-title-txt">⚡ SCRIPT COMPLETO DO PROJETO</div>
+      <div class="modal-x" onclick="closeModal('gmodal')">✕</div>
+    </div>
+    <div style="flex:1;overflow-y:auto;background:#04060f;"><pre id="gmodal-pre" style="padding:16px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;color:#c9d1d9;white-space:pre-wrap;"></pre></div>
+    <div class="modal-foot">
+      <div style="font-size:11px;color:var(--dim);">📍 Cole em <strong style="color:var(--acc2);">ServerScriptService</strong> ou <strong style="color:var(--acc2);">StarterPlayerScripts</strong></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn btn-acc" onclick="App.scripts.copyGlobal()">📋 Copiar</button>
+        <span id="gcopy-ok" style="font-size:10px;color:var(--green);display:none;">✓ Copiado!</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CMD PALETTE -->
+<div id="cmd-palette" onclick="if(event.target===this)App.cmdPalette.close()">
+  <div id="cmd-box">
+    <input id="cmd-input" placeholder="Buscar sistemas, efeitos, ações..." oninput="App.cmdPalette.search(this.value)" onkeydown="App.cmdPalette.onKey(event)"/>
+    <div id="cmd-results"></div>
+  </div>
+</div>
+
+<!-- UNDO BAR -->
+<div id="undo-bar">
+  <button class="undo-btn" id="undo-btn" onclick="App.history.undo()" disabled>↩ Desfazer</button>
+  <button class="undo-btn" id="redo-btn" onclick="App.history.redo()" disabled>↪ Refazer</button>
+  <span id="history-info" style="font-family:'JetBrains Mono',monospace;font-size:9px;">0/0</span>
+</div>
+<div id="autosave-indicator"><div class="autosave-dot"></div><span>Salvo</span></div>
+
+<!-- SETTINGS -->
 <div class="settings-ov" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
   <div class="settings-box">
     <div class="settings-head">
       <h2>CONFIGURAÇÕES</h2>
-      <button class="pnl-close" onclick="closeSettings()">✕</button>
+      <div class="modal-x" onclick="closeSettings()">✕</div>
     </div>
     <div class="settings-body">
-      <div class="sett-section">
+      <div class="sett-sec">
         <h3>TEMA</h3>
         <div class="theme-grid">
-          <div class="theme-card selected" id="theme-dark" onclick="setTheme('dark',this)">
-            <div class="theme-preview" style="background:linear-gradient(135deg,#050810,#0f1629)">🌙</div>ESCURO
-          </div>
-          <div class="theme-card" id="theme-light" onclick="setTheme('light',this)">
-            <div class="theme-preview" style="background:linear-gradient(135deg,#f0f0f0,#ffffff)">☀️</div>CLARO
-          </div>
-          <div class="theme-card" id="theme-blue" onclick="setTheme('blue',this)">
-            <div class="theme-preview" style="background:linear-gradient(135deg,#080c24,#0f1840)">🔵</div>AZUL
-          </div>
+          <div class="theme-card selected" onclick="setTheme('dark',this)"><div class="theme-preview" style="background:linear-gradient(135deg,#050810,#0f1629)">🌙</div>ESCURO</div>
+          <div class="theme-card" onclick="setTheme('light',this)"><div class="theme-preview" style="background:linear-gradient(135deg,#f0f0f0,#fff)">☀️</div>CLARO</div>
+          <div class="theme-card" onclick="setTheme('blue',this)"><div class="theme-preview" style="background:linear-gradient(135deg,#04080f,#0a1428)">🔵</div>AZUL</div>
         </div>
       </div>
-      <div class="sett-section">
+      <div class="sett-sec">
         <h3>COR DE DESTAQUE</h3>
         <div class="accent-row">
           <div class="accent-dot selected" style="background:#ff4d1a" onclick="setAccent('#ff4d1a','#ff8c42',this)"></div>
@@ -838,666 +750,583 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
           <div class="accent-dot" style="background:#ff2d78" onclick="setAccent('#ff2d78','#ff7aab',this)"></div>
         </div>
       </div>
-      <div class="sett-section">
-        <h3>INTERFACE</h3>
-        <div class="sett-row">
-          <span class="sett-label">Painel Esquerdo</span>
-          <button class="toggle on" id="tog-left" onclick="this.classList.toggle('on');togglePanel('left')"></button>
-        </div>
-        <div class="sett-row">
-          <span class="sett-label">Painel Direito</span>
-          <button class="toggle on" id="tog-right" onclick="this.classList.toggle('on');togglePanel('right')"></button>
-        </div>
-        <div class="sett-row">
-          <span class="sett-label">Painel Inferior</span>
-          <button class="toggle on" id="tog-bottom" onclick="this.classList.toggle('on');togglePanel('bottom')"></button>
-        </div>
-        <div class="sett-row">
-          <span class="sett-label">Tamanho da Fonte</span>
-          <select class="prop-input" style="width:80px" onchange="document.getElementById('code-editor').style.fontSize=this.value+'px'">
-            <option value="10">10px</option><option value="11" selected>11px</option>
-            <option value="12">12px</option><option value="13">13px</option><option value="14">14px</option>
-          </select>
-        </div>
+      <div class="sett-sec">
+        <h3>PAINEL</h3>
+        <div class="sett-row"><span class="sett-label">Explorer</span><button class="toggle on" onclick="toggleExplorer(this)"></button></div>
+        <div class="sett-row"><span class="sett-label">Propriedades</span><button class="toggle on" onclick="toggleProps(this)"></button></div>
+        <div class="sett-row"><span class="sett-label">Minimap</span><button class="toggle on" onclick="App.minimap.toggle();this.classList.toggle('on')"></button></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════
+<!-- ════════════════════════════════════
      JAVASCRIPT
-═══════════════════════════════════════════════════════ -->
+════════════════════════════════════ -->
 <script>
-// ── STATE ──────────────────────────────────────────────
-const S = {
-  user: null, projects: [], currentProject: null,
-  deleteTarget: null, emoji: "🎮", fbReady: false,
-  currentModule: 'scripts',
-  panels: {left: true, right: true, bottom: true},
-  simElems: [], selectedElem: null, elemCounter: 0,
-  currentDevice: 'pc',
-  sysNodes: [],
-};
+// ── FIREBASE STATE ─────────────────────────────────
+const S={user:null,projects:[],deleteTarget:null,emoji:'🎮',fbReady:false};
+const EMOJIS=['🎮','⚔️','🏆','🏰','🐾','🌊','💰','🤖','🧙','🛒','🔥','💎'];
 
-const EMOJIS = ["🎮","⚔️","🏆","🏰","🐾","🌊","💰","🤖","🧙","🛒","🔥","💎"];
-
-// Device sizes  [simW, simH, label]
-const DEVICES = {
-  pc:     [620, 380, '1366 × 768'],
-  mobile: [220, 440, '390 × 844'],
-  tablet: [440, 340, '768 × 1024'],
-};
-
-// Right panel content per module
-const RIGHT_PANELS = {
-  scripts: `
-    <div class="elem-cat">SCRIPTS PRONTOS</div>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);padding:4px 8px 8px;">Arraste para o editor ou frame</div>
-    ${[
-      ['🚪 Porta Automática','Script','Detecta proximidade e abre porta'],
-      ['💰 Coletar Moeda','LocalScript','Touch para coletar com leaderstats'],
-      ['📊 Leaderstats','Script','Pontuação, dinheiro e kills'],
-      ['🏃 Velocidade Extra','LocalScript','Modifica WalkSpeed do personagem'],
-      ['☠️ Kill Brick','Script','Mata ao tocar a parte'],
-      ['🔄 Respawn Custom','Script','Respawn em ponto específico'],
-      ['🛡️ Admin Commands','Script','Comandos de administrador'],
-      ['🔒 Anti-Exploit','Script','Bloqueia exploits comuns'],
-      ['🎒 Inventário','ModuleScript','Sistema de inventário completo'],
-      ['💾 DataStore','Script','Salva dados do jogador na nuvem'],
-    ].map(([n,t,d])=>`<div class="script-item" draggable="true" ondragstart="dragScript(event,'${n}','${t}')"><div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:2px"><h4>${n}</h4><span class="si-tag">${t}</span></div><p>${d}</p></div>`).join('')}`,
-  interface: `
-    <div class="elem-cat">ELEMENTOS UI</div>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);padding:4px 8px 8px;">Arraste para a tela ou clique para adicionar</div>
-    ${[
-      ['⬜','Frame','Frame'],
-      ['🔤','TextLabel','TextLabel'],
-      ['🔘','TextButton','TextButton'],
-      ['📝','TextBox','TextBox'],
-      ['🖼️','ImageLabel','ImageLabel'],
-      ['🖼️','ImageButton','ImageButton'],
-      ['📜','ScrollingFrame','ScrollingFrame'],
-      ['🎥','ViewportFrame','ViewportFrame'],
-    ].map(([i,n,t])=>`<div class="elem-item" draggable="true" ondragstart="dragElem(event,'${t}')" onclick="addSimElem('${t}')"><span class="elem-icon">${i}</span>${n}</div>`).join('')}
-    <div class="elem-cat" style="margin-top:8px">LAYOUTS</div>
-    ${[['⚡','UIListLayout'],['📐','UIGridLayout'],['🔲','UIPageLayout'],['🎨','UICorner'],['🖌️','UIStroke'],['📏','UIPadding']].map(([i,n])=>`<div class="elem-item" onclick="addSysNode('${n}','${i}')"><span class="elem-icon">${i}</span>${n}</div>`).join('')}`,
-  efeitos: `
-    <div class="elem-cat">EMISSORES</div>
-    ${[['✨','ParticleEmitter'],['🔥','Fire'],['💨','Smoke'],['⚡','Sparkles']].map(([i,n])=>`<div class="elem-item"><span class="elem-icon">${i}</span>${n}</div>`).join('')}
-    <div class="elem-cat" style="margin-top:8px">ILUMINAÇÃO</div>
-    ${[['💡','PointLight'],['🔦','SpotLight'],['🌅','SurfaceLight']].map(([i,n])=>`<div class="elem-item"><span class="elem-icon">${i}</span>${n}</div>`).join('')}
-    <div class="elem-cat" style="margin-top:8px">DECORAÇÃO</div>
-    ${[['🌈','Trail'],['💎','SelectionSphere'],['🖼️','BillboardGui']].map(([i,n])=>`<div class="elem-item"><span class="elem-icon">${i}</span>${n}</div>`).join('')}`,
-  sons:`<div class="elem-cat">SONS</div>${[['🔊','SoundService'],['🎵','Sound'],['📻','SoundGroup'],['🎚️','EqualizerSoundEffect'],['🔁','FlangeSoundEffect']].map(([i,n])=>`<div class="elem-item"><span class="elem-icon">${i}</span>${n}</div>`).join('')}`,
-  fisica:`<div class="elem-cat">CONSTRAINTS</div>${[['🔗','WeldConstraint'],['🔩','SpringConstraint'],['🪝','HingeConstraint'],['💨','VectorForce'],['🌀','Torque']].map(([i,n])=>`<div class="elem-item"><span class="elem-icon">${i}</span>${n}</div>`).join('')}`,
-  iluminacao:`<div class="elem-cat">LUZES</div>${[['💡','PointLight'],['🔦','SpotLight'],['🌅','SurfaceLight'],['🌫️','Atmosphere'],['☁️','Clouds'],['🌃','Sky']].map(([i,n])=>`<div class="elem-item"><span class="elem-icon">${i}</span>${n}</div>`).join('')}`,
-  overview:`<div style="padding:16px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);line-height:1.7">// Nesta aba o script final<br>// do projeto é gerado.<br><br>Clique em <span style="color:var(--acc2)">📋 Gerar</span> na<br>barra superior ou acesse<br>a aba "Gerar Script".</div>`,
-};
-
-// ── FIREBASE ──────────────────────────────────────────
-window.addEventListener("fb-ready", () => {
-  S.fbReady = true;
-  const {auth, onAuthStateChanged} = window._fb;
-  onAuthStateChanged(auth, async u => {
-    S.user = u;
-    if (u) await fetchProjects();
-    hideLoading();
-    renderHome();
-    showScreen("home");
+window.addEventListener('fb-ready',()=>{
+  S.fbReady=true;
+  const{auth,onAuthStateChanged}=window._fb;
+  onAuthStateChanged(auth,async u=>{
+    S.user=u;
+    if(u)await fetchProjects();
+    hideLoading();renderHome();showScreen('home');
   });
 });
-setTimeout(() => { if (!S.fbReady) { hideLoading(); showScreen("home"); } }, 4000);
+setTimeout(()=>{if(!S.fbReady){hideLoading();showScreen('home');}},4000);
 
-function hideLoading() {
-  const l = document.getElementById("loading");
-  l.style.opacity = "0";
-  setTimeout(() => l.style.display = "none", 400);
+function hideLoading(){const l=document.getElementById('loading');l.style.opacity='0';setTimeout(()=>l.style.display='none',400)}
+function showScreen(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+n).classList.add('active')}
+
+function toast(msg,type='s'){const w=document.getElementById('toastWrap');const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=(type==='s'?'✔ ':type==='e'?'✖ ':type==='i'?'ℹ ':'⚠ ')+msg;w.appendChild(t);setTimeout(()=>t.remove(),3000)}
+
+async function login(){
+  if(!S.fbReady){toast('Firebase carregando...','w');return}
+  try{const{auth,gp,signInWithPopup}=window._fb;const r=await signInWithPopup(auth,gp);S.user=r.user;await fetchProjects();renderHome();toast(`Bem-vindo, ${r.user.displayName?.split(' ')[0]}! 🎮`)}
+  catch(e){if(e.code!=='auth/popup-closed-by-user')toast('Erro no login','e')}
+}
+async function logout(){if(!S.fbReady)return;await window._fb.signOut(window._fb.auth);S.user=null;S.projects=[];renderHome();toast('Até logo! 👋','w')}
+
+async function fetchProjects(){
+  if(!S.user||!S.fbReady)return;
+  try{const{db,collection,query,where,orderBy,getDocs}=window._fb;const q=query(collection(db,'projects'),where('uid','==',S.user.uid),orderBy('updatedAt','desc'));const snap=await getDocs(q);S.projects=snap.docs.map(d=>({id:d.id,...d.data()}))}catch(e){console.warn(e)}
+}
+async function saveToCloud(proj){
+  if(!S.user||!S.fbReady)return null;
+  try{const{db,collection,addDoc,doc,updateDoc}=window._fb;if(proj.id&&!proj.id.startsWith('demo-')){await updateDoc(doc(db,'projects',proj.id),proj);return proj.id}else{const r=await addDoc(collection(db,'projects'),proj);return r.id}}catch(e){toast('Erro ao salvar','e');return null}
+}
+async function deleteFromCloud(id){if(!S.user||!S.fbReady||id.startsWith('demo-'))return;try{const{db,doc,deleteDoc}=window._fb;await deleteDoc(doc(db,'projects',id))}catch(e){}}
+
+function renderHome(){renderNavUser();renderProjects();document.getElementById('hero-main-btn').textContent=S.user?'⚡ NOVO PROJETO':'🔑 ENTRAR COM GOOGLE';document.getElementById('hero-main-btn').onclick=S.user?()=>openNewModal():login}
+function renderNavUser(){const a=document.getElementById('nav-user-area');if(S.user){const ph=S.user.photoURL?`<img src="${S.user.photoURL}" class="nav-av"/>`:`<div class="nav-av-ph">${(S.user.displayName||'U')[0]}</div>`;a.innerHTML=`<div class="nav-user" onclick="logout()">${ph}<span class="nav-nm">${S.user.displayName?.split(' ')[0]||'User'}</span></div>`}else{a.innerHTML=`<button class="btn btn-acc btn-sm" onclick="login()">🔑 Entrar com Google</button>`}}
+
+function renderProjects(){
+  const a=document.getElementById('proj-area');
+  if(!S.user){a.innerHTML=`<div class="empty"><div class="empty-i">🔒</div><div class="empty-t">LOGIN NECESSÁRIO</div><div class="empty-s">// Entre com Google para salvar projetos</div><br><button class="btn btn-acc" onclick="login()" style="margin:0 auto;display:flex">🔑 Entrar com Google</button></div>`;return}
+  let h=`<div class="proj-grid"><div class="new-card" onclick="openNewModal()"><div class="new-icon">⚡</div><div class="new-lbl">NOVO PROJETO</div></div>`;
+  if(!S.projects.length){h+=`</div><div class="empty"><div class="empty-i">🚀</div><div class="empty-t">SEM PROJETOS</div><div class="empty-s">// Crie seu primeiro projeto!</div></div>`}
+  else{S.projects.forEach(p=>{const d=p.updatedAt?new Date(p.updatedAt).toLocaleDateString('pt-BR'):'Recente';h+=`<div class="proj-card"><div class="proj-thumb" style="background:linear-gradient(135deg,${p.color||'rgba(255,77,26,.15)'},rgba(26,140,255,.08))"><span style="position:relative;z-index:1">${p.emoji||'🎮'}</span></div><div class="proj-body"><div class="proj-name">${p.name}</div><div class="proj-date">${d}</div><div class="proj-tags"><span class="ptag">${p.type||'Game'}</span></div></div><div class="proj-actions"><button class="pact open" onclick="openProject('${p.id}')">⚡ Abrir</button><button class="pact del" onclick="askDelete('${p.id}','${p.name}')">🗑️</button></div></div>`});h+=`</div>`}
+  a.innerHTML=h;
 }
 
-// ── SCREENS ──────────────────────────────────────────
-function showScreen(name) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById("screen-" + name).classList.add("active");
+function openNewModal(){document.getElementById('emojiRow').innerHTML=EMOJIS.map(e=>`<span class="emoji-opt${e===S.emoji?' sel':''}" onclick="selEmoji(this,'${e}')">${e}</span>`).join('');document.getElementById('np-name').value='';document.getElementById('modal-new').classList.add('open')}
+function closeNewModal(){document.getElementById('modal-new').classList.remove('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function selEmoji(el,e){document.querySelectorAll('.emoji-opt').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');S.emoji=e}
+
+async function createProject(){
+  const name=document.getElementById('np-name').value.trim();
+  if(!name){document.getElementById('np-name').focus();return}
+  const type=document.getElementById('np-type').value;
+  const colors=['rgba(255,77,26,.15)','rgba(26,140,255,.12)','rgba(155,66,255,.12)','rgba(0,255,157,.1)'];
+  const proj={name,type,emoji:S.emoji,uid:S.user?.uid||'demo',color:colors[Math.floor(Math.random()*colors.length)],updatedAt:Date.now(),createdAt:Date.now()};
+  closeNewModal();
+  const cid=await saveToCloud(proj);
+  proj.id=cid||('demo-'+Date.now());
+  S.projects.unshift(proj);renderProjects();
+  openProject(proj.id);toast(`"${name}" criado! ⚡`);
+}
+function askDelete(id,name){S.deleteTarget=id;document.getElementById('confirm-msg').textContent=`// Excluir "${name}"? Não pode ser desfeito.`;document.getElementById('modal-confirm').classList.add('open')}
+async function confirmDelete(){closeModal('modal-confirm');if(!S.deleteTarget)return;await deleteFromCloud(S.deleteTarget);S.projects=S.projects.filter(p=>p.id!==S.deleteTarget);renderProjects();toast('Projeto excluído','w');S.deleteTarget=null}
+
+function openProject(id){
+  const proj=S.projects.find(p=>p.id===id);if(!proj)return;
+  document.getElementById('ed-proj-name').textContent=proj.name;
+  showScreen('editor');
+  App.init();
+  App.loadFromStorage();
+  toast(`"${proj.name}" aberto! 🔨`,'i');
+}
+function goHome(){showScreen('home')}
+
+// Settings
+function openSettings(){document.getElementById('settings-overlay').classList.add('open')}
+function closeSettings(){document.getElementById('settings-overlay').classList.remove('open')}
+function setTheme(n,el){document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');const t={dark:['#050810','#0f1629','#141c35'],light:['#f0f2f8','#ffffff','#e8eaf4'],blue:['#03050c','#070e1e','#0b1530']};const[bg,card,hover]=t[n];document.documentElement.style.setProperty('--bg',bg);document.documentElement.style.setProperty('--card',card);document.documentElement.style.setProperty('--hover',hover);toast(`Tema ${n} aplicado!`)}
+function setAccent(a,a2,el){document.querySelectorAll('.accent-dot').forEach(d=>d.classList.remove('selected'));el.classList.add('selected');document.documentElement.style.setProperty('--acc',a);document.documentElement.style.setProperty('--acc2',a2);document.documentElement.style.setProperty('--acc-glow',a+'44');document.documentElement.style.setProperty('--border',a+'30');document.documentElement.style.setProperty('--border2',a+'55')}
+function toggleExplorer(btn){const e=document.getElementById('explorer');e.classList.toggle('hidden');if(btn)btn.classList.toggle('on')}
+function toggleProps(btn){const p=document.getElementById('props-panel');p.classList.toggle('hidden');if(btn)btn.classList.toggle('on')}
+document.getElementById('btn-new-proj').onclick=()=>S.user?openNewModal():login();
+
+// ══════════════════════════════════════════
+// APP ENGINE (from v3)
+// ══════════════════════════════════════════
+const DATA={
+explorer:[
+{group:'Movimentação',icon:'🏃',color:'#4d8fff',items:[
+{id:'WalkSpeed',icon:'👟',name:'WalkSpeed',desc:'Velocidade do personagem',color:'#4d8fff',props:{Name:'WalkSpeed',Speed:16,JumpPower:50,SprintSpeed:24,CrouchSpeed:6}},
+{id:'Dash',icon:'💨',name:'Dash',desc:'Sistema de dash',color:'#4d8fff',props:{Name:'Dash',Power:60,Cooldown:1.0}},
+{id:'DoubleJump',icon:'🦘',name:'Double Jump',desc:'Pulo duplo',color:'#4d8fff',props:{Name:'DoubleJump',JumpPower:45}},
+{id:'Fly',icon:'🕊',name:'Fly Mode',desc:'Modo de voo',color:'#4d8fff',props:{Name:'Fly',Speed:30}},
+{id:'Roll',icon:'🔄',name:'Rolamento',desc:'Dodge roll',color:'#4d8fff',props:{Name:'Roll',Power:40,Cooldown:0.8}}]},
+{group:'Loja / Moedas',icon:'💰',color:'#f5c542',items:[
+{id:'Currency',icon:'💰',name:'Moedas',desc:'Sistema de moedas',color:'#f5c542',props:{Name:'Currency',CoinName:'Coins',StartAmount:0,MaxAmount:999999}},
+{id:'Shop',icon:'🛒',name:'Loja',desc:'Loja com itens',color:'#f5c542',props:{Name:'Shop',ShopName:'Loja'}},
+{id:'XPSystem',icon:'⭐',name:'XP/Level',desc:'Sistema de experiência',color:'#f5c542',props:{Name:'XPSystem',MaxLevel:100,XPBase:100}}]},
+{group:'NPCs / Inimigos',icon:'🤖',color:'#e8473f',items:[
+{id:'BasicNPC',icon:'🤖',name:'NPC Básico',desc:'NPC com diálogo',color:'#e8473f',props:{Name:'BasicNPC',NPCName:'Aldeão',DialogText:'Olá!'}},
+{id:'Enemy',icon:'👾',name:'Inimigo IA',desc:'Persegue e ataca',color:'#e8473f',props:{Name:'Enemy',HP:100,Damage:10,AggroRange:30,Speed:14}},
+{id:'Boss',icon:'💀',name:'Boss',desc:'Inimigo multi-fase',color:'#e8473f',props:{Name:'Boss',HP:1000,Phases:3,Damage:40}}]},
+{group:'Armas / Combate',icon:'⚔️',color:'#ff7b42',items:[
+{id:'Sword',icon:'⚔️',name:'Espada',desc:'Arma melee',color:'#ff7b42',props:{Name:'Sword',Damage:25,Cooldown:0.5,Range:5}},
+{id:'Gun',icon:'🔫',name:'Arma de Fogo',desc:'Projétil',color:'#ff7b42',props:{Name:'Gun',Damage:30,FireRate:0.3,Ammo:30}},
+{id:'Magic',icon:'🪄',name:'Magia',desc:'Sistema de feitiços',color:'#ff7b42',props:{Name:'Magic',SpellDamage:50,ManaCost:20}}]},
+{group:'DataStore',icon:'💾',color:'#3ecf8e',items:[
+{id:'SaveLoad',icon:'💾',name:'Salvar/Carregar',desc:'Auto-save completo',color:'#3ecf8e',props:{Name:'SaveLoad',StoreName:'PlayerData',AutoSave:60}},
+{id:'Leaderboard',icon:'🏆',name:'Leaderboard',desc:'Ranking de jogadores',color:'#3ecf8e',props:{Name:'Leaderboard',Stat:'Kills'}}]},
+{group:'Mundo',icon:'🌍',color:'#06b6d4',items:[
+{id:'DayNight',icon:'🌅',name:'Dia/Noite',desc:'Ciclo dia/noite',color:'#06b6d4',props:{Name:'DayNight',CycleMinutes:20,StartHour:6}},
+{id:'Weather',icon:'🌧',name:'Clima',desc:'Chuva e neve',color:'#06b6d4',props:{Name:'Weather',WeatherType:'Chuva'}},
+{id:'Teleport',icon:'🌀',name:'Teleporte',desc:'Sistema de portais',color:'#06b6d4',props:{Name:'Teleport'}},
+{id:'SpawnSystem',icon:'📍',name:'Spawn',desc:'Sistema de spawn',color:'#06b6d4',props:{Name:'SpawnSystem',RespawnTime:5}}]},
+{group:'Admin',icon:'🛡',color:'#8b949e',items:[
+{id:'AdminPanel',icon:'🛡',name:'Admin',desc:'Comandos de admin',color:'#8b949e',props:{Name:'AdminPanel',AdminUserId:0}},
+{id:'AntiCheat',icon:'🔒',name:'Anti-Cheat',desc:'Proteção contra cheats',color:'#8b949e',props:{Name:'AntiCheat',MaxSpeed:50}}]}],
+
+effects:[
+{group:'Partículas',icon:'✨',items:[
+{id:'ParticleEmitter',icon:'✨',name:'ParticleEmitter',color:'#f5c542',props:{Rate:20,Speed:'5',Color:'#ff6b35'}},
+{id:'Smoke',icon:'💨',name:'Smoke',color:'#8b949e',props:{Density:0.5,Color:'#c8c8c8'}},
+{id:'Fire',icon:'🔥',name:'Fire',color:'#ff7b42',props:{Heat:9,Size:5,Color:'#ff6b35'}},
+{id:'Sparkles',icon:'⚡',name:'Sparkles',color:'#f5c542',props:{SparkleColor:'#ffdd00'}}]},
+{group:'Iluminação',icon:'💡',items:[
+{id:'PointLight',icon:'💡',name:'PointLight',color:'#f5c542',props:{Brightness:1,Range:16,Color:'#ffffff'}},
+{id:'Highlight',icon:'✦',name:'Highlight',color:'#9b6dff',props:{FillColor:'#ffffff',OutlineColor:'#ff6b35',FillTransparency:0.5}}]},
+{group:'Pós-processo',icon:'🎨',items:[
+{id:'BloomEffect',icon:'🌸',name:'Bloom',color:'#ff7b42',props:{Intensity:0.5,Size:56}},
+{id:'BlurEffect',icon:'🌫',name:'Blur',color:'#06b6d4',props:{Size:10}}]},
+{group:'Ambiente',icon:'🌍',items:[
+{id:'Atmosphere',icon:'🌫',name:'Atmosphere',color:'#06b6d4',props:{Density:0.3,Color:'#c8d5e8'}},
+{id:'Clouds',icon:'☁️',name:'Clouds',color:'#8b949e',props:{Cover:0.5,Density:0.3,Color:'#dde9f0'}}]}],
+
+templates:[
+{name:'FPS Básico',icon:'🔫',desc:'Arma + movimento + save',tags:['WalkSpeed','Gun','SaveLoad']},
+{name:'RPG Simples',icon:'⚔️',desc:'Espada + XP + NPC + Inimigo',tags:['WalkSpeed','Sword','XPSystem','BasicNPC','Enemy']},
+{name:'Simulator',icon:'💰',desc:'Moedas + Loja + DataStore',tags:['Currency','Shop','SaveLoad','Leaderboard']},
+{name:'Obby',icon:'🏃',desc:'Movimento + Spawn',tags:['WalkSpeed','SpawnSystem']},
+{name:'Battle Royale',icon:'🎯',desc:'Armas + Admin + Spawn',tags:['Gun','AdminPanel','SpawnSystem']},
+{name:'Horror',icon:'👻',desc:'Atmosfera + Inimigo + Boss',tags:['Weather','Enemy','Boss']}],
+
+tabs:[
+{id:'builder',icon:'🔨',label:'Builder'},
+{id:'effects',icon:'✨',label:'Efeitos'},
+{id:'templates',icon:'📦',label:'Templates'},
+{id:'docs',icon:'📖',label:'Docs'}],
+
+docs:{
+sections:[{id:'intro',icon:'🏠',label:'Início'},{id:'builder',icon:'🔨',label:'Builder',section:'Guias'},{id:'effects',icon:'✨',label:'Efeitos',section:'Guias'},{id:'shortcuts',icon:'⌨️',label:'Atalhos',section:'Extra'}],
+content:{
+intro:`<div class="docs-h1">🔨 RoForger Studio</div><div class="docs-lead">Crie scripts Lua para Roblox visualmente. Arraste sistemas, configure propriedades e gere código pronto.</div><div class="docs-grid"><div class="docs-card"><div class="docs-card-icon">🔨</div><div class="docs-card-title">Builder Visual</div><div class="docs-card-desc">Canvas infinito com drag & drop, pan, zoom e minimap.</div></div><div class="docs-card"><div class="docs-card-icon">↩</div><div class="docs-card-title">Undo/Redo</div><div class="docs-card-desc">Ctrl+Z / Ctrl+Y desfaz qualquer ação.</div></div><div class="docs-card"><div class="docs-card-icon">💾</div><div class="docs-card-title">Auto-Save</div><div class="docs-card-desc">Salvo automaticamente no navegador a cada 10s.</div></div><div class="docs-card"><div class="docs-card-icon">🔍</div><div class="docs-card-title">Busca Global</div><div class="docs-card-desc">Ctrl+K abre a paleta de comandos.</div></div></div><div class="docs-tip-box">💡 Dica: arraste sistemas do Explorer para o canvas. Dê duplo clique para adicionar direto.</div>`,
+builder:`<div class="docs-h1">🔨 Builder Visual</div><div class="docs-lead">O Builder é o coração do RoForger. Adicione sistemas como nodes no canvas e conecte-os.</div><div class="docs-h2">Como usar</div><div class="docs-code"><div class="docs-code-header">Passo a passo</div><div class="docs-code-body">1. Arraste um sistema do Explorer (esquerda) para o canvas
+2. Clique no node para selecionar e editar propriedades
+3. Clique em 📜 no node para abrir o Script Builder
+4. Use o modo Guiado para gerar Lua automaticamente
+5. Clique em ⚡ Gerar na topbar para o script completo</div></div><div class="docs-tip-box">💡 Ctrl+D duplica o node selecionado. Delete o remove.</div>`,
+effects:`<div class="docs-h1">✨ Efeitos</div><div class="docs-lead">Visualize efeitos Roblox em tempo real antes de exportar.</div><div class="docs-h2">Como usar</div><div class="docs-code"><div class="docs-code-header">Passo a passo</div><div class="docs-code-body">1. Clique na aba Efeitos na topbar
+2. Selecione um efeito na lista (esquerda)
+3. Ajuste as propriedades no painel direito
+4. Clique em 💾 Salvar para guardar
+5. Clique em ➕ Ao Builder para adicionar ao projeto</div></div>`,
+shortcuts:`<div class="docs-h1">⌨️ Atalhos</div><div class="docs-code"><div class="docs-code-header">Teclado</div><div class="docs-code-body">Ctrl+K     Busca global (Command Palette)
+Ctrl+Z     Desfazer
+Ctrl+Y     Refazer
+Ctrl+D     Duplicar node selecionado
+Ctrl+S     Salvar na nuvem
+Delete     Deletar node selecionado
+Escape     Desselecionar / Fechar
+Scroll     Zoom no canvas
+Mid-click  Pan no canvas</div></div>`}}};
+
+class HistoryManager{
+  constructor(m=50){this.stack=[];this.index=-1;this.max=m}
+  push(a){this.stack=this.stack.slice(0,this.index+1);this.stack.push(a);if(this.stack.length>this.max)this.stack.shift();else this.index++;this.updateUI()}
+  undo(){if(this.index<0)return;this.stack[this.index].undo();this.index--;this.updateUI();App.toast('↩ Desfeito','i')}
+  redo(){if(this.index>=this.stack.length-1)return;this.index++;this.stack[this.index].redo();this.updateUI();App.toast('↪ Refeito','i')}
+  updateUI(){const u=document.getElementById('undo-btn'),r=document.getElementById('redo-btn'),i=document.getElementById('history-info'),b=document.getElementById('undo-bar');u.disabled=this.index<0;r.disabled=this.index>=this.stack.length-1;i.textContent=`${this.index+1}/${this.stack.length}`;b.classList.toggle('show',this.stack.length>0)}
 }
 
-// ── TOAST ─────────────────────────────────────────────
-function toast(msg, type="s") {
-  const w = document.getElementById("toastWrap");
-  const t = document.createElement("div");
-  t.className = `toast ${type}`;
-  t.textContent = (type==="s"?"✔ ":type==="e"?"✖ ":"⚠ ") + msg;
-  w.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
-}
+const App={
+state:{nodes:[],selectedId:null,nodeCounter:1,canvasX:0,canvasY:0,canvasZ:1,isPanning:false,tool:'select',gridSnap:false,showConnections:false,showMinimap:true,savedEffects:[],currentFx:null,currentFxProps:{},fxAnimFrame:null,guidedAnswers:{},scriptTargetId:null,_inited:false},
+history:new HistoryManager(),
 
-// ── CONSOLE LOG ───────────────────────────────────────
-function clog(type, msg) {
-  const b = document.getElementById("btab-console");
-  const t = new Date().toLocaleTimeString("pt-BR",{hour12:false,hour:"2-digit",minute:"2-digit"});
-  const el = document.createElement("div");
-  el.className = "cl";
-  el.innerHTML = `<span class="ct">${t}</span><span class="cm-log ${type}">${msg}</span>`;
-  b.appendChild(el);
-  b.scrollTop = b.scrollHeight;
-}
+init(){
+  if(this.state._inited)return;
+  this.state._inited=true;
+  this.renderTabs();this.explorer.render();this.templates.render();
+  this.canvas.init();this.autosave.init();this.shortcuts.init();
+},
 
-// ── AUTH ──────────────────────────────────────────────
-async function login() {
-  if (!S.fbReady) { toast("Firebase carregando...", "w"); return; }
-  try {
-    const {auth, gp, signInWithPopup} = window._fb;
-    const r = await signInWithPopup(auth, gp);
-    S.user = r.user;
-    await fetchProjects();
-    renderHome();
-    toast(`Bem-vindo, ${r.user.displayName?.split(" ")[0]}! 🎮`);
-  } catch(e) {
-    if (e.code !== "auth/popup-closed-by-user") toast("Erro no login", "e");
+renderTabs(){
+  const c=document.getElementById('main-tabs');c.innerHTML='';
+  DATA.tabs.forEach((t,i)=>{const d=document.createElement('div');d.className='main-tab'+(i===0?' active':'');d.textContent=t.icon+' '+t.label;d.onclick=()=>this.switchView(t.id,d);c.appendChild(d)});
+},
+
+switchView(id,tab){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('v-'+id).classList.add('active');tab.classList.add('active');
+  if(id==='effects')this.fx.init();
+  if(id==='docs')this.docs.init();
+},
+
+toast(msg,type='s'){toast(msg,type)},
+
+explorer:{
+  render(f=''){
+    const b=document.getElementById('explorer-body');b.innerHTML='';
+    DATA.explorer.forEach(g=>{
+      const items=g.items.filter(i=>!f||i.name.toLowerCase().includes(f.toLowerCase())||i.desc.toLowerCase().includes(f.toLowerCase()));
+      if(!items.length)return;
+      const grp=document.createElement('div');grp.className='exp-group';
+      const h=document.createElement('div');h.className='exp-group-header open';
+      h.innerHTML=`<span class="exp-group-icon">${g.icon}</span><span>${g.group}</span><span class="exp-count">${items.length}</span><span class="exp-chevron">▶</span>`;
+      h.onclick=()=>h.classList.toggle('open');grp.appendChild(h);
+      const ch=document.createElement('div');ch.className='exp-children';
+      items.forEach(item=>{
+        const el=document.createElement('div');el.className='exp-item';el.draggable=true;
+        el.innerHTML=`<span class="exp-item-ico">${item.icon}</span><span class="exp-item-name">${item.name}</span>`;
+        el.title=item.desc;
+        el.addEventListener('dragstart',e=>e.dataTransfer.setData('itemId',item.id));
+        el.addEventListener('dblclick',()=>App.nodes.add(item.id,100+App.state.nodes.length*30,80+App.state.nodes.length*20));
+        ch.appendChild(el)
+      });grp.appendChild(ch);b.appendChild(grp);
+    });
+  },
+  filter(v){this.render(v)}
+},
+
+canvas:{
+  init(){
+    const cvs=document.getElementById('infinite-canvas'),vp=document.getElementById('canvas-viewport');
+    cvs.addEventListener('mousedown',e=>{
+      if(App.state.tool==='pan'||e.button===1){App.state.isPanning=true;App.state._panStart={x:e.clientX,y:e.clientY,ox:App.state.canvasX,oy:App.state.canvasY};cvs.style.cursor='grabbing';e.preventDefault()}
+      if(e.target===cvs||e.target===vp)App.nodes.deselectAll();
+    });
+    document.addEventListener('mousemove',e=>{
+      if(App.state.isPanning){const s=App.state._panStart;App.state.canvasX=s.ox+(e.clientX-s.x);App.state.canvasY=s.oy+(e.clientY-s.y);this.updateTransform()}
+      if(App.state._dragging)App.nodes._dragMove(e);
+    });
+    document.addEventListener('mouseup',()=>{
+      if(App.state.isPanning){App.state.isPanning=false;document.getElementById('infinite-canvas').style.cursor=''}
+      if(App.state._dragging){
+        const d=App.state._dragging;const node=App.state.nodes.find(n=>n.uid===d.uid);
+        if(node&&(node.x!==d.startX||node.y!==d.startY)){const fx=node.x,fy=node.y;App.history.push({desc:'Mover '+(node.props.Name||node.type),undo:()=>{node.x=d.startX;node.y=d.startY;App.nodes.renderOne(node)},redo:()=>{node.x=fx;node.y=fy;App.nodes.renderOne(node)}})}
+        App.state._dragging=null;
+      }
+      App.autosave.schedule();
+    });
+    cvs.addEventListener('wheel',e=>{
+      e.preventDefault();const delta=e.deltaY<0?0.1:-0.1;const rect=cvs.getBoundingClientRect();
+      const mx=e.clientX-rect.left,my=e.clientY-rect.top;const prev=App.state.canvasZ;
+      App.state.canvasZ=Math.min(Math.max(App.state.canvasZ+delta,0.15),3);
+      App.state.canvasX=mx-(mx-App.state.canvasX)*(App.state.canvasZ/prev);
+      App.state.canvasY=my-(my-App.state.canvasY)*(App.state.canvasZ/prev);
+      this.updateTransform();
+    },{passive:false});
+    cvs.addEventListener('dragover',e=>e.preventDefault());
+    cvs.addEventListener('drop',e=>{
+      e.preventDefault();const id=e.dataTransfer.getData('itemId');if(!id)return;
+      const rect=cvs.getBoundingClientRect();
+      const x=Math.round((e.clientX-rect.left-App.state.canvasX)/App.state.canvasZ);
+      const y=Math.round((e.clientY-rect.top-App.state.canvasY)/App.state.canvasZ);
+      App.nodes.add(id,x,y);
+    });
+  },
+  updateTransform(){
+    document.getElementById('canvas-viewport').style.transform=`translate(${App.state.canvasX}px,${App.state.canvasY}px) scale(${App.state.canvasZ})`;
+    document.getElementById('zoom-lbl').textContent=Math.round(App.state.canvasZ*100)+'%';
+    App.minimap.render();if(App.state.showConnections)App.connections.render();
+  },
+  zoom(d){App.state.canvasZ=Math.min(Math.max(App.state.canvasZ+d,0.15),3);this.updateTransform()},
+  resetView(){App.state.canvasX=0;App.state.canvasY=0;App.state.canvasZ=1;this.updateTransform()},
+  setTool(t,el){App.state.tool=t;document.querySelectorAll('.tb-btn[id^=tb-]').forEach(b=>b.classList.remove('active'));el.classList.add('active');document.getElementById('infinite-canvas').style.cursor=t==='pan'?'grab':''},
+  toggleGrid(){App.state.gridSnap=!App.state.gridSnap;document.getElementById('tb-grid').classList.toggle('active',App.state.gridSnap)}
+},
+
+nodes:{
+  _findItem(id){for(const g of DATA.explorer){const i=g.items.find(x=>x.id===id);if(i)return i}return null},
+  add(itemId,x=100,y=100){
+    const item=this._findItem(itemId);if(!item)return;
+    const node={uid:App.state.nodeCounter++,type:itemId,x,y,props:JSON.parse(JSON.stringify(item.props)),script:'',color:item.color,icon:item.icon};
+    App.state.nodes.push(node);this.renderOne(node);this._updateCount();this.select(node.uid);
+    App.history.push({desc:'Add '+item.name,undo:()=>this.remove(node.uid,true),redo:()=>{App.state.nodes.push(node);this.renderOne(node);this._updateCount()}});
+    App.toast(item.icon+' '+item.name+' adicionado');App.autosave.schedule();
+  },
+  renderOne(node){
+    const vp=document.getElementById('canvas-viewport');let div=document.getElementById('n-'+node.uid);
+    if(!div){div=document.createElement('div');div.id='n-'+node.uid;div.className='canvas-node';
+      div.addEventListener('mousedown',e=>{
+        if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;
+        if(e.target.closest('.node-act'))return;
+        e.stopPropagation();this.select(node.uid);
+        if(App.state.tool==='select'){const rect=div.getBoundingClientRect();App.state._dragging={uid:node.uid,offX:(e.clientX-rect.left)/App.state.canvasZ,offY:(e.clientY-rect.top)/App.state.canvasZ,startX:node.x,startY:node.y}}
+      });vp.appendChild(div)}
+    div.style.left=node.x+'px';div.style.top=node.y+'px';div.classList.toggle('selected',node.uid===App.state.selectedId);
+    const has=!!node.script;
+    const propsHTML=Object.entries(node.props).slice(0,4).map(([k,v])=>`<div class="node-prop-row"><span class="node-prop-label">${k}</span><input class="node-prop-input" value="${v}" onchange="App.nodes.setProp(${node.uid},'${k}',this.value)" onclick="event.stopPropagation()"/></div>`).join('');
+    div.innerHTML=`<div class="node-header"><div class="node-icon" style="background:${node.color}18;color:${node.color}">${node.icon}</div><div class="node-title-area"><div class="node-name">${node.props.Name||node.type}</div><div class="node-type">${node.type}</div></div><div class="node-actions"><div class="node-act" onclick="App.scripts.openFor(${node.uid})">📜</div><div class="node-act" onclick="App.nodes.duplicate(${node.uid})">⧉</div><div class="node-act danger" onclick="App.nodes.remove(${node.uid})">✕</div></div></div><div class="node-body">${propsHTML}<div class="node-script-badge ${has?'has':''}" onclick="App.scripts.openFor(${node.uid})">${has?'✓ Script definido':'＋ Adicionar Script'}</div></div>`;
+  },
+  _dragMove(e){
+    const d=App.state._dragging;if(!d)return;const node=App.state.nodes.find(n=>n.uid===d.uid);if(!node)return;
+    const cvs=document.getElementById('infinite-canvas');const rect=cvs.getBoundingClientRect();
+    let nx=Math.round((e.clientX-rect.left)/App.state.canvasZ-App.state.canvasX/App.state.canvasZ-d.offX);
+    let ny=Math.round((e.clientY-rect.top)/App.state.canvasZ-App.state.canvasY/App.state.canvasZ-d.offY);
+    if(App.state.gridSnap){nx=Math.round(nx/24)*24;ny=Math.round(ny/24)*24}
+    node.x=nx;node.y=ny;const div=document.getElementById('n-'+node.uid);
+    if(div){div.style.left=nx+'px';div.style.top=ny+'px'}
+    App.props.updatePos(node);App.minimap.render();
+  },
+  setProp(uid,key,val){
+    const node=App.state.nodes.find(n=>n.uid===uid);if(!node)return;
+    const old=node.props[key];node.props[key]=isNaN(val)||val===''?val:Number(val);
+    this.renderOne(node);if(App.state.selectedId===uid)App.props.render();
+    App.history.push({desc:`Editar ${key}`,undo:()=>{node.props[key]=old;this.renderOne(node);App.props.render()},redo:()=>{node.props[key]=isNaN(val)||val===''?val:Number(val);this.renderOne(node);App.props.render()}});
+    App.autosave.schedule();
+  },
+  select(uid){App.state.selectedId=uid;App.state.nodes.forEach(n=>{const d=document.getElementById('n-'+n.uid);if(d)d.classList.toggle('selected',n.uid===uid)});App.props.render()},
+  deselectAll(){App.state.selectedId=null;App.state.nodes.forEach(n=>{const d=document.getElementById('n-'+n.uid);if(d)d.classList.remove('selected')});App.props.render()},
+  remove(uid,silent=false){
+    const node=App.state.nodes.find(n=>n.uid===uid);const div=document.getElementById('n-'+uid);if(div)div.remove();
+    App.state.nodes=App.state.nodes.filter(n=>n.uid!==uid);
+    if(App.state.selectedId===uid){App.state.selectedId=null;App.props.render()}
+    this._updateCount();
+    if(!silent&&node){App.history.push({desc:'Deletar '+(node.props.Name||node.type),undo:()=>{App.state.nodes.push(node);this.renderOne(node);this._updateCount()},redo:()=>this.remove(uid,true)})}
+    App.autosave.schedule();
+  },
+  deleteSelected(){if(App.state.selectedId)this.remove(App.state.selectedId)},
+  duplicate(uid){
+    const node=App.state.nodes.find(n=>n.uid===uid);if(!node)return;
+    const copy=JSON.parse(JSON.stringify(node));copy.uid=App.state.nodeCounter++;copy.x+=40;copy.y+=40;copy.props.Name=(copy.props.Name||copy.type)+'_copy';
+    App.state.nodes.push(copy);this.renderOne(copy);this._updateCount();this.select(copy.uid);
+    App.history.push({desc:'Duplicar',undo:()=>this.remove(copy.uid,true),redo:()=>{App.state.nodes.push(copy);this.renderOne(copy);this._updateCount()}});
+    App.autosave.schedule();
+  },
+  duplicateSelected(){if(App.state.selectedId)this.duplicate(App.state.selectedId)},
+  _updateCount(){document.getElementById('node-count').textContent=App.state.nodes.length+' elemento'+(App.state.nodes.length!==1?'s':'')}
+},
+
+props:{
+  render(){
+    const body=document.getElementById('props-body'),typeEl=document.getElementById('props-type'),sb=document.getElementById('add-script-btn');
+    if(!App.state.selectedId){body.innerHTML='<div class="props-empty">Selecione um<br>elemento no canvas</div>';typeEl.textContent='';sb.classList.remove('show');return}
+    const node=App.state.nodes.find(n=>n.uid===App.state.selectedId);if(!node)return;
+    typeEl.textContent=node.type;sb.classList.add('show');body.innerHTML='';
+    const pos=document.createElement('div');pos.className='props-section';
+    pos.innerHTML=`<div class="props-section-title">Posição</div><div class="prop-row"><span class="prop-lbl">X</span><input class="prop-in" id="px" type="number" value="${Math.round(node.x)}" onchange="App.props.setCoord('x',this.value)"/></div><div class="prop-row"><span class="prop-lbl">Y</span><input class="prop-in" id="py" type="number" value="${Math.round(node.y)}" onchange="App.props.setCoord('y',this.value)"/></div>`;
+    body.appendChild(pos);
+    const sec=document.createElement('div');sec.className='props-section';sec.innerHTML='<div class="props-section-title">Propriedades</div>';
+    Object.entries(node.props).forEach(([k,v])=>{const row=document.createElement('div');row.className='prop-row';const isBool=typeof v==='boolean';row.innerHTML=`<span class="prop-lbl">${k}</span>${isBool?`<div class="toggle ${v?'on':''}" onclick="this.classList.toggle('on');App.nodes.setProp(${node.uid},'${k}',this.classList.contains('on'))"></div>`:`<input class="prop-in" value="${v}" onchange="App.nodes.setProp(${node.uid},'${k}',this.value)"/>`}`;sec.appendChild(row)});
+    body.appendChild(sec);
+  },
+  setCoord(c,v){const node=App.state.nodes.find(n=>n.uid===App.state.selectedId);if(!node)return;node[c]=parseInt(v)||0;const div=document.getElementById('n-'+node.uid);if(div){div.style.left=node.x+'px';div.style.top=node.y+'px'}},
+  updatePos(node){const px=document.getElementById('px'),py=document.getElementById('py');if(px)px.value=Math.round(node.x);if(py)py.value=Math.round(node.y)}
+},
+
+minimap:{
+  toggle(){App.state.showMinimap=!App.state.showMinimap;document.getElementById('minimap').style.display=App.state.showMinimap?'block':'none'},
+  render(){
+    if(!App.state.showMinimap)return;const canvas=document.getElementById('minimap-canvas'),ctx=canvas.getContext('2d');ctx.clearRect(0,0,160,100);if(!App.state.nodes.length)return;
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    App.state.nodes.forEach(n=>{minX=Math.min(minX,n.x);minY=Math.min(minY,n.y);maxX=Math.max(maxX,n.x+210);maxY=Math.max(maxY,n.y+120)});
+    const pad=40;minX-=pad;minY-=pad;maxX+=pad;maxY+=pad;const rX=maxX-minX||1,rY=maxY-minY||1,scale=Math.min(160/rX,100/rY);
+    App.state.nodes.forEach(n=>{ctx.fillStyle=n.color+'88';ctx.fillRect((n.x-minX)*scale,(n.y-minY)*scale,Math.max(4,210*scale),Math.max(3,60*scale))});
   }
-}
-async function logout() {
-  if (!S.fbReady) return;
-  await window._fb.signOut(window._fb.auth);
-  S.user = null; S.projects = [];
-  renderHome(); toast("Até logo! 👋", "w");
-}
+},
 
-// ── FIRESTORE ─────────────────────────────────────────
-async function fetchProjects() {
-  if (!S.user || !S.fbReady) return;
-  try {
-    const {db, collection, query, where, orderBy, getDocs} = window._fb;
-    const q = query(collection(db,"projects"), where("uid","==",S.user.uid), orderBy("updatedAt","desc"));
-    const snap = await getDocs(q);
-    S.projects = snap.docs.map(d => ({id: d.id, ...d.data()}));
-  } catch(e) { console.warn(e); }
-}
-async function saveToCloud(proj) {
-  if (!S.user || !S.fbReady) return null;
-  try {
-    const {db, collection, addDoc, doc, updateDoc} = window._fb;
-    if (proj.id && !proj.id.startsWith("demo-")) {
-      await updateDoc(window._fb.doc(db,"projects",proj.id), proj);
-      return proj.id;
-    } else {
-      const ref = await addDoc(collection(db,"projects"), proj);
-      return ref.id;
+connections:{
+  toggle(){App.state.showConnections=!App.state.showConnections;this.render()},
+  render(){
+    const svg=document.getElementById('connections-svg');if(!App.state.showConnections){svg.innerHTML='';return}
+    let lines='';const ns=App.state.nodes;
+    for(let i=0;i<ns.length;i++)for(let j=i+1;j<ns.length;j++)if(ns[i].color===ns[j].color){const x1=ns[i].x+105,y1=ns[i].y+60,x2=ns[j].x+105,y2=ns[j].y+60,mx=(x1+x2)/2;lines+=`<path class="conn-line" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"/>`}
+    svg.innerHTML=lines;
+  }
+},
+
+fx:{
+  init(){this.renderList()},
+  renderList(f=''){
+    const list=document.getElementById('fx-list');list.innerHTML='';
+    DATA.effects.forEach(g=>{
+      const items=g.items.filter(i=>!f||i.name.toLowerCase().includes(f.toLowerCase()));if(!items.length)return;
+      const t=document.createElement('div');t.className='fx-group-title';t.textContent=g.icon+' '+g.group;list.appendChild(t);
+      items.forEach(fx=>{const d=document.createElement('div');d.className='fx-item';d.id='fxi-'+fx.id;d.innerHTML=`<div class="fx-ico" style="background:${fx.color}18;color:${fx.color}">${fx.icon}</div><span>${fx.name}</span>`;d.onclick=()=>this.select(fx);list.appendChild(d)});
+    });
+  },
+  filter(v){this.renderList(v)},
+  select(fx){
+    document.querySelectorAll('.fx-item').forEach(i=>i.classList.remove('active'));const el=document.getElementById('fxi-'+fx.id);if(el)el.classList.add('active');
+    App.state.currentFx=fx;App.state.currentFxProps=JSON.parse(JSON.stringify(fx.props));
+    document.getElementById('fx-current').textContent=fx.icon+' '+fx.name;
+    this.renderProps(fx);this.startPreview(fx);
+  },
+  renderProps(fx){
+    document.getElementById('fx-props-title').textContent=fx.icon+' '+fx.name;document.getElementById('fx-props-sub').textContent=fx.id;
+    const body=document.getElementById('fx-props-body');body.innerHTML='';const sec=document.createElement('div');sec.className='fx-prop-section';sec.innerHTML='<div class="fx-prop-section-title">Propriedades</div>';
+    Object.entries(fx.props).forEach(([k,v])=>{
+      const row=document.createElement('div');row.className='fx-prop-row';const isColor=typeof v==='string'&&v.startsWith('#');const isNum=typeof v==='number';
+      if(isColor){row.innerHTML=`<div class="fx-prop-lbl">${k}</div><div style="display:flex;gap:5px;"><input type="color" value="${v}" style="width:28px;height:24px;border-radius:4px;cursor:pointer;border:1px solid rgba(255,255,255,.1);" oninput="App.state.currentFxProps['${k}']=this.value"/><input class="input" value="${v}" style="flex:1;" oninput="App.state.currentFxProps['${k}']=this.value"/></div>`}
+      else if(isNum){const max=k.toLowerCase().includes('range')?100:k.toLowerCase().includes('rate')?200:10;row.innerHTML=`<div class="fx-prop-lbl">${k} <span id="fxv-${k}">${v}</span></div><input class="fx-slider" type="range" min="0" max="${max}" step="0.1" value="${v}" oninput="App.state.currentFxProps['${k}']=parseFloat(this.value);document.getElementById('fxv-${k}').textContent=this.value"/>`}
+      else{row.innerHTML=`<div class="fx-prop-lbl">${k}</div><input class="input" value="${v}" oninput="App.state.currentFxProps['${k}']=this.value"/>`}
+      sec.appendChild(row);
+    });body.appendChild(sec);
+  },
+  startPreview(fx){
+    if(App.state.fxAnimFrame)cancelAnimationFrame(App.state.fxAnimFrame);
+    const cvs=document.getElementById('fx-canvas'),ctx=cvs.getContext('2d');let particles=[],frame=0;
+    const hexToRgb=hex=>{hex=(hex||'#fff').replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);return[(n>>16)&255,(n>>8)&255,n&255]};
+    const rgba=(hex,a)=>{const[r,g,b]=hexToRgb(hex);return`rgba(${r},${g},${b},${a})`};
+    const loop=()=>{
+      const p=App.state.currentFxProps;ctx.clearRect(0,0,320,320);ctx.fillStyle='#050810';ctx.fillRect(0,0,320,320);
+      const isPart=['ParticleEmitter','Fire','Smoke','Sparkles'].includes(fx.id);
+      if(isPart){
+        const rate=Math.min(Number(p.Rate||20),120);if(frame%Math.max(1,Math.round(60/rate))===0){const spd=3+Math.random()*5;const angle=Math.PI*2*Math.random();particles.push({x:160,y:(fx.id==='Fire'||fx.id==='Smoke')?280:160,vx:Math.cos(angle)*spd,vy:(fx.id==='Fire'||fx.id==='Smoke')?-spd*2:Math.sin(angle)*spd,life:80,maxLife:80,sz:2+Math.random()*5})}
+        frame++;particles=particles.filter(pt=>pt.life>0);
+        particles.forEach(pt=>{pt.x+=pt.vx;pt.y+=pt.vy;pt.life--;const t=pt.life/pt.maxLife;ctx.globalAlpha=t;const color=p.Color||p.SparkleColor||'#ff6b35';
+          if(fx.id==='Fire'){const g=ctx.createRadialGradient(pt.x,pt.y,0,pt.x,pt.y,pt.sz*(1+t));g.addColorStop(0,'rgba(255,255,255,.8)');g.addColorStop(0.3,color);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.beginPath();ctx.arc(pt.x,pt.y,pt.sz*(1+t),0,Math.PI*2);ctx.fill()}
+          else if(fx.id==='Smoke'){ctx.fillStyle=p.Color||'#c8c8c8';ctx.beginPath();ctx.arc(pt.x,pt.y,pt.sz*(2-t),0,Math.PI*2);ctx.fill()}
+          else if(fx.id==='Sparkles'){ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(pt.x-pt.sz,pt.y);ctx.lineTo(pt.x+pt.sz,pt.y);ctx.stroke();ctx.beginPath();ctx.moveTo(pt.x,pt.y-pt.sz);ctx.lineTo(pt.x,pt.y+pt.sz);ctx.stroke()}
+          else{ctx.fillStyle=color;ctx.beginPath();ctx.arc(pt.x,pt.y,pt.sz*t,0,Math.PI*2);ctx.fill()}
+          ctx.globalAlpha=1;});
+      }else if(fx.id==='PointLight'){const range=Math.min(Number(p.Range||16)*4,150);const br=Math.min(Number(p.Brightness||1),3);const color=p.Color||'#ffffff';const g=ctx.createRadialGradient(160,160,0,160,160,range);g.addColorStop(0,rgba(color,br*.9));g.addColorStop(0.4,rgba(color,br*.3));g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fillRect(0,0,320,320);ctx.fillStyle=rgba(color,1);ctx.beginPath();ctx.arc(160,160,6,0,Math.PI*2);ctx.fill()}
+      else if(fx.id==='BloomEffect'){const intensity=Number(p.Intensity||0.5);const size=Number(p.Size||56);[{x:160,y:160,r:22,c:'#fff'},{x:90,y:110,r:14,c:'#ff9900'},{x:230,y:200,r:16,c:'#4d8fff'}].forEach(o=>{ctx.fillStyle=o.c;ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);ctx.fill();if(intensity>0.1){const g=ctx.createRadialGradient(o.x,o.y,o.r,o.x,o.y,o.r+size*intensity);g.addColorStop(0,rgba(o.c,intensity*.6));g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.beginPath();ctx.arc(o.x,o.y,o.r+size*intensity,0,Math.PI*2);ctx.fill()}})}
+      else if(fx.id==='Atmosphere'){const density=Number(p.Density||0.3);const color=p.Color||'#c8d5e8';const g=ctx.createLinearGradient(0,0,0,320);g.addColorStop(0,'#08101e');g.addColorStop(0.5,rgba(color,density*.7));g.addColorStop(1,rgba(color,density));ctx.fillStyle=g;ctx.fillRect(0,0,320,320)}
+      else{ctx.strokeStyle=p.OutlineColor||p.Color||'#fff';ctx.lineWidth=2;ctx.strokeRect(60,60,200,200)}
+      App.state.fxAnimFrame=requestAnimationFrame(loop);
+    };loop();
+  },
+  save(){if(!App.state.currentFx){App.toast('Selecione um efeito!','e');return}const name=prompt('Nome para salvar:',App.state.currentFx.name);if(!name)return;App.state.savedEffects.push({id:Date.now(),name,type:App.state.currentFx.id,icon:App.state.currentFx.icon,color:App.state.currentFx.color,props:JSON.parse(JSON.stringify(App.state.currentFxProps))});this._renderSaved();App.toast('💾 Efeito salvo!')},
+  _renderSaved(){const list=document.getElementById('fx-saved-list');if(!App.state.savedEffects.length){list.innerHTML='<div style="font-size:10px;color:var(--dark);padding:6px;">Nenhum salvo.</div>';return}list.innerHTML='';App.state.savedEffects.forEach(s=>{const d=document.createElement('div');d.className='fx-saved-item';d.innerHTML=`<span class="fx-saved-dot" style="background:${s.color}"></span>${s.icon} ${s.name}`;list.appendChild(d)})},
+  addToBuilder(){if(!App.state.currentFx){App.toast('Selecione!','e');return}App.switchView('builder',document.querySelector('.main-tab'));App.toast(App.state.currentFx.icon+' adicionado ao Builder!')},
+  reset(){if(!App.state.currentFx)return;const o=DATA.effects.flatMap(g=>g.items).find(i=>i.id===App.state.currentFx.id);if(o){App.state.currentFxProps=JSON.parse(JSON.stringify(o.props));this.renderProps(o)}}
+},
+
+templates:{
+  render(){
+    const grid=document.getElementById('templates-grid');grid.innerHTML='';
+    DATA.templates.forEach(t=>{const card=document.createElement('div');card.className='tpl-card';card.innerHTML=`<div class="tpl-icon">${t.icon}</div><div class="tpl-name">${t.name}</div><div class="tpl-desc">${t.desc}</div><div class="tpl-tags">${t.tags.map(tag=>`<span class="tpl-tag">${tag}</span>`).join('')}</div>`;card.onclick=()=>this.load(t);grid.appendChild(card)});
+  },
+  load(t){
+    if(App.state.nodes.length&&!confirm('Substituir canvas atual?'))return;
+    App.state.nodes.forEach(n=>{const d=document.getElementById('n-'+n.uid);if(d)d.remove()});App.state.nodes=[];
+    t.tags.forEach((id,i)=>App.nodes.add(id,80+i*60,80+i*40));
+    App.switchView('builder',document.querySelector('.main-tab'));App.toast('📦 '+t.name+' carregado!');
+  }
+},
+
+docs:{
+  init(){
+    const nav=document.getElementById('docs-nav-links');nav.innerHTML='';let last=null;
+    DATA.docs.sections.forEach(item=>{if(item.section&&item.section!==last){const s=document.createElement('div');s.className='docs-nav-section';s.textContent=item.section;nav.appendChild(s);last=item.section}const el=document.createElement('div');el.className='docs-nav-item'+(item.id==='intro'?' active':'');el.id='dn-'+item.id;el.innerHTML=`<span style="font-size:14px">${item.icon}</span>${item.label}`;el.onclick=()=>this.show(item.id);nav.appendChild(el)});
+    this.show('intro');
+  },
+  show(id){document.querySelectorAll('.docs-nav-item').forEach(el=>el.classList.remove('active'));const nav=document.getElementById('dn-'+id);if(nav)nav.classList.add('active');document.getElementById('docs-content').innerHTML=DATA.docs.content[id]||'<div style="color:var(--dim);padding:20px;">Em breve.</div>'}
+},
+
+cmdPalette:{
+  open(){document.getElementById('cmd-palette').classList.add('open');const i=document.getElementById('cmd-input');i.value='';i.focus();this.search('')},
+  close(){document.getElementById('cmd-palette').classList.remove('open')},
+  search(q){
+    const r=document.getElementById('cmd-results');r.innerHTML='';
+    const all=[...DATA.explorer.flatMap(g=>g.items.map(i=>({icon:i.icon,name:i.name,desc:g.group+' · '+i.desc,color:i.color,action:()=>{App.nodes.add(i.id,100+App.state.nodes.length*30,100);this.close()}}))),
+      {icon:'🗑',name:'Limpar Canvas',desc:'Remove todos os elementos',action:()=>App.project.clear()},
+      {icon:'📤',name:'Exportar JSON',desc:'Baixar projeto',action:()=>App.project.exportJSON()},
+      {icon:'⚡',name:'Gerar Script',desc:'Script completo do projeto',action:()=>App.scripts.openGlobal()},
+      {icon:'↩',name:'Desfazer',desc:'Ctrl+Z',action:()=>App.history.undo()},
+      {icon:'↪',name:'Refazer',desc:'Ctrl+Y',action:()=>App.history.redo()},
+      {icon:'✨',name:'Ir para Efeitos',desc:'Aba de efeitos',action:()=>{App.switchView('effects',document.querySelectorAll('.main-tab')[1]);this.close()}},
+      {icon:'📦',name:'Ir para Templates',desc:'Aba de templates',action:()=>{App.switchView('templates',document.querySelectorAll('.main-tab')[2]);this.close()}},
+    ];
+    const filtered=q?all.filter(i=>i.name.toLowerCase().includes(q.toLowerCase())||(i.desc||'').toLowerCase().includes(q.toLowerCase())):all.slice(0,12);
+    filtered.forEach(item=>{const d=document.createElement('div');d.className='cmd-item';d.innerHTML=`<div class="cmd-item-icon" style="background:${item.color||'rgba(255,77,26,.08)'};color:${item.color||'var(--acc)'}">${item.icon}</div><div><div class="cmd-item-name">${item.name}</div><div class="cmd-item-desc">${item.desc||''}</div></div>`;d.onclick=()=>{item.action();this.close()};r.appendChild(d)});
+  },
+  onKey(e){if(e.key==='Escape')this.close();if(e.key==='Enter'){const f=document.querySelector('.cmd-item');if(f)f.click()}}
+},
+
+scripts:{
+  openForSelected(){if(App.state.selectedId)this.openFor(App.state.selectedId)},
+  openFor(uid){
+    App.state.scriptTargetId=uid;const node=App.state.nodes.find(n=>n.uid===uid);if(!node)return;
+    document.getElementById('smodal-title').textContent='📜 '+(node.props.Name||node.type);
+    this._buildGuided(node);document.getElementById('code-area').value=node.script||'-- Escreva Lua aqui\nlocal element = script.Parent';
+    document.getElementById('smodal').classList.add('open');App.state.guidedAnswers={};
+  },
+  closeModal(){document.getElementById('smodal').classList.remove('open')},
+  switchTab(btn,id){document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.stab-body').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById(id).classList.add('active');if(id==='s-output')this.generate()},
+  _buildGuided(node){
+    const scroll=document.getElementById('guided-scroll');const qs=this._getQ(node.type);scroll.innerHTML='';
+    qs.forEach((q,i)=>{const block=document.createElement('div');block.className='q-block';block.innerHTML=`<div class="q-title"><span class="q-num">${i+1}</span>${q.q}</div><div class="q-opts"></div>`;q.opts.forEach(opt=>{const btn=document.createElement('div');btn.className='q-opt';btn.textContent=opt;btn.onclick=()=>{block.querySelectorAll('.q-opt').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');App.state.guidedAnswers[q.id]=opt};block.querySelector('.q-opts').appendChild(btn)});scroll.appendChild(block)});
+  },
+  _getQ(type){const m={WalkSpeed:[{id:'sprint',q:'Ter sprint?',opts:['Sim (Shift)','Não']},{id:'crouch',q:'Agachamento?',opts:['Sim (Ctrl)','Não']}],Dash:[{id:'key',q:'Tecla do Dash?',opts:['Q','E','Shift','F']}],Enemy:[{id:'ai',q:'Tipo de IA?',opts:['Perseguir','Patrulhar','Ficar parado']}],Currency:[{id:'save',q:'Salvar dados?',opts:['Sim (DataStore)','Não']}],SaveLoad:[{id:'scope',q:'O que salvar?',opts:['Leaderstats','Inventário','Tudo']}],Gun:[{id:'mode',q:'Modo de tiro?',opts:['Semi-auto','Automático','Burst']}]};return m[type]||[{id:'info',q:'Gerar script padrão para este sistema?',opts:['Sim, gerar!']}]},
+  generate(){const node=App.state.nodes.find(n=>n.uid===App.state.scriptTargetId);if(!node){document.getElementById('output-pre').textContent='-- Selecione um elemento';return}const code=this._buildLua(node);document.getElementById('output-pre').innerHTML=syntaxHL(code);window._finalScript=code;node.script=code;App.nodes.renderOne(node);document.querySelectorAll('.stab').forEach((b,i)=>b.classList.toggle('active',i===2));document.querySelectorAll('.stab-body').forEach((b,i)=>b.classList.toggle('active',i===2))},
+  _buildLua(node){
+    const p=node.props,a=App.state.guidedAnswers,L=[];
+    L.push(`-- RoForger Studio · ${node.type} · ${p.Name||node.type}`);L.push(`-- 📍 Onde colocar: StarterPlayerScripts (LocalScript) ou ServerScriptService (Script)`);L.push(`local Players = game:GetService("Players")`);L.push(`local TweenService = game:GetService("TweenService")`);L.push(`local UIS = game:GetService("UserInputService")`);L.push(`local RunService = game:GetService("RunService")`);L.push('');
+    switch(node.type){
+      case'WalkSpeed':L.push(`local DEFAULT=${p.Speed||16}`);L.push(`local SPRINT=${p.SprintSpeed||24}`);L.push(`local JUMP=${p.JumpPower||50}`);L.push('');L.push(`local plr=Players.LocalPlayer`);L.push(`local char=plr.Character or plr.CharacterAdded:Wait()`);L.push(`local hum=char:WaitForChild("Humanoid")`);L.push(`hum.WalkSpeed=DEFAULT; hum.JumpPower=JUMP`);if(a.sprint!=='Não'){L.push('');L.push(`UIS.InputBegan:Connect(function(i,p) if p then return end`);L.push(`  if i.KeyCode==Enum.KeyCode.LeftShift then hum.WalkSpeed=SPRINT end`);L.push(`end)`);L.push(`UIS.InputEnded:Connect(function(i)`);L.push(`  if i.KeyCode==Enum.KeyCode.LeftShift then hum.WalkSpeed=DEFAULT end`);L.push(`end)`)}if(a.crouch==='Sim (Ctrl)'){L.push('');L.push(`UIS.InputBegan:Connect(function(i,p) if p then return end`);L.push(`  if i.KeyCode==Enum.KeyCode.LeftControl then hum.WalkSpeed=${p.CrouchSpeed||6} end`);L.push(`end)`);L.push(`UIS.InputEnded:Connect(function(i)`);L.push(`  if i.KeyCode==Enum.KeyCode.LeftControl then hum.WalkSpeed=DEFAULT end`);L.push(`end)`)}break;
+      case'Dash':L.push(`local POWER=${p.Power||60}`);L.push(`local CD=${p.Cooldown||1}`);L.push(`local canDash=true`);L.push('');L.push(`local char=Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()`);L.push(`local hrp=char:WaitForChild("HumanoidRootPart")`);L.push('');L.push(`UIS.InputBegan:Connect(function(i,p) if p or not canDash then return end`);L.push(`  if i.KeyCode==Enum.KeyCode.${a.key||'Q'} then`);L.push(`    canDash=false`);L.push(`    hrp.Velocity=hrp.CFrame.LookVector*POWER`);L.push(`    task.wait(CD); canDash=true`);L.push(`  end`);L.push(`end)`);break;
+      case'Currency':L.push(`local DS=game:GetService("DataStoreService")`);L.push(`local store=DS:GetDataStore("${p.CoinName||'Coins'}Store")`);L.push('');L.push(`Players.PlayerAdded:Connect(function(plr)`);L.push(`  local ls=Instance.new("Folder"); ls.Name="leaderstats"; ls.Parent=plr`);L.push(`  local coins=Instance.new("IntValue"); coins.Name="${p.CoinName||'Coins'}"; coins.Value=${p.StartAmount||0}; coins.Parent=ls`);if(a.save!=='Não'){L.push(`  local ok,v=pcall(function() return store:GetAsync(tostring(plr.UserId)) end)`);L.push(`  if ok and v then coins.Value=math.min(v,${p.MaxAmount||999999}) end`)}L.push(`end)`);if(a.save!=='Não'){L.push('');L.push(`Players.PlayerRemoving:Connect(function(plr)`);L.push(`  local ls=plr:FindFirstChild("leaderstats")`);L.push(`  if ls then pcall(function() store:SetAsync(tostring(plr.UserId),ls["${p.CoinName||'Coins'}"].Value) end) end`);L.push(`end)`)}break;
+      case'Enemy':L.push(`local HP=${p.HP||100}; local DMG=${p.Damage||10}`);L.push(`local AGGRO=${p.AggroRange||30}; local SPD=${p.Speed||14}`);L.push('');L.push(`local enemy=script.Parent`);L.push(`local hum=enemy:WaitForChild("Humanoid")`);L.push(`local hrp=enemy:WaitForChild("HumanoidRootPart")`);L.push(`hum.MaxHealth=HP; hum.Health=HP; hum.WalkSpeed=SPD`);L.push('');L.push(`RunService.Heartbeat:Connect(function()`);L.push(`  if hum.Health<=0 then return end`);L.push(`  local nearest,dist=nil,AGGRO`);L.push(`  for _,plr in ipairs(Players:GetPlayers()) do`);L.push(`    local ch=plr.Character`);L.push(`    local p=ch and ch:FindFirstChild("HumanoidRootPart")`);L.push(`    if p then local d=(hrp.Position-p.Position).Magnitude; if d<dist then nearest=p; dist=d end end`);L.push(`  end`);L.push(`  if nearest then hum:MoveTo(nearest.Position) end`);L.push(`end)`);L.push('');L.push(`hum.Died:Connect(function() task.wait(3); enemy:Destroy() end)`);break;
+      case'DayNight':L.push(`local Lighting=game:GetService("Lighting")`);L.push(`local CYCLE=${p.CycleMinutes||20}`);L.push(`Lighting.ClockTime=${p.StartHour||6}`);L.push('');L.push(`task.spawn(function()`);L.push(`  local sph=(CYCLE*60)/24`);L.push(`  while true do task.wait(0.1); Lighting.ClockTime=(Lighting.ClockTime+0.1/sph)%24 end`);L.push(`end)`);break;
+      case'SaveLoad':L.push(`local DS=game:GetService("DataStoreService"):GetDataStore("${p.StoreName||'PlayerData'}")`);L.push('');L.push(`local function save(plr)`);L.push(`  local ls=plr:FindFirstChild("leaderstats"); if not ls then return end`);L.push(`  local d={}; for _,v in ipairs(ls:GetChildren()) do d[v.Name]=v.Value end`);L.push(`  pcall(function() DS:SetAsync(tostring(plr.UserId),d) end)`);L.push(`end`);L.push('');L.push(`Players.PlayerAdded:Connect(function(plr)`);L.push(`  local ok,d=pcall(function() return DS:GetAsync(tostring(plr.UserId)) end)`);L.push(`  if ok and d then task.wait(1); local ls=plr:FindFirstChild("leaderstats")`);L.push(`    if ls then for k,v in pairs(d) do local s=ls:FindFirstChild(k); if s then s.Value=v end end end`);L.push(`  end`);L.push(`  task.spawn(function() while plr.Parent do task.wait(${p.AutoSave||60}); save(plr) end end)`);L.push(`end)`);L.push(`Players.PlayerRemoving:Connect(save)`);L.push(`game:BindToClose(function() for _,p in ipairs(Players:GetPlayers()) do save(p) end end)`);break;
+      default:L.push(`-- Sistema: ${p.Name||node.type}`);L.push(`print("[RoForger] ${p.Name||node.type} inicializado")`);
     }
-  } catch(e) { toast("Erro ao salvar na nuvem","e"); return null; }
-}
-async function deleteFromCloud(id) {
-  if (!S.user || !S.fbReady || id.startsWith("demo-")) return;
-  try {
-    const {db, doc, deleteDoc} = window._fb;
-    await deleteDoc(doc(db,"projects",id));
-  } catch(e) {}
-}
+    L.push('');L.push(`-- Gerado pelo RoForger Studio`);return L.join('\n');
+  },
+  insertSnippet(type){const s={click:`element.MouseButton1Click:Connect(function()\n  \nend)`,tween:`local tw=TweenService:Create(element,TweenInfo.new(0.5,Enum.EasingStyle.Quart),{})\ntw:Play()`,remote:`local re=game.ReplicatedStorage:WaitForChild("MeuEvento")\nre:FireServer("arg")`,sound:`local s=Instance.new("Sound"); s.SoundId="rbxassetid://0"; s.Parent=workspace; s:Play()`,ds:`local DS=game:GetService("DataStoreService"):GetDataStore("Store")\nDS:SetAsync(key,value)`};const ta=document.getElementById('code-area');const pos=ta.selectionStart;ta.value=ta.value.slice(0,pos)+'\n'+s[type]+'\n'+ta.value.slice(pos)},
+  async copy(){const code=window._finalScript||document.getElementById('code-area').value;try{await navigator.clipboard.writeText(code);document.getElementById('copy-ok').style.display='block';App.toast('✓ Copiado!');setTimeout(()=>document.getElementById('copy-ok').style.display='none',2000)}catch(e){App.toast('Copie manualmente','e')}},
+  openGlobal(){
+    if(!App.state.nodes.length){App.toast('⚠️ Adicione elementos primeiro!','w');return}
+    const L=[];L.push(`-- RoForger Studio — Projeto Completo`);L.push(`-- ${App.state.nodes.length} sistemas | ${new Date().toLocaleString('pt-BR')}`);L.push(`-- 📍 Coloque em ServerScriptService (Script) ou StarterPlayerScripts (LocalScript)`);L.push('');L.push(`local Players=game:GetService("Players")`);L.push(`local TweenService=game:GetService("TweenService")`);L.push(`local RunService=game:GetService("RunService")`);L.push('');
+    App.state.nodes.forEach(n=>{L.push(`-- ${'─'.repeat(40)}`);L.push(`-- ${n.icon} ${n.props.Name||n.type}`);if(n.script)L.push(n.script);else L.push(`print("[RoForger] ${n.props.Name||n.type} ativo")`);L.push('')});
+    const code=L.join('\n');document.getElementById('gmodal-pre').innerHTML=syntaxHL(code);window._globalScript=code;document.getElementById('gmodal').classList.add('open');
+  },
+  async copyGlobal(){try{await navigator.clipboard.writeText(window._globalScript||'');document.getElementById('gcopy-ok').style.display='block';App.toast('✓ Copiado!');setTimeout(()=>document.getElementById('gcopy-ok').style.display='none',2000)}catch(e){App.toast('Copie manualmente','e')}}
+},
 
-// ── HOME ──────────────────────────────────────────────
-function renderHome() {
-  renderNavUser();
-  renderProjects();
-  document.getElementById("hero-main-btn").textContent = S.user ? "⚡ NOVO PROJETO" : "🔑 ENTRAR COM GOOGLE";
-  document.getElementById("hero-main-btn").onclick = S.user ? () => openModal("new") : login;
-}
-function renderNavUser() {
-  const area = document.getElementById("nav-user-area");
-  if (S.user) {
-    const ph = S.user.photoURL
-      ? `<img src="${S.user.photoURL}" class="nav-av" alt="av"/>`
-      : `<div class="nav-av-ph">${(S.user.displayName||"U")[0]}</div>`;
-    area.innerHTML = `<div class="nav-user" onclick="logout()">${ph}<span class="nav-nm">${S.user.displayName?.split(" ")[0]||"User"}</span></div>`;
-  } else {
-    area.innerHTML = `<button class="nbtn login" onclick="login()">🔑 Entrar com Google</button>`;
-  }
-}
-function renderProjects() {
-  const area = document.getElementById("proj-area");
-  if (!S.user) {
-    area.innerHTML = `<div class="empty"><div class="empty-i">🔒</div><div class="empty-t">LOGIN NECESSÁRIO</div><div class="empty-s">// Entre com Google para salvar projetos</div><br><button class="btn-p" onclick="login()" style="margin:0 auto;display:block">🔑 Entrar com Google</button></div>`;
-    return;
-  }
-  let html = `<div class="proj-grid"><div class="new-card" onclick="openModal('new')"><div class="new-icon">⚡</div><div class="new-lbl">NOVO PROJETO</div></div>`;
-  if (S.projects.length === 0) {
-    html += `</div><div class="empty"><div class="empty-i">🚀</div><div class="empty-t">SEM PROJETOS</div><div class="empty-s">// Crie seu primeiro projeto!</div></div>`;
-  } else {
-    S.projects.forEach(p => {
-      const date = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString("pt-BR") : "Recente";
-      html += `<div class="proj-card">
-        <div class="proj-thumb" style="background:linear-gradient(135deg,${p.color||"rgba(255,77,26,.15)"},rgba(26,140,255,.08))">
-          <span style="position:relative;z-index:1">${p.emoji||"🎮"}</span></div>
-        <div class="proj-body">
-          <div class="proj-name">${p.name}</div>
-          <div class="proj-date">${date}</div>
-          <div class="proj-tags"><span class="ptag">${p.type||"Game"}</span></div>
-        </div>
-        <div class="proj-actions">
-          <button class="pact open" onclick="openProject('${p.id}')">⚡ Abrir</button>
-          <button class="pact del" onclick="askDelete('${p.id}','${p.name}')">🗑️</button>
-        </div></div>`;
-    });
-    html += `</div>`;
-  }
-  area.innerHTML = html;
-}
+project:{
+  clear(){if(!App.state.nodes.length)return;if(!confirm('Limpar todo o canvas?'))return;App.state.nodes.forEach(n=>{const d=document.getElementById('n-'+n.uid);if(d)d.remove()});App.state.nodes=[];App.state.selectedId=null;App.props.render();App.nodes._updateCount();App.autosave.save()},
+  exportJSON(){const d=JSON.stringify({v:3,nodes:App.state.nodes,fx:App.state.savedEffects,c:{x:App.state.canvasX,y:App.state.canvasY,z:App.state.canvasZ}},null,2);const b=new Blob([d],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='roforger-projeto.json';a.click();App.toast('📤 Exportado!')},
+  importJSON(){const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);App.state.nodes.forEach(n=>{const el=document.getElementById('n-'+n.uid);if(el)el.remove()});App.state.nodes=d.nodes||[];App.state.savedEffects=d.fx||[];App.state.nodeCounter=Math.max(...(App.state.nodes.map(n=>n.uid)||[0]),0)+1;if(d.c){App.state.canvasX=d.c.x||0;App.state.canvasY=d.c.y||0;App.state.canvasZ=d.c.z||1}App.state.nodes.forEach(n=>App.nodes.renderOne(n));App.nodes._updateCount();App.canvas.updateTransform();App.toast('📥 Importado! '+App.state.nodes.length+' elementos','i')}catch(err){App.toast('❌ Arquivo inválido','e')}};reader.readAsText(file)};input.click()}
+},
 
-// ── MODAL ─────────────────────────────────────────────
-function openModal(name) {
-  if (name === "new") {
-    document.getElementById("emojiRow").innerHTML = EMOJIS.map(e =>
-      `<span class="emoji-opt${e===S.emoji?" sel":""}" onclick="selectEmoji(this,'${e}')">${e}</span>`
-    ).join("");
-    document.getElementById("np-name").value = "";
-  }
-  document.getElementById("modal-"+name).classList.add("show");
-}
-function closeModal(name) { document.getElementById("modal-"+name).classList.remove("show"); }
-function selectEmoji(el, e) {
-  document.querySelectorAll(".emoji-opt").forEach(x => x.classList.remove("sel"));
-  el.classList.add("sel"); S.emoji = e;
-}
+autosave:{
+  _timer:null,
+  init(){setInterval(()=>this.save(),10000)},
+  schedule(){clearTimeout(this._timer);this._timer=setTimeout(()=>this.save(),2000)},
+  save(){if(!App.state.nodes.length&&!App.state.savedEffects.length)return;try{localStorage.setItem('roforger-v3',JSON.stringify({v:3,nodes:App.state.nodes,fx:App.state.savedEffects,nc:App.state.nodeCounter,c:{x:App.state.canvasX,y:App.state.canvasY,z:App.state.canvasZ}}));const ind=document.getElementById('autosave-indicator');ind.classList.add('show');setTimeout(()=>ind.classList.remove('show'),1500)}catch(e){}}
+},
 
-// ── CREATE PROJECT ─────────────────────────────────────
-async function createProject() {
-  const name = document.getElementById("np-name").value.trim();
-  if (!name) { document.getElementById("np-name").focus(); return; }
-  const type = document.getElementById("np-type").value;
-  const colors = ["rgba(255,77,26,.15)","rgba(26,140,255,.12)","rgba(155,66,255,.12)","rgba(0,255,157,.1)"];
-  const proj = {
-    name, type, emoji: S.emoji, uid: S.user?.uid || "demo",
-    color: colors[Math.floor(Math.random()*colors.length)],
-    updatedAt: Date.now(), createdAt: Date.now(),
-  };
-  closeModal("new");
-  const cloudId = await saveToCloud(proj);
-  proj.id = cloudId || ("demo-" + Date.now());
-  S.projects.unshift(proj);
-  renderProjects();
-  openProject(proj.id);
-  toast(`"${name}" criado! ⚡`);
-}
+loadFromStorage(){
+  try{const raw=localStorage.getItem('roforger-v3');if(!raw)return;const d=JSON.parse(raw);if(!d||!d.nodes||!d.nodes.length)return;App.state.nodes=d.nodes;App.state.savedEffects=d.fx||[];App.state.nodeCounter=d.nc||(Math.max(...d.nodes.map(n=>n.uid),0)+1);if(d.c){App.state.canvasX=d.c.x||0;App.state.canvasY=d.c.y||0;App.state.canvasZ=d.c.z||1}App.state.nodes.forEach(n=>App.nodes.renderOne(n));App.nodes._updateCount();App.canvas.updateTransform();App.toast('💾 Canvas restaurado — '+App.state.nodes.length+' elementos','i')}catch(e){}
+},
 
-// ── DELETE ────────────────────────────────────────────
-function askDelete(id, name) {
-  S.deleteTarget = id;
-  document.getElementById("confirm-msg").textContent = `// Excluir "${name}"? Não pode ser desfeito.`;
-  openModal("confirm");
-}
-async function confirmDelete() {
-  closeModal("confirm");
-  if (!S.deleteTarget) return;
-  await deleteFromCloud(S.deleteTarget);
-  S.projects = S.projects.filter(p => p.id !== S.deleteTarget);
-  renderProjects(); toast("Projeto excluído","w");
-  S.deleteTarget = null;
-}
-
-// ── OPEN / CLOSE PROJECT ──────────────────────────────
-function openProject(id) {
-  const proj = S.projects.find(p => p.id === id);
-  if (!proj) return;
-  S.currentProject = proj;
-  document.getElementById("ed-proj-name").textContent = proj.name;
-  S.simElems = []; S.selectedElem = null; S.sysNodes = [];
-  showScreen("editor");
-  showModule("scripts", document.querySelector(".etab"));
-  clog("s", `✔ "${proj.name}" carregado`);
-  setDevice('pc', document.getElementById('sim-btn-pc'));
-}
-function goHome() { showScreen("home"); }
-
-// ── MODULE TABS ───────────────────────────────────────
-function showModule(name, btn) {
-  // hide all workspaces
-  document.querySelectorAll('.ws-script,.ws-ui,.ws-effects,.ws-generic,.ws-overview')
-    .forEach(w => w.classList.remove('active'));
-  // active tab
-  document.querySelectorAll('.etab').forEach(t => t.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  else {
-    document.querySelectorAll('.etab').forEach(t => {
-      if (t.textContent.toLowerCase().includes(name.substring(0,4))) t.classList.add('active');
+shortcuts:{
+  init(){
+    document.addEventListener('keydown',e=>{
+      if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)){if(e.key==='Escape')document.activeElement.blur();return}
+      if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();App.cmdPalette.open()}
+      if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();App.history.undo()}
+      if((e.ctrlKey||e.metaKey)&&e.key==='y'){e.preventDefault();App.history.redo()}
+      if((e.ctrlKey||e.metaKey)&&e.key==='d'){e.preventDefault();App.nodes.duplicateSelected()}
+      if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();if(S.currentProject)saveProjectToCloud()}
+      if(e.key==='Delete'||e.key==='Backspace')App.nodes.deleteSelected();
+      if(e.key==='Escape'){App.nodes.deselectAll();App.cmdPalette.close();closeModal('smodal');closeModal('gmodal')}
     });
   }
-  S.currentModule = name;
-  // show workspace
-  const wsMap = {
-    scripts:'ws-scripts', interface:'ws-interface', efeitos:'ws-efeitos',
-    sons:'ws-sons', fisica:'ws-fisica', iluminacao:'ws-iluminacao', overview:'ws-overview'
-  };
-  const ws = document.getElementById(wsMap[name]);
-  if (ws) ws.classList.add('active');
-  // update right panel
-  document.getElementById('right-panel-body').innerHTML = RIGHT_PANELS[name] || RIGHT_PANELS.scripts;
-  // update props visibility
-  document.getElementById('props-extra').style.display = name === 'efeitos' ? 'block' : 'none';
-  // update overview code
-  if (name === 'overview') buildOverview();
+}};
+
+async function saveProjectToCloud(){
+  if(!S.user||!S.fbReady)return;
+  const proj=S.projects.find(p=>p.name===document.getElementById('ed-proj-name').textContent);
+  if(proj){proj.updatedAt=Date.now();await saveToCloud(proj);toast('☁️ Salvo na nuvem!')}
 }
 
-// ── PANELS ────────────────────────────────────────────
-function togglePanel(which) {
-  S.panels[which] = !S.panels[which];
-  const on = S.panels[which];
-  if (which === 'left') {
-    document.getElementById('panel-left').classList.toggle('hidden', !on);
-    document.getElementById('ptgl-left').classList.toggle('on', on);
-  } else if (which === 'right') {
-    document.getElementById('panel-right').classList.toggle('hidden', !on);
-    document.getElementById('ptgl-right').classList.toggle('on', on);
-  } else if (which === 'bottom') {
-    document.getElementById('ed-bottom').classList.toggle('hidden', !on);
-    document.getElementById('ptgl-bottom').classList.toggle('on', on);
-  }
-}
-function filterProps(v) {
-  document.querySelectorAll('.prop-row').forEach(r => {
-    r.style.display = r.textContent.toLowerCase().includes(v.toLowerCase()) ? '' : 'none';
-  });
-}
-
-// ── BOTTOM TABS ───────────────────────────────────────
-function switchBtab(btn, id) {
-  document.querySelectorAll('.btab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.bottom-body, .con-wrap').forEach(b => b.style.display = 'none');
-  document.getElementById('btab-' + id).style.display = id === 'console' ? 'flex' : 'block';
-}
-
-// ── DEVICE SIMULATOR ──────────────────────────────────
-function setDevice(dev, btn) {
-  document.querySelectorAll('.ui-tb-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  S.currentDevice = dev;
-  const [w, h, label] = DEVICES[dev];
-  const screen = document.getElementById('sim-screen');
-  const container = document.getElementById('sim-container');
-  screen.style.width = w + 'px';
-  screen.style.height = h + 'px';
-  screen.className = `sim-screen device-frame-${dev}`;
-  document.getElementById('sim-size-label').textContent = label;
-
-  // Scale down elements proportionally
-  adaptSimElems(dev);
-  clog("i", `📱 Simulador: ${label}`);
-}
-
-function adaptSimElems(newDev) {
-  // Get old device dims
-  const oldDevs = Object.keys(DEVICES);
-  const prevDev = oldDevs.find(d => d !== newDev && S.currentDevice !== newDev) || S.currentDevice;
-  const [oldW, oldH] = DEVICES[S.currentDevice] || DEVICES.pc;
-  const [newW, newH] = DEVICES[newDev];
-  const scaleX = newW / oldW;
-  const scaleY = newH / oldH;
-
-  S.simElems.forEach(el => {
-    el.x = Math.round(el.x * scaleX);
-    el.y = Math.round(el.y * scaleY);
-    el.w = Math.max(30, Math.round(el.w * scaleX));
-    el.h = Math.max(16, Math.round(el.h * scaleY));
-  });
-  S.currentDevice = newDev;
-  renderSimulator();
-}
-
-// ── SIMULATOR ─────────────────────────────────────────
-function renderSimulator() {
-  const content = document.getElementById('sim-content');
-  const isEmpty = S.simElems.length === 0;
-  document.getElementById('sim-empty').style.display = isEmpty ? 'flex' : 'none';
-  // Remove old elements (keep sim-empty)
-  content.querySelectorAll('.sim-elem').forEach(e => e.remove());
-  S.simElems.forEach(el => content.appendChild(createSimDomElem(el)));
-}
-
-function createSimDomElem(el) {
-  const div = document.createElement('div');
-  div.className = 'sim-elem' + (S.selectedElem?.id === el.id ? ' selected' : '');
-  div.style.cssText = `left:${el.x}px;top:${el.y}px;width:${el.w}px;height:${el.h}px;background:${el.bg||'rgba(255,77,26,.08)'}`;
-  div.innerHTML = `<div class="sim-elem-label">${el.type}</div><span class="sim-elem-text">${el.name||el.type}</span><div class="resize-handle"></div>`;
-  div.addEventListener('mousedown', e => { if (!e.target.classList.contains('resize-handle')) startDragElem(e, el, div); });
-  div.querySelector('.resize-handle').addEventListener('mousedown', e => startResizeElem(e, el, div));
-  div.addEventListener('click', e => { e.stopPropagation(); selectSimElem(el); });
-  return div;
-}
-
-function addSimElem(type) {
-  const [w, h] = DEVICES[S.currentDevice];
-  const colors = {Frame:'rgba(255,77,26,.08)',TextLabel:'rgba(26,140,255,.08)',TextButton:'rgba(0,255,157,.08)',TextBox:'rgba(155,66,255,.08)',ImageLabel:'rgba(255,140,66,.08)',ImageButton:'rgba(255,45,120,.08)',ScrollingFrame:'rgba(26,140,255,.05)',ViewportFrame:'rgba(155,66,255,.05)'};
-  const id = ++S.elemCounter;
-  const elem = {
-    id, type, name: type + id,
-    x: Math.round(w * 0.2 + (id%5)*12),
-    y: Math.round(h * 0.2 + (id%4)*14),
-    w: Math.round(w * 0.35), h: Math.round(h * 0.2),
-    bg: colors[type] || 'rgba(255,77,26,.08)',
-  };
-  S.simElems.push(elem);
-  document.getElementById('sim-empty').style.display = 'none';
-  document.getElementById('sim-content').appendChild(createSimDomElem(elem));
-  selectSimElem(elem);
-  updateBottomScript(elem);
-  clog("s", `✔ ${type} adicionado`);
-}
-
-function selectSimElem(el) {
-  S.selectedElem = el;
-  document.querySelectorAll('.sim-elem').forEach(d => d.classList.remove('selected'));
-  const domEl = Array.from(document.querySelectorAll('.sim-elem')).find(d => d.querySelector('.sim-elem-label')?.textContent === el.type && d.style.left === el.x+'px');
-  if (domEl) domEl.classList.add('selected');
-  // update props
-  document.getElementById('prop-name').value = el.name || el.type;
-  document.getElementById('prop-px').value = `{${(el.x/DEVICES[S.currentDevice][0]).toFixed(2)}, 0}`;
-  document.getElementById('prop-py').value = `{${(el.y/DEVICES[S.currentDevice][1]).toFixed(2)}, 0}`;
-  document.getElementById('prop-sx').value = `{${(el.w/DEVICES[S.currentDevice][0]).toFixed(2)}, 0}`;
-  document.getElementById('prop-sy').value = `{${(el.h/DEVICES[S.currentDevice][1]).toFixed(2)}, 0}`;
-  updateBottomScript(el);
-}
-
-function startDragElem(e, el, div) {
-  e.preventDefault();
-  const ox = e.clientX - el.x, oy = e.clientY - el.y;
-  const screen = document.getElementById('sim-content').getBoundingClientRect();
-  function move(e) {
-    el.x = Math.max(0, Math.min(e.clientX - ox, DEVICES[S.currentDevice][0] - el.w));
-    el.y = Math.max(0, Math.min(e.clientY - oy, DEVICES[S.currentDevice][1] - el.h));
-    div.style.left = el.x + 'px';
-    div.style.top = el.y + 'px';
-    if (S.selectedElem?.id === el.id) selectSimElem(el);
-  }
-  function up() { document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
-  document.addEventListener('mousemove', move);
-  document.addEventListener('mouseup', up);
-}
-
-function startResizeElem(e, el, div) {
-  e.preventDefault(); e.stopPropagation();
-  const ox = e.clientX - el.w, oy = e.clientY - el.h;
-  function move(e) {
-    el.w = Math.max(30, e.clientX - ox);
-    el.h = Math.max(16, e.clientY - oy);
-    div.style.width = el.w + 'px';
-    div.style.height = el.h + 'px';
-    if (S.selectedElem?.id === el.id) selectSimElem(el);
-  }
-  function up() { document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); }
-  document.addEventListener('mousemove', move);
-  document.addEventListener('mouseup', up);
-}
-
-function clearSimulator() {
-  S.simElems = []; S.selectedElem = null;
-  document.querySelectorAll('.sim-elem').forEach(e => e.remove());
-  document.getElementById('sim-empty').style.display = 'flex';
-}
-
-// Drag from right panel
-function dragElem(e, type) { e.dataTransfer.setData('elemType', type); }
-function dragScript(e, name, type) { e.dataTransfer.setData('scriptName', name); e.dataTransfer.setData('scriptType', type); }
-
-function onSimDrop(e) {
-  e.preventDefault();
-  const type = e.dataTransfer.getData('elemType');
-  if (type) addSimElem(type);
-}
-
-// ── EFFECTS ───────────────────────────────────────────
-function selectEffect(el, name, icon) {
-  document.querySelectorAll('.effect-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('prop-name').value = name;
-  document.getElementById('props-extra').style.display = 'block';
-  updateBottomScript({type: name, name, isEffect: true});
-  clog("s", `✔ Efeito selecionado: ${name}`);
-}
-
-// ── SYSTEM NODES ──────────────────────────────────────
-function addSysNode(name, icon) {
-  S.sysNodes.push({name, icon});
-  toast(`${icon} ${name} adicionado!`);
-  clog("s", `✔ ${name} adicionado ao projeto`);
-}
-
-// ── BOTTOM SCRIPT UPDATE ──────────────────────────────
-function updateBottomScript(el) {
-  const preview = document.getElementById('btab-script-preview');
-  if (!el) return;
-  if (el.isEffect) {
-    const instanceMap = {Fire:'Fire',Smoke:'Smoke',Sparkles:'Sparkles',Explosão:'Explosion',Brilho:'SelectionBox',Trail:'Trail',Chuva:'ParticleEmitter',Gelo:'ParticleEmitter',Magia:'ParticleEmitter',Portal:'ParticleEmitter',Bolhas:'ParticleEmitter',Sangue:'ParticleEmitter'};
-    const inst = instanceMap[el.name] || 'ParticleEmitter';
-    preview.innerHTML = `<span class="cm">-- Efeito: ${el.name}</span>
-<span class="kw">local</span> <span class="var">part</span> = workspace.NomeDaParte
-<span class="kw">local</span> <span class="var">effect</span> = Instance.<span class="fn">new</span>(<span class="str">"${inst}"</span>)
-<span class="var">effect</span>.Parent = <span class="var">part</span>
-<span class="var">effect</span>.Enabled = <span class="kw">true</span>`;
-  } else {
-    preview.innerHTML = `<span class="cm">-- Script para: ${el.name || el.type}</span>
-<span class="kw">local</span> <span class="var">elem</span> = script.Parent
-<span class="var">elem</span>.MouseEnter:<span class="fn">Connect</span>(<span class="kw">function</span>()
-  <span class="var">elem</span>.BackgroundTransparency = <span class="num">0.2</span>
-<span class="kw">end</span>)
-<span class="var">elem</span>.MouseLeave:<span class="fn">Connect</span>(<span class="kw">function</span>()
-  <span class="var">elem</span>.BackgroundTransparency = <span class="num">0</span>
-<span class="kw">end</span>)`;
-  }
-}
-
-// ── CODE EDITOR ───────────────────────────────────────
-function onCodeInput() {
-  const editor = document.getElementById('code-editor');
-  const lines = editor.innerText.split('\n').length;
-  let nums = '';
-  for (let i = 1; i <= Math.max(lines, 20); i++) nums += i + '<br>';
-  document.getElementById('line-nums').innerHTML = nums;
-}
-
-// ── GENERATE OVERVIEW ─────────────────────────────────
-function buildOverview() {
-  const proj = S.currentProject;
-  const name = proj?.name || 'Projeto';
-  const uiElems = S.simElems;
-  let code = `-- ================================================\n-- Gerado pelo RoForger Studio\n-- Projeto: ${name}\n-- ================================================\n\n`;
-
-  if (uiElems.length > 0) {
-    code += `-- 📍 ONDE COLOCAR: StarterPlayerScripts → LocalScript\n-- ✅ POR QUÊ: LocalScripts acessam PlayerGui de cada jogador.\n\n`;
-    code += `local Players = game:GetService("Players")\nlocal player = Players.LocalPlayer\nlocal gui = player.PlayerGui\n\n`;
-    code += `-- Criar ScreenGui\nlocal screenGui = Instance.new("ScreenGui")\nscreenGui.Name = "${name.replace(/\s/g,'')}_GUI"\nscreenGui.Parent = gui\n\n`;
-    uiElems.forEach(el => {
-      const [tw, th] = DEVICES[S.currentDevice];
-      const px = (el.x/tw).toFixed(3), py = (el.y/th).toFixed(3);
-      const sx = (el.w/tw).toFixed(3), sy = (el.h/th).toFixed(3);
-      code += `-- ${el.type}: ${el.name}\nlocal ${el.name} = Instance.new("${el.type}")\n`;
-      code += `${el.name}.Size = UDim2.new(${sx}, 0, ${sy}, 0)\n`;
-      code += `${el.name}.Position = UDim2.new(${px}, 0, ${py}, 0)\n`;
-      code += `${el.name}.Parent = screenGui\n\n`;
-    });
-  } else {
-    code += `-- 📍 ONDE COLOCAR: StarterPlayerScripts → LocalScript\n\n`;
-    code += document.getElementById('code-editor').innerText + '\n';
-  }
-
-  if (S.sysNodes.length > 0) {
-    code += `\n-- === SISTEMAS ADICIONADOS ===\n`;
-    S.sysNodes.forEach(n => { code += `-- ${n.icon} ${n.name}: configurar no objeto correspondente\n`; });
-  }
-
-  document.getElementById('overview-code').textContent = code;
-  const hints = uiElems.length > 0
-    ? `<strong>📍 Onde colocar:</strong> StarterPlayerScripts → LocalScript<br><strong>✅ Por que:</strong> LocalScripts acessam o PlayerGui individualmente para cada jogador.`
-    : `<strong>📍 Onde colocar:</strong> StarterPlayerScripts → LocalScript<br><strong>✅ Por que:</strong> Scripts locais podem acessar a interface e eventos do personagem.`;
-  document.getElementById('overview-hint').innerHTML = hints;
-}
-
-function copyOverviewScript() {
-  const text = document.getElementById('overview-code').textContent;
-  navigator.clipboard.writeText(text).then(() => toast("Script copiado! 📋"));
-}
-
-// ── SAVE ──────────────────────────────────────────────
-async function editorSave() {
-  if (!S.currentProject) return;
-  const updated = {...S.currentProject, updatedAt: Date.now()};
-  S.currentProject = updated;
-  const idx = S.projects.findIndex(p => p.id === updated.id);
-  if (idx >= 0) S.projects[idx] = updated;
-  await saveToCloud(updated);
-  clog("s","✔ Projeto salvo — " + new Date().toLocaleTimeString("pt-BR"));
-  toast("Salvo na nuvem! ☁️");
-}
-
-// ── SETTINGS ──────────────────────────────────────────
-function openSettings() { document.getElementById('settings-overlay').classList.add('show'); }
-function closeSettings() { document.getElementById('settings-overlay').classList.remove('show'); }
-
-function setTheme(name, el) {
-  document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  const themes = {
-    dark:  ['#050810','#0f1629','#141c35','#e8eaf0'],
-    light: ['#f0f2f8','#ffffff','#e8eaf4','#1a1a2e'],
-    blue:  ['#04080f','#081428','#0c1c38','#d0e4ff'],
-  };
-  const [bg,card,hover,txt] = themes[name];
-  document.documentElement.style.setProperty('--bg',bg);
-  document.documentElement.style.setProperty('--card',card);
-  document.documentElement.style.setProperty('--hover',hover);
-  document.documentElement.style.setProperty('--txt',txt);
-  toast(`Tema ${name} aplicado!`);
-}
-
-function setAccent(acc, acc2, el) {
-  document.querySelectorAll('.accent-dot').forEach(d => d.classList.remove('selected'));
-  el.classList.add('selected');
-  document.documentElement.style.setProperty('--acc', acc);
-  document.documentElement.style.setProperty('--acc2', acc2);
-  document.documentElement.style.setProperty('--bord', acc + '33');
-  document.documentElement.style.setProperty('--glow', `0 0 20px ${acc}66`);
-}
-
-// ── KEYBOARD SHORTCUTS ────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (e.ctrlKey || e.metaKey) {
-    if (e.key === 'n') { e.preventDefault(); if (S.user) openModal('new'); else login(); }
-    if (e.key === 's') { e.preventDefault(); editorSave(); }
-    if (e.key === 'g') { e.preventDefault(); showModule('overview'); }
-    if (e.key === ',') { e.preventDefault(); openSettings(); }
-  }
-  if (e.key === 'Escape') { closeSettings(); closeModal('new'); closeModal('confirm'); }
-  if (e.key === 'Delete' && S.selectedElem && S.currentModule === 'interface') {
-    S.simElems = S.simElems.filter(el => el.id !== S.selectedElem.id);
-    S.selectedElem = null; renderSimulator();
-  }
-});
-
-// Click outside deselects sim elem
-document.getElementById('sim-content')?.addEventListener('click', e => {
-  if (e.target === document.getElementById('sim-content') || e.target === document.getElementById('sim-empty')) {
-    S.selectedElem = null;
-    document.querySelectorAll('.sim-elem').forEach(d => d.classList.remove('selected'));
-  }
-});
-
-document.getElementById("btn-new-proj").onclick = () => S.user ? openModal("new") : login();
+function syntaxHL(code){return code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/(--[^\n]*)/g,'<span class="lua-cmt">$1</span>').replace(/\b(local|function|end|if|then|else|elseif|return|for|in|do|while|repeat|until|not|and|or|break)\b/g,'<span class="lua-kw">$1</span>').replace(/\b(true|false|nil)\b/g,'<span class="lua-bool">$1</span>').replace(/("(?:[^"\\]|\\.)*")/g,'<span class="lua-str">$1</span>').replace(/\b(\d+(\.\d+)?)\b/g,'<span class="lua-num">$1</span>')}
 </script>
 </body>
 </html>
