@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#050810"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<link rel="manifest" href="/manifest.json"/>
+<title>RoForger Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;600&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet"/>
+<script type="module" src="/shared.js"></script>
+<script src="/updates.js"></script>
+<style>
+:root{
+  --bg:#050810;--card:#0c1120;--card2:#111828;--hover:#141c35;
+  --acc:#ff4d1a;--acc2:#ff8c42;--acc-glow:rgba(255,77,26,.25);
+  --blue:#1a8cff;--green:#00ff9d;--purple:#9b42ff;--yellow:#ffd600;--cyan:#06b6d4;
+  --txt:#e8eaf0;--dim:#6b7594;--mid:#9ba3c0;--dark:#363a5c;
+  --brd:rgba(255,77,26,.18);--brd2:rgba(255,77,26,.35);
+  --glow:0 0 20px rgba(255,77,26,.4);
+  --r:8px;--tr:.15s cubic-bezier(.4,0,.2,1)
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);font-size:13px;overflow:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:rgba(255,77,26,.3);border-radius:2px}
+
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes pulse{50%{opacity:.4}}
+@keyframes glitch{0%,92%{clip-path:none;transform:none}93%{clip-path:inset(20% 0 30% 0);transform:translateX(-3px)}95%{clip-path:inset(60% 0 10% 0);transform:translateX(3px)}97%{clip-path:none;transform:none}}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 15px var(--acc-glow)}50%{box-shadow:0 0 30px var(--acc-glow),0 0 50px rgba(255,77,26,.1)}}
+@keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}
+
+/* ── Loading ── */
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:9999;transition:opacity .4s}
+.ld-logo{font-family:'Orbitron',monospace;font-size:42px;font-weight:900;color:var(--acc);letter-spacing:6px;text-shadow:var(--glow)}
+.ld-bar{width:180px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.ld-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));background-size:200% 100%;animation:shimmer 1.2s infinite}
+.ld-txt{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:2px}
+
+/* ── Background decorations ── */
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(255,77,26,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,77,26,.025) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse at center,black 20%,transparent 75%)}
+.glow-bg{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 10% 10%,rgba(255,77,26,.07) 0%,transparent 50%),radial-gradient(ellipse at 90% 90%,rgba(26,140,255,.05) 0%,transparent 50%)}
+
+/* ── Layout geral ── */
+#app{display:flex;height:100dvh;overflow:hidden;position:relative;z-index:1;animation:fadeUp .3s ease}
+
+/* ── Sidebar ── */
+#sidebar{width:200px;background:rgba(8,12,22,.97);border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0;z-index:10}
+#sb-logo{padding:16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sb-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--acc),#c93300);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;animation:logoPulse 3s ease-in-out infinite;flex-shrink:0}
+.sb-logo-text{font-family:'Orbitron',monospace;font-size:14px;font-weight:900;color:var(--acc);letter-spacing:2px;animation:glitch 10s infinite}
+.sb-logo-text span{color:var(--acc2)}
+
+#sb-nav{flex:1;padding:10px 0;overflow-y:auto}
+.sb-section{padding:12px 14px 5px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dark)}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;color:var(--dim);font-size:12px;font-weight:600;transition:all var(--tr);border-left:2px solid transparent;user-select:none}
+.sb-item:hover{background:rgba(255,255,255,.04);color:var(--txt)}
+.sb-item.active{background:rgba(255,77,26,.08);color:var(--txt);border-left-color:var(--acc)}
+.sb-item-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.sb-badge{margin-left:auto;background:var(--acc);color:#fff;font-size:9px;font-family:'JetBrains Mono',monospace;padding:1px 6px;border-radius:10px;font-weight:700}
+
+#sb-user{padding:12px 14px;border-top:1px solid rgba(255,255,255,.06)}
+.sb-user-card{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);cursor:pointer;transition:all var(--tr)}
+.sb-user-card:hover{background:rgba(255,77,26,.08);border-color:var(--brd2)}
+.sb-av{width:28px;height:28px;border-radius:50%;border:2px solid var(--acc);object-fit:cover}
+.sb-av-ph{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-name{font-size:11px;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-user-sub{font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.sb-logout{font-size:12px;color:var(--dark);cursor:pointer;transition:color var(--tr)}
+.sb-logout:hover{color:var(--acc)}
+
+/* ── Main content ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Topbar ── */
+#topbar{height:48px;background:rgba(5,8,16,.95);border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;backdrop-filter:blur(10px)}
+#topbar-title{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--txt);letter-spacing:1.5px}
+#topbar-title span{color:var(--acc)}
+.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--r);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all var(--tr);border:none;white-space:nowrap;letter-spacing:.4px}
+.btn:active{transform:scale(.97)}
+.btn-acc{background:linear-gradient(135deg,var(--acc),#c93300);color:#fff;box-shadow:0 4px 15px var(--acc-glow)}
+.btn-acc:hover{filter:brightness(1.1)}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--mid);border:1px solid rgba(255,255,255,.1)}
+.btn-ghost:hover{background:rgba(255,255,255,.09);color:var(--txt)}
+
+/* ── Scrollable area ── */
+#content{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px}
+
+/* ── View panels ── */
+.view{display:none;animation:fadeUp .25s ease}
+.view.active{display:block}
+
+/* ── Stats row ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px;position:relative;overflow:hidden;transition:all var(--tr)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
+.stat-card.acc::before{background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.stat-card.blue::before{background:linear-gradient(90deg,var(--blue),#42b3ff)}
+.stat-card.green::before{background:linear-gradient(90deg,var(--green),#00cc7a)}
+.stat-card.purple::before{background:linear-gradient(90deg,var(--purple),#c084fc)}
+.stat-card:hover{border-color:rgba(255,255,255,.12);transform:translateY(-2px)}
+.stat-ico{font-size:22px;margin-bottom:8px}
+.stat-val{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;margin-bottom:2px}
+.stat-card.acc .stat-val{color:var(--acc2)}
+.stat-card.blue .stat-val{color:var(--blue)}
+.stat-card.green .stat-val{color:var(--green)}
+.stat-card.purple .stat-val{color:var(--purple)}
+.stat-lbl{font-size:10px;color:var(--dim);font-family:'JetBrains Mono',monospace;letter-spacing:.8px;text-transform:uppercase}
+
+/* ── Section headers ── */
+.sec-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-t{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--txt);letter-spacing:2px;white-space:nowrap}
+.sec-t span{color:var(--acc)}
+.sec-l{flex:1;height:1px;background:rgba(255,255,255,.06)}
+.sec-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;border:none;font-family:'Rajdhani',sans-serif;transition:filter var(--tr)}
+.sec-btn:hover{filter:brightness(1.1)}
+
+/* ── Projects grid ── */
+#proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:26px}
+@media(max-width:500px){#proj-grid{grid-template-columns:1fr}}
+
+.proj-card{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden;cursor:pointer;transition:all var(--tr);animation:fadeUp .3s ease}
+.proj-card:hover{border-color:var(--brd2);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.proj-card:active{transform:scale(.98)}
+
+.proj-banner{height:80px;display:flex;align-items:center;justify-content:center;font-size:36px;position:relative;overflow:hidden}
+.proj-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(5,8,16,.8))}
+.proj-banner-emoji{position:relative;z-index:1}
+
+.proj-body{padding:12px 14px 10px}
+.proj-name{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--txt);letter-spacing:.8px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proj-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.proj-type{font-size:9px;padding:2px 8px;border-radius:20px;background:rgba(255,77,26,.1);color:var(--acc2);border:1px solid rgba(255,77,26,.2);font-family:'JetBrains Mono',monospace}
+.proj-date{font-size:9px;color:var(--dark);font-family:'JetBrains Mono',monospace;margin-left:auto}
+.proj-actions{display:flex;gap:6px;padding:8px 12px;border-top:1px solid rgba(255,255,255,.05)}
+.pact{flex:1;padding:7px;border-radius:6px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;border:none;font-family:'Rajdhani',sans-serif;transition:all var(--tr)}
+.pact.open{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+.pact.open:hover{filter:brightness(1.1)}
+.pact.del{background:rgba(255,255,255,.05);color:var(--dim);border:1px solid rgba(255,255,255,.07)}
+.pact.del:hover{background:rgba(255,77,26,.15);color:var(--acc)}
+
+/* ── New project card ── */
+.new-card{background:rgba(255,77,26,.04);border:1px dashed rgba(255,77,26,.25);border-radius:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:190px;gap:10px;transition:all var(--tr)}
+.new-card:hover{background:rgba(255,77,26,.08);border-color:rgba(255,77,26,.5);transform:translateY(-3px)}
+.new-card:active{transform:scale(.98)}
+.new-icon{font-size:28px}
+.new-lbl{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;color:var(--acc2);letter-spacing:1.5px}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:40px 20px;grid-column:1/-1}
+.empty-i{font-size:44px;margin-bottom:12px}
+.empty-t{font-family:'Orbitron',monospace;font-size:12px;color:var(--mid);letter-spacing:2px;margin-bottom:6px}
+.empty-s{font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace;margin-bottom:16px}
+
+/* ── Quick access panel ── */
+.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:22px}
+@media(min-width:900px){.quick-grid{grid-template-columns:repeat(4,1fr)}}
+.quick-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 12px;cursor:pointer;transition:all var(--tr);display:flex;align-items:center;gap:10px}
+.quick-card:hover{border-color:var(--brd2);background:var(--card2);transform:translateY(-1px)}
+.qc-ico{font-size:20px;flex-shrink:0;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.qc-info{min-width:0}
+.qc-title{font-size:11px;font-weight:700;color:var(--txt);margin-bottom:2px;letter-spacing:.3px}
+.qc-sub{font-size:10px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── Activity feed ── */
+.activity-list{display:flex;flex-direction:column;gap:6px;margin-bottom:22px}
+.act-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1px solid rgba(255,255,255,.05);border-radius:8px;font-size:11px}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.act-dot.green{background:var(--green)}
+.act-dot.acc{background:var(--acc)}
+.act-dot.blue{background:var(--blue)}
+.act-text{flex:1;color:var(--mid)}
+.act-text strong{color:var(--txt)}
+.act-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dark)}
+
+/* ── Login wall ── */
+.login-wall{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:16px;text-align:center;grid-column:1/-1}
+.lw-icon{font-size:52px;margin-bottom:8px}
+.lw-title{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--txt);letter-spacing:2px}
+.lw-sub{font-size:12px;color:var(--dim);font-family:'JetBrains Mono',monospace;max-width:280px;line-height:1.7}
+
+/* ── Modals ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
+.overlay.open{display:flex}
+.msheet{background:#080d1c;border:1px solid var(--brd2);border-radius:16px 16px 0 0;padding:22px 20px 30px;width:100%;max-width:480px;box-shadow:0 -20px 60px rgba(0,0,0,.8)}
+.mbar{width:40px;height:3px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 18px}
+.mt{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--txt);letter-spacing:1.5px;margin-bottom:4px}
+.ms{font-size:11px;color:var(--dim);margin-bottom:18px;font-family:'JetBrains Mono',monospace}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.8px}
+.field input,.field select{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--txt);outline:none;width:100%;transition:border var(--tr)}
+.field input:focus,.field select:focus{border-color:var(--acc)}
+.emoji-row{display:flex;gap:6px;flex-wrap:wrap;padding:4px 0}
+.emoji-opt{font-size:22px;cursor:pointer;padding:5px;border-radius:8px;border:2px solid transparent;transition:all var(--tr)}
+.emoji-opt.sel{border-color:var(--acc);background:rgba(255,77,26,.15)}
+.macts{display:flex;gap:8px;margin-top:18px}
+.mbt{flex:1;padding:12px;border-radius:8px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;border:none;transition:all var(--tr)}
+.mbt.cancel{background:rgba(255,255,255,.06);color:var(--mid);border:1px solid rgba(255,255,255,.1)}
+.mbt.confirm{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+.mbt:active{transform:scale(.97)}
+
+/* ── Confirm modal ── */
+.cov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.cov.open{display:flex}
+.cmod-sm{background:#080d1c;border:1px solid var(--brd2);border-radius:14px;padding:26px 22px;width:92%;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+
+/* ── Mobile sidebar toggle ── */
+#sb-toggle{display:none;width:36px;height:36px;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.1);border-radius:var(--r);cursor:pointer;color:var(--dim);font-size:16px;background:rgba(255,255,255,.05);transition:all var(--tr)}
+#sb-toggle:hover{background:rgba(255,255,255,.1);color:var(--txt)}
+
+@media(max-width:700px){
+  #sidebar{position:fixed;left:-210px;top:0;bottom:0;z-index:100;transition:left .25s ease}
+  #sidebar.open{left:0}
+  #sb-overlay{display:block!important}
+  #sb-toggle{display:flex}
+  #content{padding:14px}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+}
+#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;backdrop-filter:blur(3px)}
+
+/* ── Toast wrap (shared.js injeta, mas garante estilo) ── */
+#toastWrap{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:90%;max-width:320px}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="ld-logo">RF</div>
+  <div class="ld-bar"><div class="ld-fill"></div></div>
+  <div class="ld-txt">CARREGANDO...</div>
+</div>
+
+<div class="grid-bg"></div>
+<div class="glow-bg"></div>
+<div id="toastWrap"></div>
+
+<!-- Mobile sidebar overlay -->
+<div id="sb-overlay" onclick="closeSidebar()"></div>
+
+<div id="app" style="display:none">
+
+  <!-- ── Sidebar ── -->
+  <div id="sidebar">
+    <div id="sb-logo">
+      <div class="sb-logo-icon">⚒</div>
+      <div class="sb-logo-text">RO<span>FORGER</span></div>
+    </div>
+
+    <div id="sb-nav">
+      <div class="sb-section">Painel</div>
+      <div class="sb-item active" onclick="switchView('dashboard',this)">
+        <span class="sb-item-ico">📊</span> Dashboard
+      </div>
+      <div class="sb-item" onclick="switchView('projects',this)">
+        <span class="sb-item-ico">📁</span> Projetos
+        <span class="sb-badge" id="proj-count">0</span>
+      </div>
+
+      <div class="sb-section">Ferramentas</div>
+      <div class="sb-item" onclick="switchView('systems',this)">
+        <span class="sb-item-ico">📦</span> Sistemas
+      </div>
+      <div class="sb-item" onclick="switchView('templates',this)">
+        <span class="sb-item-ico">🗂</span> Templates
+      </div>
+      <div class="sb-item" onclick="switchView('docs',this)">
+        <span class="sb-item-ico">📖</span> Docs
+      </div>
+      <div class="sb-item" onclick="switchView('updates',this)" id="nav-updates">
+        <span class="sb-item-ico">📋</span> Atualizações
+        <span class="sb-badge" id="update-badge" style="background:var(--acc);color:#fff;display:none">1</span>
+      </div>
+
+      <div class="sb-section">App</div>
+      <div class="sb-item" id="btn-install-app" onclick="installApp()" style="display:none">
+        <span class="sb-item-ico">📲</span> Baixar App
+        <span class="sb-badge" style="background:var(--green);color:#000">NOVO</span>
+      </div>
+      <div class="sb-item" id="btn-install-unavail" style="display:none;opacity:.4;cursor:default">
+        <span class="sb-item-ico">✅</span> App Instalado
+      </div>
+    </div>
+
+    <div id="sb-user">
+      <div id="sb-user-area">
+        <button class="btn btn-acc" onclick="doLogin()" style="width:100%">🔑 Entrar com Google</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main ── -->
+  <div id="main">
+    <!-- Topbar -->
+    <div id="topbar">
+      <button id="sb-toggle" onclick="toggleSidebar()">☰</button>
+      <div id="topbar-title"><span>//</span> <span id="view-title">Dashboard</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" onclick="switchView('docs',null)">📖 Docs</button>
+        <button class="btn btn-acc" id="btn-new-proj">⚡ Novo Projeto</button>
+      </div>
+    </div>
+
+    <!-- PWA Install Banner -->
+    <div id="install-banner" style="display:none;align-items:center;gap:12px;padding:10px 16px;background:linear-gradient(90deg,rgba(0,255,157,.08),rgba(255,77,26,.08));border-bottom:1px solid rgba(0,255,157,.2);">
+      <span style="font-size:20px">📲</span>
+      <div style="flex:1">
+        <div style="font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:#00ff9d;letter-spacing:1px">INSTALAR ROFORGER STUDIO</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);margin-top:2px">Adicione à tela inicial para usar como app nativo</div>
+      </div>
+      <button class="btn btn-green" onclick="installApp()" style="flex-shrink:0">⬇ Instalar</button>
+      <button onclick="document.getElementById('install-banner').style.display='none'" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;padding:4px">✕</button>
+    </div>
+
+    <!-- Scrollable content -->
+    <div id="content">
+
+      <!-- ── View: Dashboard ── -->
+      <div class="view active" id="v-dashboard">
+        <div class="stats-row">
+          <div class="stat-card acc">
+            <div class="stat-ico">📁</div>
+            <div class="stat-val" id="st-projects">0</div>
+            <div class="stat-lbl">Projetos</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-ico">📦</div>
+            <div class="stat-val">80+</div>
+            <div class="stat-lbl">Sistemas</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-ico">✨</div>
+            <div class="stat-val">12</div>
+            <div class="stat-lbl">Efeitos</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="stat-ico">🗂</div>
+            <div class="stat-val">8</div>
+            <div class="stat-lbl">Templates</div>
+          </div>
+        </div>
+
+        <!-- Acesso rápido -->
+        <div class="sec-h">
+          <span class="sec-t"><span>//</span> ACESSO RÁPIDO</span>
+          <div class="sec-l"></div>
+        </div>
+        <div class="quick-grid">
+          <div class="quick-card" onclick="openNewModal()">
+            <div class="qc-ico" style="background:rgba(255,77,26,.12)">⚡</div>
+            <div class="qc-info">
+              <div class="qc-title">Novo Projeto</div>
+              <div class="qc-sub">Criar do zero</div>
+            </div>
+          </div>
+          <div class="quick-card" onclick="switchView('systems',null)">
+            <div class="qc-ico" style="background:rgba(26,140,255,.12)">📦</div>
+            <div class="qc-info">
+              <div class="qc-title">Sistemas</div>
+              <div class="qc-sub">80+ scripts prontos</div>
+            </div>
+          </div>
+          <div class="quick-card" onclick="switchView('templates',null)">
+            <div class="qc-ico" style="background:rgba(155,66,255,.12)">🗂</div>
+            <div class="qc-info">
+              <div class="qc-title">Templates</div>
+              <div class="qc-sub">Projetos pré-montados</div>
+            </div>
+          </div>
+          <div class="quick-card" onclick="switchView('docs',null)">
+            <div class="qc-ico" style="background:rgba(0,255,157,.1)">📖</div>
+            <div class="qc-info">
+              <div class="qc-title">Documentação</div>
+              <div class="qc-sub">Guias e referência</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Projetos recentes -->
+        <div class="sec-h">
+          <span class="sec-t"><span>//</span> PROJETOS RECENTES</span>
+          <div class="sec-l"></div>
+          <button class="sec-btn" onclick="switchView('projects',null)">Ver todos</button>
+        </div>
+        <div id="proj-grid-recent"></div>
+
+        <!-- Atividade recente -->
+        <div class="sec-h" style="margin-top:4px">
+          <span class="sec-t"><span>//</span> NOVIDADES</span>
+          <div class="sec-l"></div>
+        </div>
+        <div class="activity-list">
+          <div class="act-item"><div class="act-dot green"></div><div class="act-text"><strong>Sistema de Dash</strong> atualizado com efeito de câmera</div><div class="act-time">hoje</div></div>
+          <div class="act-item"><div class="act-dot acc"></div><div class="act-text"><strong>5 novos templates</strong> de RPG adicionados</div><div class="act-time">2d</div></div>
+          <div class="act-item"><div class="act-dot blue"></div><div class="act-text"><strong>Cloud sync</strong> melhorado, agora com retry automático</div><div class="act-time">5d</div></div>
+        </div>
+      </div>
+
+      <!-- ── View: Projetos ── -->
+      <div class="view" id="v-projects">
+        <div class="sec-h">
+          <span class="sec-t"><span>//</span> MEUS PROJETOS</span>
+          <div class="sec-l"></div>
+          <button class="sec-btn" onclick="openNewModal()">+ Novo</button>
+        </div>
+        <div id="proj-grid"></div>
+      </div>
+
+      <!-- ── View: Sistemas (placeholder) ── -->
+      <div class="view" id="v-systems">
+        <div class="sec-h">
+          <span class="sec-t"><span>//</span> SISTEMAS PRONTOS</span>
+          <div class="sec-l"></div>
+        </div>
+        <div style="padding:40px;text-align:center;color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:11px">
+          <div style="font-size:44px;margin-bottom:14px">📦</div>
+          Abra um projeto para acessar os 80+ sistemas prontos<br/>no editor completo.
+          <br/><br/>
+          <button class="btn btn-acc" onclick="openNewModal()">⚡ Criar Projeto</button>
+        </div>
+      </div>
+
+      <!-- ── View: Templates (placeholder) ── -->
+      <div class="view" id="v-templates">
+        <div class="sec-h">
+          <span class="sec-t"><span>//</span> TEMPLATES</span>
+          <div class="sec-l"></div>
+        </div>
+        <div style="padding:40px;text-align:center;color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:11px">
+          <div style="font-size:44px;margin-bottom:14px">🗂</div>
+          Templates disponíveis dentro do editor.<br/>Crie ou abra um projeto para usar.
+          <br/><br/>
+          <button class="btn btn-acc" onclick="openNewModal()">⚡ Criar Projeto</button>
+        </div>
+      </div>
+
+      <!-- ── View: Docs (placeholder) ── -->
+      <div class="view" id="v-docs">
+        <div class="sec-h">
+          <span class="sec-t"><span>//</span> DOCUMENTAÇÃO</span>
+          <div class="sec-l"></div>
+        </div>
+        <div style="max-width:600px">
+          <div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--txt);margin-bottom:8px;letter-spacing:1px">RoForger Studio</div>
+          <div style="font-size:12px;color:var(--dim);line-height:1.9;font-family:'JetBrains Mono',monospace;margin-bottom:20px">IDE visual para criação de scripts Roblox. Builder de canvas infinito, sistemas prontos e gerador de Lua.</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px 16px">
+              <div style="font-weight:700;color:var(--txt);margin-bottom:4px">1. Criando um projeto</div>
+              <div style="font-size:11px;color:var(--dim);line-height:1.8">Clique em "⚡ Novo Projeto", dê um nome, escolha um tipo e um ícone. O projeto fica salvo na nuvem automaticamente.</div>
+            </div>
+            <div style="background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px 16px">
+              <div style="font-weight:700;color:var(--txt);margin-bottom:4px">2. Usando o Builder</div>
+              <div style="font-size:11px;color:var(--dim);line-height:1.8">Arraste sistemas do Explorer para o canvas. Conecte blocos, configure propriedades e gere o script Lua completo.</div>
+            </div>
+            <div style="background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px 16px">
+              <div style="font-weight:700;color:var(--txt);margin-bottom:4px">3. Sistemas prontos</div>
+              <div style="font-size:11px;color:var(--dim);line-height:1.8">80+ sistemas: movimentação, combate, DataStore, UI, admin e mais. Clique em "Copiar Código" para usar direto no Roblox Studio.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Updates view -->
+      <div class="view" id="v-updates" style="overflow-y:auto">
+        <div id="updates-container"></div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Modal: Novo Projeto -->
+<div class="overlay" id="m-new" onclick="if(event.target===this)closeModal('m-new')">
+  <div class="msheet" onclick="event.stopPropagation()">
+    <div class="mbar"></div>
+    <div class="mt">NOVO PROJETO</div>
+    <div class="ms">// Configure seu projeto RoForger</div>
+    <div class="field">
+      <label>Nome do Projeto</label>
+      <input id="np-name" placeholder="MeuJogoEpico" maxlength="40"/>
+    </div>
+    <div class="field">
+      <label>Tipo</label>
+      <select id="np-type">
+        <option>Game</option><option>Simulator</option><option>RPG</option>
+        <option>Battle Royale</option><option>Tower Defense</option>
+        <option>Obby</option><option>Horror</option><option>Outro</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Ícone</label>
+      <div class="emoji-row" id="emojiRow"></div>
+    </div>
+    <div class="macts">
+      <button class="mbt cancel" onclick="closeModal('m-new')">Cancelar</button>
+      <button class="mbt confirm" onclick="createProject()">⚡ Criar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirmar delete -->
+<div class="cov" id="m-confirm" onclick="if(event.target===this)closeModal('m-confirm')">
+  <div class="cmod-sm">
+    <div class="mt">EXCLUIR PROJETO</div>
+    <div class="ms" id="confirm-msg">// Tem certeza?</div>
+    <div class="macts">
+      <button class="mbt cancel" onclick="closeModal('m-confirm')">Cancelar</button>
+      <button class="mbt confirm" style="background:linear-gradient(135deg,#cc2200,var(--acc))" onclick="confirmDelete()">🗑️ Excluir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+const HS = { user: null, projects: [], delTarget: null, emoji: '🎮', fbReady: false };
+const EMOJIS = ['🎮','⚔️','🏆','🏰','🐾','🌊','💰','🤖','🧙','🛒','🔥','💎'];
+const COLORS = ['rgba(255,77,26,.15)','rgba(26,140,255,.12)','rgba(155,66,255,.12)','rgba(0,255,157,.1)','rgba(255,214,0,.1)'];
+
+// ── Firebase ready ──
+// Check for new update badge
+(function(){
+  setTimeout(() => {
+    if (window.UPDATES && window.UPDATES.length) {
+      const seen = localStorage.getItem('rf_seen_update');
+      const latest = window.UPDATES[0].version;
+      if (seen !== latest) {
+        const badge = document.getElementById('update-badge');
+        if (badge) badge.style.display = 'inline-flex';
+      }
+    }
+  }, 500);
+})();
+
+window.addEventListener('fb-ready', () => {
+  HS.fbReady = true;
+  const { auth, onAuthStateChanged } = window._fb;
+  onAuthStateChanged(auth, async u => {
+    HS.user = u;
+    if (u) {
+      await fetchProjects();
+      toast(`Olá, ${u.displayName?.split(' ')[0]}! 🎮`);
+    }
+    hideLoading();
+    renderAll();
+  });
+});
+setTimeout(() => { if (!HS.fbReady) { hideLoading(); renderAll(); } }, 4000);
+
+function hideLoading() {
+  const l = document.getElementById('loading');
+  l.style.opacity = '0';
+  setTimeout(() => l.style.display = 'none', 400);
+  document.getElementById('app').style.display = 'flex';
+}
+
+// ── Fetch projects ──
+async function fetchProjects() {
+  if (!HS.user || !HS.fbReady) return;
+  try {
+    const { db, collection, query, where, orderBy, getDocs } = window._fb;
+    const q = query(collection(db, 'projects'), where('uid', '==', HS.user.uid), orderBy('updatedAt', 'desc'));
+    const snap = await getDocs(q);
+    HS.projects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) { console.warn(e); }
+}
+
+// ── Auth ──
+async function doLogin() {
+  if (!HS.fbReady) { toast('Firebase carregando...', 'w'); return; }
+  const { auth, gp, signInWithPopup } = window._fb;
+  try {
+    const r = await signInWithPopup(auth, gp);
+    HS.user = r.user;
+    await fetchProjects();
+    renderAll();
+    toast(`Bem-vindo, ${r.user.displayName?.split(' ')[0]}! 🎮`);
+  } catch (e) { if (e.code !== 'auth/popup-closed-by-user') toast('Erro no login', 'e'); }
+}
+async function doLogout() {
+  if (!HS.fbReady) return;
+  await window._fb.signOut(window._fb.auth);
+  HS.user = null; HS.projects = [];
+  renderAll(); toast('Até logo! 👋', 'w');
+}
+
+// ── Render ──
+function renderAll() {
+  renderUser();
+  renderProjects();
+  updateStats();
+}
+
+function renderUser() {
+  const area = document.getElementById('sb-user-area');
+  if (HS.user) {
+    const ph = HS.user.photoURL
+      ? `<img src="${HS.user.photoURL}" class="sb-av"/>`
+      : `<div class="sb-av-ph">${(HS.user.displayName || 'U')[0]}</div>`;
+    area.innerHTML = `
+      <div class="sb-user-card" onclick="doLogout()">
+        ${ph}
+        <div class="sb-user-info">
+          <div class="sb-user-name">${HS.user.displayName?.split(' ')[0] || 'User'}</div>
+          <div class="sb-user-sub">Google account</div>
+        </div>
+        <span class="sb-logout" title="Sair">↩</span>
+      </div>`;
+  } else {
+    area.innerHTML = `<button class="btn btn-acc" onclick="doLogin()" style="width:100%">🔑 Entrar com Google</button>`;
+  }
+  // Btn new proj
+  document.getElementById('btn-new-proj').onclick = HS.user ? openNewModal : doLogin;
+}
+
+function renderProjects() {
+  if (!HS.user) {
+    const wall = `<div class="login-wall">
+      <div class="lw-icon">🔒</div>
+      <div class="lw-title">LOGIN NECESSÁRIO</div>
+      <div class="lw-sub">// Entre com Google para salvar e acessar seus projetos</div>
+      <button class="btn btn-acc" onclick="doLogin()">🔑 Entrar com Google</button>
+    </div>`;
+    document.getElementById('proj-grid').innerHTML = wall;
+    document.getElementById('proj-grid-recent').innerHTML = wall;
+    return;
+  }
+
+  const newCard = `<div class="new-card" onclick="openNewModal()"><div class="new-icon">⚡</div><div class="new-lbl">NOVO PROJETO</div></div>`;
+  const cards = HS.projects.map(p => projCard(p)).join('');
+
+  // Grid completo
+  document.getElementById('proj-grid').innerHTML = newCard + (cards || emptyMsg());
+
+  // Recentes (max 4)
+  const recent = HS.projects.slice(0, 4).map(p => projCard(p)).join('');
+  document.getElementById('proj-grid-recent').innerHTML = recent || `<div class="empty"><div class="empty-i">🚀</div><div class="empty-t">SEM PROJETOS</div><div class="empty-s">// Crie seu primeiro projeto!</div><button class="btn btn-acc" onclick="openNewModal()" style="margin:0 auto;display:flex">⚡ Criar</button></div>`;
+
+  document.getElementById('proj-count').textContent = HS.projects.length;
+}
+
+function projCard(p) {
+  const date = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('pt-BR') : 'Recente';
+  return `<div class="proj-card">
+    <div class="proj-banner" style="background:linear-gradient(135deg,${p.color||'rgba(255,77,26,.15)'},rgba(26,140,255,.08))">
+      <span class="proj-banner-emoji">${p.emoji || '🎮'}</span>
+    </div>
+    <div class="proj-body">
+      <div class="proj-name">${p.name}</div>
+      <div class="proj-meta">
+        <span class="proj-type">${p.type || 'Game'}</span>
+        <span class="proj-date">${date}</span>
+      </div>
+    </div>
+    <div class="proj-actions">
+      <button class="pact open" onclick="openProject('${p.id}')">⚡ Abrir</button>
+      <button class="pact del" onclick="askDelete('${p.id}','${p.name}')">🗑️</button>
+    </div>
+  </div>`;
+}
+
+function emptyMsg() {
+  return `<div class="empty"><div class="empty-i">🚀</div><div class="empty-t">SEM PROJETOS</div><div class="empty-s">// Crie seu primeiro projeto!</div></div>`;
+}
+
+function updateStats() {
+  document.getElementById('st-projects').textContent = HS.projects.length;
+}
+
+// ── Views ──
+function switchView(name, el) {
+  if (name === 'updates') {
+    renderUpdates('updates-container');
+    // Hide badge once seen
+    localStorage.setItem('rf_seen_update', window.UPDATES && window.UPDATES[0]?.version);
+    const badge = document.getElementById('update-badge');
+    if (badge) badge.style.display = 'none';
+  }
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('v-' + name)?.classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const titles = { dashboard: 'Dashboard', projects: 'Meus Projetos', systems: 'Sistemas', templates: 'Templates', docs: 'Documentação', updates: 'Atualizações' };
+  document.getElementById('view-title').textContent = titles[name] || name;
+  closeSidebar();
+}
+
+// ── Sidebar mobile ──
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+function closeSidebar()  { document.getElementById('sidebar').classList.remove('open'); }
+
+// ── PWA Install ──
+let _pwaPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _pwaPrompt = e;
+
+  // Mostrar botão na sidebar
+  document.getElementById('btn-install-app').style.display = 'flex';
+
+  // Mostrar banner no topo (só na primeira visita)
+  if (!localStorage.getItem('rf_banner_dismissed')) {
+    document.getElementById('install-banner').style.display = 'flex';
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  _pwaPrompt = null;
+  document.getElementById('btn-install-app').style.display = 'none';
+  document.getElementById('btn-install-unavail').style.display = 'flex';
+  document.getElementById('install-banner').style.display = 'none';
+  toast('✅ App instalado com sucesso!', 's');
+});
+
+async function installApp() {
+  if (!_pwaPrompt) {
+    // iOS não suporta prompt — orientar manualmente
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (isIOS) {
+      toast('No iOS: toque em Compartilhar → Adicionar à Tela Inicial', 'i');
+    } else {
+      toast('Abra pelo Chrome para instalar o app', 'w');
+    }
+    return;
+  }
+  _pwaPrompt.prompt();
+  const { outcome } = await _pwaPrompt.userChoice;
+  if (outcome === 'accepted') {
+    _pwaPrompt = null;
+    document.getElementById('install-banner').style.display = 'none';
+    localStorage.setItem('rf_banner_dismissed', '1');
+  }
+}
+
+// ── Modals ──
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openNewModal() {
+  if (!HS.user) { doLogin(); return; }
+  document.getElementById('emojiRow').innerHTML = EMOJIS.map(e =>
+    `<span class="emoji-opt${e === HS.emoji ? ' sel' : ''}" onclick="selEmoji(this,'${e}')">${e}</span>`
+  ).join('');
+  document.getElementById('np-name').value = '';
+  openModal('m-new');
+}
+function selEmoji(el, e) {
+  document.querySelectorAll('.emoji-opt').forEach(x => x.classList.remove('sel'));
+  el.classList.add('sel'); HS.emoji = e;
+}
+
+async function createProject() {
+  const name = document.getElementById('np-name').value.trim();
+  if (!name) { document.getElementById('np-name').focus(); return; }
+  const type = document.getElementById('np-type').value;
+  const proj = {
+    name, type, emoji: HS.emoji,
+    uid: HS.user?.uid || 'demo',
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    updatedAt: Date.now(), createdAt: Date.now()
+  };
+  closeModal('m-new');
+  if (HS.fbReady && HS.user) {
+    const { db, collection, addDoc } = window._fb;
+    try { const r = await addDoc(collection(db, 'projects'), proj); proj.id = r.id; }
+    catch (e) { proj.id = 'demo-' + Date.now(); }
+  } else { proj.id = 'demo-' + Date.now(); }
+  HS.projects.unshift(proj);
+  renderProjects(); updateStats();
+  toast(`"${name}" criado! ⚡`);
+  openProject(proj.id);
+}
+
+function askDelete(id, name) {
+  HS.delTarget = id;
+  document.getElementById('confirm-msg').textContent = `// Excluir "${name}"? Não pode ser desfeito.`;
+  openModal('m-confirm');
+}
+async function confirmDelete() {
+  closeModal('m-confirm');
+  if (!HS.delTarget) return;
+  if (HS.fbReady && HS.user && !HS.delTarget.startsWith('demo-')) {
+    const { db, doc, deleteDoc } = window._fb;
+    try { await deleteDoc(doc(db, 'projects', HS.delTarget)); } catch (e) {}
+  }
+  HS.projects = HS.projects.filter(p => p.id !== HS.delTarget);
+  renderProjects(); updateStats(); toast('Projeto excluído', 'w'); HS.delTarget = null;
+}
+
+// ── Open project → ir para editor.html ──
+function openProject(id) {
+  const proj = HS.projects.find(p => p.id === id);
+  if (!proj) return;
+  sessionStorage.setItem('rf_current_project', JSON.stringify(proj));
+  window.location.href = '/editor.html';
+}
+</script>
+</body>
+</html>
