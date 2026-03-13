@@ -780,7 +780,7 @@ Ctrl+S     Salvar na nuvem
 Delete     Deletar node selecionado
 Escape     Desselecionar / Fechar modal
 Scroll     Zoom no canvas
-Clique Médio  Pan no canvas</div></div>`}}};
+Clique Médio  Pan no canvas</div></div>`}};
 
 // HISTORY
 const History={stack:[],index:-1,max:50,
@@ -1214,7 +1214,7 @@ docs:{
   show(id){document.querySelectorAll('.docs-nav-item').forEach(el=>el.classList.remove('active'));const nav=document.getElementById('dn-'+id);if(nav)nav.classList.add('active');document.getElementById('docs-content').innerHTML=DATA.docs.content[id]||'<div style="color:var(--dim);padding:20px">Em breve.</div>'}
 }
 
-}; // end App
+};
 
 // PP — PROPS PANEL CONTROLLER (tabs, script view, logic)
 const PP={
@@ -2061,7 +2061,7 @@ SE.saveBlock=function(){
   _origSaveBlock();
 };
 
-scripts:{
+App.scripts={
   openForSelected(){if(App.state.selId)this.openEditorFor(App.state.selId)},
   openFor(uid){this.openEditorFor(uid)},
   openEditorFor(uid){SE.openFor(uid)},
@@ -2072,15 +2072,15 @@ scripts:{
     const code=L.join('\n');document.getElementById('gmodal-pre').innerHTML=syntaxHL(code);window._globalScript=code;openM('m-global');
   },
   async copyGlobal(){try{await navigator.clipboard.writeText(window._globalScript||'');document.getElementById('gcopy-ok').style.display='block';toast('✓ Copiado!');setTimeout(()=>document.getElementById('gcopy-ok').style.display='none',2000)}catch(e){}}
-},
+};
 
-project:{
+App.project={
   clear(){if(!App.state.nodes.length)return;if(!confirm('Limpar canvas?'))return;App.state.nodes.forEach(n=>{const d=document.getElementById('n-'+n.uid);if(d)d.remove()});App.state.nodes=[];App.state.selId=null;App.props.render();App.nodes.upCount();App.autosave.save()},
   exportJSON(){const d=JSON.stringify({v4:true,nodes:App.state.nodes,fx:App.state.savedFx,c:{x:App.state.cx,y:App.state.cy,z:App.state.cz}},null,2);const b=new Blob([d],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='roforger-projeto.json';a.click();toast('📤 Exportado!')},
   importJSON(){const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);App.state.nodes.forEach(n=>{const el=document.getElementById('n-'+n.uid);if(el)el.remove()});App.state.nodes=d.nodes||[];App.state.savedFx=d.fx||[];App.state.nc=Math.max(...(App.state.nodes.map(n=>n.uid)||[0]),0)+1;if(d.c){App.state.cx=d.c.x||0;App.state.cy=d.c.y||0;App.state.cz=d.c.z||1}App.state.nodes.forEach(n=>App.nodes.renderOne(n));App.nodes.upCount();App.canvas.upTf();toast('📥 Importado! '+App.state.nodes.length+' elementos','i')}catch(err){toast('Arquivo inválido','e')}};reader.readAsText(file)};input.click()}
-},
+};
 
-autosave:{
+App.autosave={
   _t:null,
   init(){setInterval(()=>this.save(),10000)},
   schedule(){clearTimeout(this._t);this._t=setTimeout(()=>this.save(),2000)},
@@ -2097,7 +2097,7 @@ autosave:{
       const i=document.getElementById('autosave-ind');i.classList.add('show');setTimeout(()=>i.classList.remove('show'),1500)
     }catch(e){}
   }
-},
+};
 
 loadFromStorage(){
   try{
