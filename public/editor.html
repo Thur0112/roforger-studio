@@ -780,7 +780,7 @@ Ctrl+S     Salvar na nuvem
 Delete     Deletar node selecionado
 Escape     Desselecionar / Fechar modal
 Scroll     Zoom no canvas
-Clique Médio  Pan no canvas</div></div>`}};
+Clique Médio  Pan no canvas</div></div>`}}};
 
 // HISTORY
 const History={stack:[],index:-1,max:50,
@@ -2117,7 +2117,7 @@ loadFromStorage(){
   }catch(e){}
 },
 
-shortcuts:{
+App.shortcuts={
   init(){
     document.addEventListener('keydown',e=>{
       if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)){if(e.key==='Escape')document.activeElement.blur();return}
@@ -2131,7 +2131,7 @@ shortcuts:{
       if(e.key==='Escape'){App.nodes.deselect();Cmd.close();closeM('m-script');closeM('m-global')}
     });
   }
-}};
+};
 
 // ═══ SCRIPT TABS ═══
 function switchStab(btn,id){
