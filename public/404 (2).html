@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#050810"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>Erro — RoForger Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;600&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#050810;--card:#0c1120;
+  --acc:#ff4d1a;--acc2:#ff8c42;--acc-glow:rgba(255,77,26,.25);
+  --blue:#1a8cff;--green:#00ff9d;--yellow:#ffd600;--red:#ff3b3b;
+  --txt:#e8eaf0;--dim:#6b7594;--mid:#9ba3c0;--dark:#363a5c;
+  --brd:rgba(255,77,26,.18);--brd2:rgba(255,77,26,.35);
+  --glow:0 0 20px rgba(255,77,26,.4);
+  --r:8px;--tr:.15s cubic-bezier(.4,0,.2,1)
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--txt);overflow:hidden;display:flex;flex-direction:column}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glitch{0%,88%,100%{clip-path:none;transform:none;opacity:1}89%{clip-path:inset(15% 0 55% 0);transform:translateX(-4px);opacity:.9}91%{clip-path:inset(60% 0 5% 0);transform:translateX(4px);opacity:.9}93%{clip-path:inset(30% 0 40% 0);transform:translateX(-2px)}95%{clip-path:none;transform:none}}
+@keyframes glitch2{0%,88%,100%{clip-path:none;transform:none;color:var(--acc)}89%{clip-path:inset(55% 0 10% 0);transform:translateX(5px);color:var(--blue)}91%{clip-path:inset(10% 0 60% 0);transform:translateX(-5px);color:var(--acc2)}93%{clip-path:none;transform:none}}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 15px var(--acc-glow)}50%{box-shadow:0 0 30px var(--acc-glow),0 0 50px rgba(255,77,26,.1)}}
+@keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(200vh)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes floatCode{0%{transform:translateY(0) rotate(0deg);opacity:.06}50%{opacity:.12}100%{transform:translateY(-100vh) rotate(15deg);opacity:0}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.04);opacity:.85}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(255,77,26,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,77,26,.025) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse at center,black 20%,transparent 75%)}
+.glow-bg{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 30%,rgba(255,77,26,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 70%,rgba(255,59,59,.06) 0%,transparent 50%)}
+.float-chars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.fc{position:absolute;bottom:-40px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--acc);opacity:.06;animation:floatCode linear infinite;user-select:none}
+.scanline{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.scanline::after{content:'';position:absolute;left:0;right:0;height:3px;background:linear-gradient(transparent,rgba(255,77,26,.06),transparent);animation:scanline 6s linear infinite}
+.navbar{height:52px;background:rgba(5,8,16,.95);border-bottom:1px solid var(--brd);display:flex;align-items:center;padding:0 16px;gap:10px;backdrop-filter:blur(12px);position:relative;z-index:10;flex-shrink:0}
+.nav-logo{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--acc);letter-spacing:3px;display:flex;align-items:center;gap:8px}
+.nav-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--acc),#c93300);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;animation:logoPulse 3s ease-in-out infinite}
+.nav-logo span{color:var(--acc2)}
+.nav-status{margin-left:auto;display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim)}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 1.5s ease-in-out infinite}
+main{flex:1;display:flex;align-items:center;justify-content:center;position:relative;z-index:2;padding:20px;animation:fadeUp .4s ease}
+.error-card{background:rgba(12,17,32,.85);border:1px solid rgba(255,77,26,.2);border-radius:18px;padding:40px 36px;max-width:520px;width:100%;text-align:center;backdrop-filter:blur(20px);box-shadow:0 20px 80px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.05);position:relative;overflow:hidden}
+.error-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--acc),var(--acc2),transparent);background-size:200% 100%;animation:shimmer 2.5s linear infinite}
+.err-code-wrap{position:relative;margin-bottom:8px}
+.err-code{font-family:'Orbitron',monospace;font-size:clamp(72px,18vw,110px);font-weight:900;line-height:1;color:var(--acc);letter-spacing:6px;text-shadow:0 0 40px rgba(255,77,26,.4);animation:glitch 7s infinite;position:relative;z-index:1}
+.err-code::after{content:attr(data-code);position:absolute;inset:0;color:var(--blue);animation:glitch2 7s infinite .15s;pointer-events:none}
+.err-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 16px;border-radius:20px;background:rgba(255,77,26,.1);border:1px solid rgba(255,77,26,.3);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--acc2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:18px}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s step-end infinite}
+.err-title{font-family:'Orbitron',monospace;font-size:clamp(14px,4vw,20px);font-weight:700;color:var(--txt);letter-spacing:1.5px;margin-bottom:10px}
+.err-desc{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);line-height:1.8;margin-bottom:28px;max-width:360px;margin-left:auto;margin-right:auto}
+.err-desc .highlight{color:var(--acc2)}
+.err-detail{background:#04060f;border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#6b7594;text-align:left;margin-bottom:24px;line-height:1.8;display:none}
+.err-detail.show{display:block}
+.err-line{display:flex;gap:10px}
+.err-line-num{color:#363a5c;min-width:20px;text-align:right;user-select:none}
+.err-line-txt{flex:1}
+.err-line-txt.hi{color:var(--acc2)}
+.err-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:var(--r);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all var(--tr);border:none;white-space:nowrap;letter-spacing:.4px}
+.btn:active{transform:scale(.97)}
+.btn-acc{background:linear-gradient(135deg,var(--acc),#c93300);color:#fff;box-shadow:0 4px 15px var(--acc-glow)}
+.btn-acc:hover{filter:brightness(1.1)}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--mid);border:1px solid rgba(255,255,255,.1)}
+.btn-ghost:hover{background:rgba(255,255,255,.09);color:var(--txt)}
+.toggle-detail{display:inline-block;margin-top:16px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dark);cursor:pointer;transition:color var(--tr);text-decoration:underline;text-underline-offset:3px}
+.toggle-detail:hover{color:var(--dim)}
+footer{height:36px;background:rgba(5,8,16,.95);border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;padding:0 16px;position:relative;z-index:10;flex-shrink:0}
+.footer-txt{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dark);letter-spacing:.8px}
+.footer-time{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dark)}
+@media(max-width:480px){.error-card{padding:28px 20px;border-radius:14px}.err-actions{flex-direction:column}.btn{justify-content:center}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow-bg"></div>
+<div class="scanline"></div>
+<div class="float-chars" id="floatChars"></div>
+<nav class="navbar">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">⚒</div>
+    RO<span>FORGER</span>
+  </div>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    <span id="status-txt">SISTEMA COM FALHA</span>
+  </div>
+</nav>
+<main>
+  <div class="error-card" id="errorCard">
+    <div class="err-code-wrap">
+      <div class="err-code" id="errCode" data-code="404">404</div>
+    </div>
+    <div class="err-badge"><div class="badge-dot"></div><span id="errType">PÁGINA NÃO ENCONTRADA</span></div>
+    <div class="err-title" id="errTitle">Ops! Rota não encontrada</div>
+    <div class="err-desc" id="errDesc">A página que você tentou acessar não existe ou foi movida.<br/>Verifique o endereço ou volte para o <span class="highlight">painel principal</span>.</div>
+    <div class="err-detail" id="errDetail"></div>
+    <div class="err-actions">
+      <button class="btn btn-acc" onclick="goHome()">🏠 Ir para Home</button>
+      <button class="btn btn-ghost" onclick="goBack()">← Voltar</button>
+      <button class="btn btn-ghost" onclick="reload()">↺ Tentar novamente</button>
+    </div>
+    <div class="toggle-detail" id="toggleDetail" onclick="toggleDetail()">ver detalhes técnicos</div>
+  </div>
+</main>
+<footer>
+  <div class="footer-txt">ROFORGER STUDIO // ERROR HANDLER v1.0</div>
+  <div class="footer-time" id="footerTime"></div>
+</footer>
+<script>
+const ERRORS={
+  400:{type:'REQUISIÇÃO INVÁLIDA',title:'Dados inválidos na requisição',desc:'A requisição enviada contém dados inválidos.\nVerifique os parâmetros e tente novamente.',detail:[{hi:true,txt:'Error: Bad Request (400)'},{hi:false,txt:'  Parâmetros inválidos ou ausentes.'},{hi:false,txt:'  Verifique o formato dos dados enviados.'}]},
+  401:{type:'NÃO AUTORIZADO',title:'Autenticação necessária',desc:'Você precisa estar logado para acessar este recurso.\nFaça login com sua conta Google.',detail:[{hi:true,txt:'Error: Unauthorized (401)'},{hi:false,txt:'  Token de autenticação ausente ou expirado.'},{hi:false,txt:'  Faça login novamente para continuar.'}]},
+  403:{type:'ACESSO NEGADO',title:'Você não tem permissão',desc:'Sua conta não tem acesso a este recurso.\nSe acredita que é um erro, entre em contato.',detail:[{hi:true,txt:'Error: Forbidden (403)'},{hi:false,txt:'  Permissão insuficiente para este recurso.'}]},
+  404:{type:'PÁGINA NÃO ENCONTRADA',title:'Ops! Rota não encontrada',desc:'A página que você tentou acessar não existe ou foi movida.\nVolte para o painel principal.',detail:[{hi:true,txt:'Error: Route not found (404)'},{hi:false,txt:'  at Router.resolve (/app/router.js:142)'},{hi:false,txt:'  at navigate (/app/home.js:87)'}]},
+  408:{type:'TIMEOUT',title:'Conexão expirou',desc:'O servidor demorou demais para responder.\nVerifique sua conexão e tente novamente.',detail:[{hi:true,txt:'Error: Request Timeout (408)'},{hi:false,txt:'  Servidor não respondeu em 30s.'},{hi:false,txt:'  Verifique sua conexão com a internet.'}]},
+  429:{type:'MUITAS REQUISIÇÕES',title:'Limite de requisições atingido',desc:'Você fez muitas requisições em pouco tempo.\nAguarde alguns segundos e tente novamente.',detail:[{hi:true,txt:'Error: Too Many Requests (429)'},{hi:false,txt:'  Rate limit excedido.'}]},
+  500:{type:'ERRO DO SERVIDOR',title:'Falha interna no servidor',desc:'Algo deu errado no servidor. Isso não é culpa sua.\nTente novamente em alguns instantes.',detail:[{hi:true,txt:'Error: Internal Server Error (500)'},{hi:false,txt:'  Erro inesperado no servidor.'},{hi:false,txt:'  Verifique o console do Firebase.'}]},
+  503:{type:'SERVIÇO INDISPONÍVEL',title:'Serviço temporariamente fora',desc:'O servidor está em manutenção ou sobrecarregado.\nTente novamente em alguns minutos.',detail:[{hi:true,txt:'Error: Service Unavailable (503)'},{hi:false,txt:'  Servidor temporariamente indisponível.'}]},
+  offline:{type:'SEM CONEXÃO',title:'Você está offline',desc:'Sem conexão com a internet detectada.\nVerifique seu Wi-Fi ou dados móveis.',detail:[{hi:true,txt:'Error: Network Offline'},{hi:false,txt:'  navigator.onLine = false'},{hi:false,txt:'  Verifique sua conexão de rede.'}]},
+  firebase:{type:'ERRO FIREBASE',title:'Falha na conexão com o banco',desc:'Não foi possível conectar ao Firebase.\nVerifique sua conexão ou tente novamente.',detail:[{hi:true,txt:'Error: Firebase connection failed'},{hi:false,txt:'  Firestore / Auth indisponível.'},{hi:false,txt:'  Verifique as regras do Firebase Console.'}]},
+  generic:{type:'ERRO INESPERADO',title:'Algo deu errado',desc:'Um erro inesperado ocorreu.\nTente recarregar a página ou voltar ao início.',detail:[{hi:true,txt:'Error: Unknown error'},{hi:false,txt:'  Erro não classificado.'},{hi:false,txt:'  Verifique o console do navegador (F12).'}]}
+};
+function getErrorCode(){
+  const p=new URLSearchParams(window.location.search);
+  const c=p.get('code')||p.get('error');
+  if(c)return isNaN(c)?c:parseInt(c);
+  if(!navigator.onLine)return 'offline';
+  return 404;
+}
+function renderError(code){
+  const data=ERRORS[code]||ERRORS.generic;
+  const isNum=!isNaN(code);
+  const codeEl=document.getElementById('errCode');
+  const codeStr=isNum?String(code):'!';
+  codeEl.textContent=codeStr;
+  codeEl.setAttribute('data-code',codeStr);
+  if(code>=500||code==='firebase'){codeEl.style.color='var(--red)';codeEl.style.textShadow='0 0 40px rgba(255,59,59,.5)'}
+  else if(code===401||code===403){codeEl.style.color='var(--yellow)';codeEl.style.textShadow='0 0 40px rgba(255,214,0,.4)'}
+  else if(code==='offline'){codeEl.style.color='var(--mid)';codeEl.style.textShadow='none'}
+  document.getElementById('errType').textContent=data.type;
+  document.getElementById('errTitle').textContent=data.title;
+  document.getElementById('errDesc').innerHTML=data.desc.replace(/\n/g,'<br/>').replace(/(painel principal|Home|início)/gi,'<span class="highlight">$1</span>');
+  document.getElementById('status-txt').textContent=isNum?`ERRO ${code} — ${data.type}`:`ERRO — ${data.type}`;
+  const detailEl=document.getElementById('errDetail');
+  detailEl.innerHTML=data.detail.map((l,i)=>`<div class="err-line"><span class="err-line-num">${i+1}</span><span class="err-line-txt${l.hi?' hi':''}">${l.txt}</span></div>`).join('')+`<div class="err-line"><span class="err-line-num">${data.detail.length+1}</span><span class="err-line-txt">  URL: <span class="hi">${window.location.href}</span></span></div>`;
+  const card=document.getElementById('errorCard');
+  card.style.animation='none';
+  requestAnimationFrame(()=>{card.style.animation='shake .4s ease'});
+  setTimeout(()=>{card.style.animation=''},500);
+}
+let detailOpen=false;
+function toggleDetail(){
+  detailOpen=!detailOpen;
+  document.getElementById('errDetail').classList.toggle('show',detailOpen);
+  document.getElementById('toggleDetail').textContent=detailOpen?'ocultar detalhes técnicos':'ver detalhes técnicos';
+}
+function goHome(){window.location.href='/home.html'}
+function goBack(){if(history.length>1)history.back();else goHome()}
+function reload(){window.location.reload()}
+function spawnFloatChars(){
+  const container=document.getElementById('floatChars');
+  const chars=['01','//','{}','[]','<>','&&','!=','=>','::','--','RF','LUA','FN','IF','END'];
+  for(let i=0;i<18;i++){
+    const el=document.createElement('div');
+    el.className='fc';
+    el.textContent=chars[Math.floor(Math.random()*chars.length)];
+    el.style.left=Math.random()*100+'%';
+    el.style.animationDuration=(8+Math.random()*14)+'s';
+    el.style.animationDelay=(Math.random()*10)+'s';
+    el.style.fontSize=(9+Math.random()*7)+'px';
+    container.appendChild(el);
+  }
+}
+function updateTime(){
+  const now=new Date();
+  document.getElementById('footerTime').textContent=now.toLocaleTimeString('pt-BR')+' // '+now.toLocaleDateString('pt-BR');
+}
+const errorCode=getErrorCode();
+renderError(errorCode);
+spawnFloatChars();
+updateTime();
+setInterval(updateTime,1000);
+window.addEventListener('offline',()=>renderError('offline'));
+window.addEventListener('online',()=>{if(errorCode==='offline')window.location.reload()});
+// API publica: use em qualquer lugar do app
+// window.RFError(404) ou window.RFError('firebase')
+window.RFError=function(code,msg){
+  let url='/error.html?code='+code;
+  if(msg)url+='&msg='+encodeURIComponent(msg);
+  window.location.href=url;
+};
+</script>
+</body>
+</html>
