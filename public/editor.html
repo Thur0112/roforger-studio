@@ -2099,7 +2099,7 @@ App.autosave={
   }
 };
 
-loadFromStorage(){
+App.loadFromStorage=function(){
   try{
     // Tenta carregar o projeto atual da sessão primeiro
     const projKey = (function(){
@@ -2115,7 +2115,7 @@ loadFromStorage(){
     App.state.nodes.forEach(n=>App.nodes.renderOne(n));App.nodes.upCount();App.canvas.upTf();
     toast('💾 Canvas restaurado — '+App.state.nodes.length+' elementos','i')
   }catch(e){}
-},
+};
 
 App.shortcuts={
   init(){

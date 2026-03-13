@@ -279,9 +279,9 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
       </div>
 
       <div class="sb-section">App</div>
-      <div class="sb-item" id="btn-install-app" onclick="installApp()" style="display:none">
+      <div class="sb-item" id="btn-install-app" onclick="installApp()">
         <span class="sb-item-ico">📲</span> Baixar App
-        <span class="sb-badge" style="background:var(--green);color:#000">NOVO</span>
+        <span class="sb-badge" style="background:var(--green);color:#000">PWA</span>
       </div>
       <div class="sb-item" id="btn-install-unavail" style="display:none;opacity:.4;cursor:default">
         <span class="sb-item-ico">✅</span> App Instalado
@@ -473,6 +473,32 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
 
     </div><!-- /content -->
   </div><!-- /main -->
+<!-- Modal: Instalar App -->
+<div class="overlay" id="m-install" onclick="if(event.target===this)closeModal('m-install')">
+  <div class="msheet" onclick="event.stopPropagation()" style="max-width:420px">
+    <div class="mbar"></div>
+    <div class="mt">📲 INSTALAR ROFORGER</div>
+    <div class="ms">// Adicione à tela inicial do seu dispositivo</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+      <div style="background:rgba(0,255,157,.06);border:1px solid rgba(0,255,157,.2);border-radius:8px;padding:12px 14px">
+        <div style="font-family:'Orbitron',monospace;font-size:10px;color:#00ff9d;margin-bottom:6px">🤖 ANDROID (Chrome)</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);line-height:1.7">Menu ⋮ (três pontos) → <b style="color:var(--txt)">Instalar aplicativo</b> ou <b style="color:var(--txt)">Adicionar à tela inicial</b></div>
+      </div>
+      <div style="background:rgba(26,140,255,.06);border:1px solid rgba(26,140,255,.2);border-radius:8px;padding:12px 14px">
+        <div style="font-family:'Orbitron',monospace;font-size:10px;color:#42b3ff;margin-bottom:6px">🍎 iOS (Safari)</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);line-height:1.7">Botão <b style="color:var(--txt)">Compartilhar</b> (quadrado com seta) → <b style="color:var(--txt)">Adicionar à Tela de Início</b></div>
+      </div>
+      <div style="background:rgba(255,77,26,.06);border:1px solid rgba(255,77,26,.2);border-radius:8px;padding:12px 14px">
+        <div style="font-family:'Orbitron',monospace;font-size:10px;color:var(--acc2);margin-bottom:6px">💻 PC (Chrome / Edge)</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);line-height:1.7">Ícone <b style="color:var(--txt)">⊕</b> na barra de endereço → <b style="color:var(--txt)">Instalar</b></div>
+      </div>
+    </div>
+    <div class="macts">
+      <button class="mbt cancel" onclick="closeModal('m-install')">Fechar</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- /app -->
 
 <!-- Modal: Novo Projeto -->
@@ -720,12 +746,18 @@ window.addEventListener('appinstalled', () => {
 
 async function installApp() {
   if (!_pwaPrompt) {
-    // iOS não suporta prompt — orientar manualmente
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isMobile = /android|iphone|ipad/i.test(navigator.userAgent);
     if (isIOS) {
-      toast('No iOS: toque em Compartilhar → Adicionar à Tela Inicial', 'i');
+      toast('iOS: toque em Compartilhar → Adicionar à Tela Inicial', 'i');
+    } else if (window.matchMedia('(display-mode: standalone)').matches) {
+      toast('App já está instalado!', 's');
     } else {
-      toast('Abra pelo Chrome para instalar o app', 'w');
+      // Show install modal with instructions
+      document.getElementById('m-install') && openModal('m-install');
+      if (!document.getElementById('m-install')) {
+        toast('No Chrome: menu ⋮ → Instalar aplicativo', 'i');
+      }
     }
     return;
   }
