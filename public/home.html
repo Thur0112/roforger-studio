@@ -228,6 +228,21 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
 /* ── Toast wrap (shared.js injeta, mas garante estilo) ── */
 #toastWrap{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:90%;max-width:320px}
 </style>
+  <!-- PWA -->
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="RoForger"/>
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(r => console.log('[SW] Registered:', r.scope))
+          .catch(e => console.warn('[SW] Error:', e));
+      });
+    }
+  </script>
 </head>
 <body>
 
@@ -745,29 +760,33 @@ window.addEventListener('appinstalled', () => {
 });
 
 async function installApp() {
-  if (!_pwaPrompt) {
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isMobile = /android|iphone|ipad/i.test(navigator.userAgent);
-    if (isIOS) {
-      toast('iOS: toque em Compartilhar → Adicionar à Tela Inicial', 'i');
-    } else if (window.matchMedia('(display-mode: standalone)').matches) {
-      toast('App já está instalado!', 's');
-    } else {
-      // Show install modal with instructions
-      document.getElementById('m-install') && openModal('m-install');
-      if (!document.getElementById('m-install')) {
-        toast('No Chrome: menu ⋮ → Instalar aplicativo', 'i');
-      }
+  // Already installed as PWA?
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    toast('✅ App já está instalado!', 's');
+    return;
+  }
+  // Native install prompt available (Android/Chrome/Edge PC)
+  if (_pwaPrompt) {
+    _pwaPrompt.prompt();
+    const { outcome } = await _pwaPrompt.userChoice;
+    if (outcome === 'accepted') {
+      _pwaPrompt = null;
+      document.getElementById('install-banner').style.display = 'none';
+      localStorage.setItem('rf_banner_dismissed', '1');
     }
     return;
   }
-  _pwaPrompt.prompt();
-  const { outcome } = await _pwaPrompt.userChoice;
-  if (outcome === 'accepted') {
-    _pwaPrompt = null;
-    document.getElementById('install-banner').style.display = 'none';
-    localStorage.setItem('rf_banner_dismissed', '1');
+  // Fallback: show instructions modal
+  const modal = document.getElementById('m-install');
+  if (modal) { modal.classList.add('open'); return; }
+  // Last resort toast
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (isIOS) {
+    toast('iOS: Compartilhar → Adicionar à Tela Inicial', 'i');
+  } else {
+    toast('Chrome: menu ⋮ → Instalar aplicativo', 'i');
   }
+  // This is a placeholder - prompt not yet captured
 }
 
 // ── Modals ──

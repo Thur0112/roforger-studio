@@ -1214,7 +1214,7 @@ docs:{
   show(id){document.querySelectorAll('.docs-nav-item').forEach(el=>el.classList.remove('active'));const nav=document.getElementById('dn-'+id);if(nav)nav.classList.add('active');document.getElementById('docs-content').innerHTML=DATA.docs.content[id]||'<div style="color:var(--dim);padding:20px">Em breve.</div>'}
 }
 
-};
+}; // end App
 
 // PP — PROPS PANEL CONTROLLER (tabs, script view, logic)
 const PP={
@@ -2087,25 +2087,19 @@ App.autosave={
   save(){
     if(!App.state.nodes.length&&!App.state.savedFx.length)return;
     try{
-      const data = JSON.stringify({v4:true,nodes:App.state.nodes,fx:App.state.savedFx,nc:App.state.nc,c:{x:App.state.cx,y:App.state.cy,z:App.state.cz}});
-      // Salvar com chave do projeto específico E chave geral (backup)
-      const projKey = (function(){
-        try { const p = JSON.parse(sessionStorage.getItem('rf_current_project')); return p && p.id ? 'roforger-proj-'+p.id : null; } catch(e){ return null; }
-      })();
-      if(projKey) localStorage.setItem(projKey, data);
-      localStorage.setItem('roforger-v4', data);
-      const i=document.getElementById('autosave-ind');i.classList.add('show');setTimeout(()=>i.classList.remove('show'),1500)
+      const data=JSON.stringify({v4:true,nodes:App.state.nodes,fx:App.state.savedFx,nc:App.state.nc,c:{x:App.state.cx,y:App.state.cy,z:App.state.cz}});
+      const projKey=(function(){try{const p=JSON.parse(sessionStorage.getItem('rf_current_project'));return p&&p.id?'roforger-proj-'+p.id:null;}catch(e){return null;}})();
+      if(projKey)localStorage.setItem(projKey,data);
+      localStorage.setItem('roforger-v4',data);
+      const i=document.getElementById('autosave-ind');i.classList.add('show');setTimeout(()=>i.classList.remove('show'),1500);
     }catch(e){}
   }
 };
 
 App.loadFromStorage=function(){
   try{
-    // Tenta carregar o projeto atual da sessão primeiro
-    const projKey = (function(){
-      try { const p = JSON.parse(sessionStorage.getItem('rf_current_project')); return p && p.id ? 'roforger-proj-'+p.id : 'roforger-v4'; } catch(e){ return 'roforger-v4'; }
-    })();
-    const raw = localStorage.getItem(projKey) || localStorage.getItem('roforger-v4');
+    const projKey=(function(){try{const p=JSON.parse(sessionStorage.getItem('rf_current_project'));return p&&p.id?'roforger-proj-'+p.id:null;}catch(e){return null;}})();
+    const raw=(projKey&&localStorage.getItem(projKey))||localStorage.getItem('roforger-v4');
     if(!raw)return;
     const d=JSON.parse(raw);
     if(!d||!d.nodes||!d.nodes.length)return;
@@ -2113,7 +2107,7 @@ App.loadFromStorage=function(){
     App.state.nc=d.nc||(Math.max(...d.nodes.map(n=>n.uid),0)+1);
     if(d.c){App.state.cx=d.c.x||0;App.state.cy=d.c.y||0;App.state.cz=d.c.z||1}
     App.state.nodes.forEach(n=>App.nodes.renderOne(n));App.nodes.upCount();App.canvas.upTf();
-    toast('💾 Canvas restaurado — '+App.state.nodes.length+' elementos','i')
+    toast('💾 Canvas restaurado — '+App.state.nodes.length+' elementos','i');
   }catch(e){}
 };
 
