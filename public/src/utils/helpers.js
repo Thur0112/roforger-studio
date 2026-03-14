@@ -70,17 +70,6 @@ export function downloadFile(content, filename, mime = 'text/plain') {
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
 
-// Syntax highlight for Lua code
-export function syntaxHL(code) {
-  if (!code) return '';
-  return code
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/(--[^\n]*)/g,'<span class="lua-cmt">$1</span>')
-    .replace(/\b(local|function|end|if|then|else|elseif|for|while|do|return|not|and|or|in|repeat|until|break)\b/g,'<span class="lua-kw">$1</span>')
-    .replace(/\b(true|false|nil)\b/g,'<span class="lua-bool">$1</span>')
-    .replace(/\b(\d+\.?\d*)\b/g,'<span class="lua-num">$1</span>')
-    .replace(/"([^"]*)"/g,'"<span class="lua-str">$1</span>"');
-}
 
 // Unique ID generator
 export function uid() {
