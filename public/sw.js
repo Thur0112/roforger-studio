@@ -3,14 +3,44 @@
 //  Cache + offline support para PWA
 // ═══════════════════════════════════════════════
 
-const CACHE_NAME    = 'roforger-v2';
-const CACHE_STATIC  = 'roforger-static-v2';
+// ── VERSÃO ATUALIZADA: v3 (adicionados arquivos src/) ──
+const CACHE_NAME    = 'roforger-v3';
+const CACHE_STATIC  = 'roforger-static-v3';
 
 const STATIC_FILES = [
+  // ── Páginas ──
   '/home.html',
   '/error.html',
   '/manifest.json',
   '/updates.js',
+
+  // ── Editor (arquivos novos) ──
+  '/editor.html',
+  '/editor.js',
+
+  // ── src/core ──
+  '/src/core/firebase.js',
+  '/src/core/errors.js',
+
+  // ── src/editor ──
+  '/src/editor.css',
+  '/src/editor/canvas.js',
+  '/src/editor/nodes.js',
+  '/src/editor/connections.js',
+
+  // ── src/ui ──
+  '/src/ui/explorer.js',
+  '/src/ui/toolbar.js',
+  '/src/ui/panels.js',
+
+  // ── src/utils ──
+  '/src/utils/storage.js',
+  '/src/utils/helpers.js',
+
+  // ── src/modules ──
+  '/src/modules/gen.js',
+
+  // ── Assets ──
   '/icons/pwa/icon-192.png',
   '/icons/pwa/icon-512.png',
   '/apple-touch-icon.png',

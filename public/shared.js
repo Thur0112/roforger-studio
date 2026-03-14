@@ -92,6 +92,10 @@ export async function fetchUserProjects(uid) {
 }
 
 export async function saveProject(proj) {
+  if (!proj || typeof proj !== 'object') {
+    console.error('[RoForger] saveProject: projeto inválido', proj);
+    return null;
+  }
   const { db, collection, addDoc, doc, updateDoc } = window._fb;
   try {
     if (proj.id && !proj.id.startsWith('demo-')) {
@@ -122,7 +126,7 @@ export async function deleteProject(id) {
   }
 }
 
-// ── Project session (compartilha projeto entre home→editor via sessionStorage) ──
+// ── Project session ──
 export function setCurrentProject(proj) {
   sessionStorage.setItem('rf_current_project', JSON.stringify(proj));
 }
@@ -137,22 +141,29 @@ export function goToHome()   { window.location.href = '/home.html'; }
 
 window._rf_shared = { toast, loginGoogle, logoutUser, fetchUserProjects, saveProject, deleteProject, setCurrentProject, getCurrentProject, goToEditor, goToHome };
 
-// ── API global de erros (disponível em todas as páginas via shared.js) ──
-// Uso: window.RFError(404) | window.RFError('firebase') | window.RFError(503)
+// ── API global de erros ──
 window.RFError = function(code, msg) {
   let url = '/error.html?code=' + code;
   if (msg) url += '&msg=' + encodeURIComponent(msg);
   window.location.href = url;
 };
 
-// Detectar perda de conexão em tempo real (qualquer página)
+// ── Conexão offline/online ──
 window.addEventListener('offline', () => {
-  window.RFError('offline');
+  if (window.toast) window.toast('Sem conexão — alterações não serão salvas na nuvem', 'w');
+  console.warn('[RoForger] Conexão perdida');
+});
+window.addEventListener('online', () => {
+  if (window.toast) window.toast('Conexão restaurada ✔', 's');
+  console.info('[RoForger] Conexão restaurada');
 });
 
-// Detectar falha total do Firebase após 8s sem inicializar
+// ── Firebase timeout (8s) ──
 setTimeout(() => {
   if (typeof window._fb === 'undefined') {
+    console.error('[RoForger] Firebase não carregou após 8s — redirecionando para error.html');
     window.RFError('firebase');
+  } else {
+    console.info('[RoForger] Firebase OK após verificação de 8s');
   }
 }, 8000);
