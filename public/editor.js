@@ -1,4 +1,6 @@
 // ═══════════════════════════════════════════════
+
+function rfSanitize(str){if(typeof str!=='string')return str;return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');}
 //  ROFORGER STUDIO — editor.js  v2.0
 //  Build: 202603140725
 // ═══════════════════════════════════════════════
@@ -123,7 +125,7 @@ UIS.InputBegan:Connect(function(i, gp)
     canDash = false
     local dir = hum.MoveDirection
     if dir.Magnitude < 0.1 then dir = hrp.CFrame.LookVector end
-    hrp.Velocity = dir * POWER
+    hrp.AssemblyLinearVelocity = dir * POWER
     task.wait(COOLDOWN)
     canDash = true
   end
@@ -540,7 +542,7 @@ Players.PlayerAdded:Connect(function(plr)
     if not isAdmin(plr) then return end
     local args = msg:lower():split(" ")
     local cmd = args[1]:sub(2) -- remove prefix
-    if not msg:sub(1,1) == PREFIX then return end
+    if msg:sub(1,1) ~= PREFIX then return end
 
     if cmd == "kick" and args[2] then
       local target = Players:FindFirstChild(args[2])
@@ -597,11 +599,15 @@ templates:[
 {name:'Open World RPG',icon:'🌍',desc:'Mundo completo com clima, dia/noite e NPCs',tags:['DayNight','Weather','BasicNPC','Enemy','SaveLoad']}],
 
 tabs:[
-{id:'builder',icon:'🔨',label:'Builder'},
-{id:'systems',icon:'📦',label:'Sistemas'},
-{id:'effects',icon:'✨',label:'Efeitos'},
-{id:'templates',icon:'📋',label:'Templates'},
-{id:'docs',icon:'📖',label:'Docs'}],
+{id:'builder',icon:'🔨',label:'🔨 Builder'},
+{id:'systems',icon:'📦',label:'📦 Sistemas'},
+{id:'effects',icon:'✨',label:'✨ Efeitos'},
+{id:'templates',icon:'📋',label:'📋 Templates'},
+{id:'docs',icon:'📖',label:'📖 Docs'},
+{id:'gerador',icon:'⚡',label:'⚡ Gerador'},
+{id:'aprender',icon:'🎓',label:'🎓 Aprender'},
+{id:'game-templates',icon:'🎮',label:'🎮 Jogos'},
+],
 
 docs:{
 sections:[{id:'intro',icon:'🏠',label:'Início'},{id:'builder',icon:'🔨',label:'Builder',section:'Guias'},{id:'systems',icon:'📦',label:'Sistemas',section:'Guias'},{id:'effects',icon:'✨',label:'Efeitos',section:'Guias'},{id:'shortcuts',icon:'⌨️',label:'Atalhos',section:'Extra'}],
@@ -642,13 +648,13 @@ ui(){const u=document.getElementById('undo-btn'),r=document.getElementById('redo
 
 // APP
 const App={
-state:{nodes:[],selId:null,nc:1,cx:0,cy:0,cz:1,panning:false,tool:'select',gridSnap:false,showConn:false,showMM:true,savedFx:[],curFx:null,curFxProps:{},fxFrame:null,guidedAns:{},scriptTarget:null},
+state:{nodes:[],connections:[],selId:null,nc:1,cx:0,cy:0,cz:1,panning:false,tool:'select',gridSnap:false,showConn:true,showMM:true,savedFx:[],curFx:null,curFxProps:{},fxFrame:null,guidedAns:{},scriptTarget:null},
 
 reset(){
   // Reset state for new project
   if(this.state.fxFrame)cancelAnimationFrame(this.state.fxFrame);
   this.state.nodes.forEach(n=>{const d=document.getElementById('n-'+n.uid);if(d)d.remove()});
-  this.state={nodes:[],selId:null,nc:1,cx:0,cy:0,cz:1,panning:false,tool:'select',gridSnap:false,showConn:false,showMM:true,savedFx:[],curFx:null,curFxProps:{},fxFrame:null,guidedAns:{},scriptTarget:null};
+  this.state={nodes:[],connections:[],selId:null,nc:1,cx:0,cy:0,cz:1,panning:false,tool:'select',gridSnap:false,showConn:true,showMM:true,savedFx:[],curFx:null,curFxProps:{},fxFrame:null,guidedAns:{},scriptTarget:null};
   History.stack=[];History.index=-1;History.ui();
   document.getElementById('node-count').textContent='0 elementos';
   document.getElementById('pp-body').innerHTML='<div class="pp-empty">Selecione um<br>elemento no canvas</div>';
@@ -716,7 +722,6 @@ explorer:{
         el.addEventListener('dragstart',e=>{
           e.dataTransfer.setData('text/plain',item.id);
           e.dataTransfer.effectAllowed='copy';
-          // drag image customizada
           const ghost=document.createElement('div');
           ghost.style.cssText='position:fixed;top:-999px;background:#0f1629;color:#e8eaf0;padding:6px 12px;border-radius:6px;font-size:11px;border:1px solid rgba(255,77,26,.4);font-family:JetBrains Mono,monospace';
           ghost.textContent=item.icon+' '+item.name;
@@ -736,8 +741,6 @@ canvas:{
   init(){
     const cvs=document.getElementById('inf-canvas'),vp=document.getElementById('canvas-vp');
     // Remove old listeners by cloning
-    // Não clonar o canvas — isso remove listeners de outros sistemas
-    // Em vez disso, usar flag para evitar dupla inicialização
     if(cvs._rfInited){return;}
     cvs._rfInited=true;
     const c=cvs;
@@ -756,6 +759,7 @@ canvas:{
         const d=App.state._drag;const node=App.state.nodes.find(n=>n.uid===d.uid);
         if(node&&(node.x!==d.sx||node.y!==d.sy)){const fx=node.x,fy=node.y;History.push({desc:'Mover',undo:()=>{node.x=d.sx;node.y=d.sy;App.nodes.renderOne(node)},redo:()=>{node.x=fx;node.y=fy;App.nodes.renderOne(node)}})}
         App.state._drag=null;
+        App.connections.render();
       }
       App.autosave.schedule();
     });
@@ -770,15 +774,11 @@ canvas:{
     c.addEventListener('dragover',e=>e.preventDefault());
     c.addEventListener('dragenter',e=>e.preventDefault());
     c.addEventListener('drop',e=>{
-      e.preventDefault();
-      const id=e.dataTransfer.getData('text/plain');
-      if(!id)return;
-      // Sempre usa inf-canvas como referência (independente de onde soltou)
-      const canvas=document.getElementById('inf-canvas');
-      const rect=canvas.getBoundingClientRect();
-      const x=(e.clientX-rect.left-App.state.cx)/App.state.cz;
-      const y=(e.clientY-rect.top-App.state.cy)/App.state.cz;
-      App.nodes.add(id,Math.round(x),Math.round(y));
+      e.preventDefault();const id=e.dataTransfer.getData('text/plain');if(!id)return;
+      const rect=c.getBoundingClientRect();
+      const x=Math.round((e.clientX-rect.left-App.state.cx)/App.state.cz);
+      const y=Math.round((e.clientY-rect.top-App.state.cy)/App.state.cz);
+      App.nodes.add(id,x,y);
     });
   },
   upTf(){
@@ -820,7 +820,7 @@ nodes:{
     div.classList.toggle('sel',node.uid===App.state.selId);
     const has=!!node.script;
     const propsHTML=Object.entries(node.props).slice(0,4).map(([k,v])=>`<div class="nd-prop-row"><span class="nd-prop-lbl">${k}</span><input class="nd-prop-in" value="${v}" onchange="App.nodes.setProp(${node.uid},'${k}',this.value)" onclick="event.stopPropagation()"/></div>`).join('');
-    div.innerHTML=`<div class="nd-head"><div class="nd-ico" style="background:${node.color}20;color:${node.color}">${node.icon}</div><div class="nd-ta"><div class="nd-name">${node.props.Name||node.type}</div><div class="nd-type">${node.type}</div></div><div class="nd-acts"><div class="nd-act" title="Abrir Script" onclick="App.scripts.openFor(${node.uid})">📜</div><div class="nd-act" title="Duplicar" onclick="App.nodes.duplicate(${node.uid})">⧉</div><div class="nd-act danger" title="Remover" onclick="App.nodes.remove(${node.uid})">✕</div></div></div><div class="nd-body">${propsHTML}<div class="nd-sbadge ${has?'has':''}" onclick="App.scripts.openFor(${node.uid})">${has?'✓ Script definido — clique para editar':'＋ Adicionar Script'}</div></div>`;
+    div.innerHTML=`<div class="nd-head"><div class="nd-ico" style="background:${node.color}20;color:${node.color}">${node.icon}</div><div class="nd-ta"><div class="nd-name">${node.props.Name||node.type}</div><div class="nd-type">${node.type}</div></div><div class="nd-acts"><div class="nd-act" title="Conectar a outro node" onclick="App.connections._connecting&&App.connections._fromUid!=${node.uid}?App.connections.finishConnect(${node.uid}):App.connections.startConnect(${node.uid})" style="color:var(--blue)">🔗</div><div class="nd-act" title="Abrir Script" onclick="App.scripts.openFor(${node.uid})">📜</div><div class="nd-act" title="Duplicar" onclick="App.nodes.duplicate(${node.uid})">⧉</div><div class="nd-act danger" title="Remover" onclick="App.nodes.remove(${node.uid})">✕</div></div></div><div class="nd-body">${propsHTML}<div class="nd-sbadge ${has?'has':''}" onclick="App.scripts.openFor(${node.uid})">${has?'✓ Script definido — clique para editar':'＋ Adicionar Script'}</div></div>`;
   },
   dragMove(e){
     const d=App.state._drag;if(!d)return;
@@ -852,7 +852,7 @@ nodes:{
     App.state.nodes=App.state.nodes.filter(n=>n.uid!==uid);
     if(App.state.selId===uid){App.state.selId=null;App.props.render()}
     this.upCount();
-    if(!silent&&node)History.push({desc:'Del '+node.type,undo:()=>{App.state.nodes.push(node);this.renderOne(node);this.upCount()},redo:()=>this.remove(uid,true)});
+    App.connections.removeAll(uid);if(!silent&&node)History.push({desc:'Del '+node.type,undo:()=>{App.state.nodes.push(node);this.renderOne(node);this.upCount()},redo:()=>this.remove(uid,true)});
     App.autosave.schedule();
   },
   deleteSelected(){if(App.state.selId)this.remove(App.state.selId)},
@@ -914,12 +914,95 @@ minimap:{
 },
 
 connections:{
-  toggle(){App.state.showConn=!App.state.showConn;this.render()},
+  // ── Adiciona conexão entre dois nodes ──
+  add(fromUid,toUid){
+    if(fromUid===toUid)return;
+    const exists=App.state.connections.find(c=>c.from===fromUid&&c.to===toUid);
+    if(exists)return;
+    App.state.connections.push({from:fromUid,to:toUid});
+    this.render();
+    App.autosave.schedule();
+    toast('🔗 Conectado!','i');
+  },
+  // ── Remove conexão ──
+  remove(fromUid,toUid){
+    App.state.connections=App.state.connections.filter(c=>!(c.from===fromUid&&c.to===toUid));
+    this.render();
+    App.autosave.schedule();
+  },
+  // ── Remove todas as conexões de um node ──
+  removeAll(uid){
+    App.state.connections=App.state.connections.filter(c=>c.from!==uid&&c.to!==uid);
+    this.render();
+  },
+  // ── Toggle visibilidade ──
+  toggle(){App.state.showConn=!App.state.showConn;this.render();toast(App.state.showConn?'🔗 Conexões visíveis':'🔗 Conexões ocultas','i')},
+  // ── Posição de saída de um node (lado direito, centro) ──
+  _getPort(uid,side='out'){
+    const node=App.state.nodes.find(n=>n.uid===uid);
+    if(!node)return null;
+    const el=document.getElementById('n-'+uid);
+    const w=el?el.offsetWidth:220;
+    const h=el?el.offsetHeight:80;
+    if(side==='out')return{x:node.x+w,y:node.y+h/2};
+    return{x:node.x,y:node.y+h/2};
+  },
+  // ── Renderiza todas as conexões no SVG ──
   render(){
-    const svg=document.getElementById('conn-svg');if(!App.state.showConn){svg.innerHTML='';return}
-    let lines='';const ns=App.state.nodes;
-    for(let i=0;i<ns.length;i++)for(let j=i+1;j<ns.length;j++)if(ns[i].color===ns[j].color){const x1=ns[i].x+110,y1=ns[i].y+60,x2=ns[j].x+110,y2=ns[j].y+60,mx=(x1+x2)/2;lines+=`<path class="conn-line" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"/>`}
-    svg.innerHTML=lines;
+    const svg=document.getElementById('conn-svg');
+    if(!svg)return;
+    svg.innerHTML='';
+    if(!App.state.showConn)return;
+    if(!App.state.connections||!App.state.connections.length)return;
+    const ns=new Map(App.state.nodes.map(n=>[n.uid,n]));
+    App.state.connections.forEach(conn=>{
+      const a=this._getPort(conn.from,'out');
+      const b=this._getPort(conn.to,'in');
+      if(!a||!b)return;
+      const nodeA=ns.get(conn.from);
+      const color=(nodeA&&nodeA.color)||'var(--acc)';
+      const mx=(a.x+b.x)/2;
+      // Bezier curve
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',`M${a.x},${a.y} C${mx},${a.y} ${mx},${b.y} ${b.x},${b.y}`);
+      path.setAttribute('fill','none');
+      path.setAttribute('stroke',color);
+      path.setAttribute('stroke-width','2');
+      path.setAttribute('stroke-dasharray','6 3');
+      path.setAttribute('opacity','0.7');
+      path.style.cursor='pointer';
+      path.title=`Clique para remover conexão`;
+      path.addEventListener('click',()=>{
+        if(confirm('Remover esta conexão?'))this.remove(conn.from,conn.to);
+      });
+      // Arrow dot at destination
+      const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('cx',b.x);dot.setAttribute('cy',b.y);dot.setAttribute('r','4');
+      dot.setAttribute('fill',color);dot.setAttribute('opacity','0.8');
+      svg.appendChild(path);
+      svg.appendChild(dot);
+    });
+  },
+  // ── Inicia modo de conexão (clica em node A depois node B) ──
+  _connecting:false,
+  _fromUid:null,
+  startConnect(uid){
+    this._connecting=true;
+    this._fromUid=uid;
+    document.getElementById('inf-canvas').style.cursor='crosshair';
+    toast('🔗 Clique em outro node para conectar (ESC cancela)','i');
+  },
+  finishConnect(uid){
+    if(!this._connecting)return false;
+    if(uid!==this._fromUid)this.add(this._fromUid,uid);
+    this._connecting=false;
+    this._fromUid=null;
+    document.getElementById('inf-canvas').style.cursor='';
+    return true;
+  },
+  cancelConnect(){
+    this._connecting=false;this._fromUid=null;
+    document.getElementById('inf-canvas').style.cursor='';
   }
 },
 
@@ -1428,7 +1511,7 @@ UIS.InputBegan:Connect(function(i, gp)
     if dir.Magnitude < 0.1 then
       dir = hrp.CFrame.LookVector  -- se parado, dash para frente
     end
-    hrp.Velocity = dir * POWER
+    hrp.AssemblyLinearVelocity = dir * POWER
     task.wait(COOLDOWN)
     canDash = true
   end
@@ -1465,7 +1548,7 @@ UIS.InputBegan:Connect(function(i, gp)
     trail.Enabled = true
     local dir = hum.MoveDirection
     if dir.Magnitude < 0.1 then dir = hrp.CFrame.LookVector end
-    hrp.Velocity = dir * POWER
+    hrp.AssemblyLinearVelocity = dir * POWER
     task.wait(EFFECT_TIME)
     trail.Enabled = false
     task.wait(COOLDOWN - EFFECT_TIME)
@@ -1936,27 +2019,138 @@ App.scripts={
   openEditorFor(uid){SE.openFor(uid)},
   openGlobal(){
     if(!App.state.nodes.length){toast('⚠️ Adicione elementos primeiro!','w');return}
-    const L=['-- RoForger Studio — Projeto Completo','-- '+App.state.nodes.length+' sistemas · '+new Date().toLocaleString('pt-BR'),'-- 📍 Cole em ServerScriptService ou StarterPlayerScripts',''];
-    App.state.nodes.forEach(n=>{L.push('-- ─── '+n.icon+' '+(n.props.Name||n.type)+' ───');if(n.script)L.push(n.script);else L.push('print("[RoForger] '+(n.props.Name||n.type)+' ativo")');L.push('')});
-    const code=L.join('\n');document.getElementById('gmodal-pre').innerHTML=syntaxHL(code);window._globalScript=code;openM('m-global');
+    const L=[];
+    const nodes=App.state.nodes;
+    const conns=App.state.connections||[];
+
+    // ── Cabeçalho ──
+    L.push('-- ═══════════════════════════════════════════');
+    L.push('--  RoForger Studio — Projeto Completo');
+    L.push('--  '+nodes.length+' sistemas · '+new Date().toLocaleString('pt-BR'));
+    L.push('--  Cole em: ServerScriptService');
+    L.push('-- ═══════════════════════════════════════════');
+    L.push('');
+
+    // ── Sistema de eventos interno (se houver conexões) ──
+    if(conns.length){
+      L.push('-- ── Sistema de Eventos Internos ──────────────');
+      L.push('local Events = {}');
+      L.push('function Events:Fire(name, ...)');
+      L.push('  if not self[name] then return end');
+      L.push('  for _, fn in ipairs(self[name]) do fn(...) end');
+      L.push('end');
+      L.push('function Events:On(name, callback)');
+      L.push('  self[name] = self[name] or {}');
+      L.push('  table.insert(self[name], callback)');
+      L.push('end');
+      L.push('');
+    }
+
+    // ── Verificação de objetos necessários ──
+    const workspaceRefs=[];
+    nodes.forEach(n=>{
+      if(n.script){
+        const matches=n.script.match(/workspace[:\.][\w]+\(?["']?([\w]+)/g)||[];
+        matches.forEach(m=>{
+          const name=m.replace(/workspace[:\.][\w]+\(?["']?/,'').replace(/["']/g,'');
+          if(name&&name.length>2&&!workspaceRefs.includes(name))workspaceRefs.push(name);
+        });
+      }
+    });
+    if(workspaceRefs.length){
+      L.push('-- ── Verificação de Objetos no Workspace ──────');
+      L.push('local function checkWorkspace(name)');
+      L.push('  local obj = workspace:FindFirstChild(name)');
+      L.push('  if not obj then');
+      L.push('    warn("[RoForger] OBJETO NÃO ENCONTRADO: " .. name)');
+      L.push('    warn("[RoForger] Crie este objeto no Workspace do Roblox Studio")');
+      L.push('    return false');
+      L.push('  end');
+      L.push('  return true');
+      L.push('end');
+      L.push('');
+      L.push('-- Verificando objetos necessários...');
+      workspaceRefs.forEach(ref=>{
+        L.push('checkWorkspace("'+ref+'")');
+      });
+      L.push('');
+    }
+
+    // ── Gerar código de cada node em ordem topológica ──
+    // Nodes sem conexões de entrada primeiro
+    const hasIncoming=new Set(conns.map(c=>c.to));
+    const roots=nodes.filter(n=>!hasIncoming.has(n.uid));
+    const rest=nodes.filter(n=>hasIncoming.has(n.uid));
+    const ordered=[...roots,...rest];
+
+    ordered.forEach(n=>{
+      L.push('-- ─── '+n.icon+' '+(n.props.Name||n.type)+' ─────────────');
+      // Configurações do node como comentário
+      const cfgLines=Object.entries(n.props).filter(([k,v])=>k!=='Name'&&v!==undefined).map(([k,v])=>`--   ${k} = ${v}`);
+      if(cfgLines.length){L.push('-- Configurações:');cfgLines.forEach(c=>L.push(c));}
+      // Script seguro com FindFirstChild onde necessário
+      if(n.script){
+        // Substituir WaitForChild por verificação segura
+        const safeScript=n.script
+          .replace(/workspace:WaitForChild\("(\w+)"\)/g,
+            (m,name)=>`(function()\n  local obj = workspace:FindFirstChild("${name}")\n  if not obj then warn("[RoForger] '${name}' não encontrado no Workspace!"); return nil end\n  return obj\nend)()`);
+        L.push(safeScript);
+      } else {
+        L.push('print("[RoForger] '+(n.props.Name||n.type)+' inicializado")');
+      }
+      // Conexões de saída: disparar evento
+      const outConns=conns.filter(c=>c.from===n.uid);
+      if(outConns.length){
+        outConns.forEach(c=>{
+          const target=nodes.find(x=>x.uid===c.to);
+          if(target)L.push('Events:Fire("'+target.type+'_trigger")');
+        });
+      }
+      // Conexões de entrada: escutar evento
+      const inConns=conns.filter(c=>c.to===n.uid);
+      if(inConns.length){
+        const src=nodes.find(x=>x.uid===inConns[0].from);
+        if(src){
+          L.push('Events:On("'+n.type+'_trigger", function()');
+          L.push('  print("[RoForger] '+( n.props.Name||n.type)+' acionado por fluxo")');
+          L.push('end)');
+        }
+      }
+      L.push('');
+    });
+
+    // ── Resumo de objetos necessários ──
+    if(workspaceRefs.length){
+      L.push('');
+      L.push('-- ═══════════════════════════════════════════');
+      L.push('-- OBJETOS NECESSÁRIOS NO WORKSPACE:');
+      workspaceRefs.forEach(r=>L.push('--   ✦ '+r));
+      L.push('-- Crie estes objetos no Roblox Studio');
+      L.push('-- ═══════════════════════════════════════════');
+    }
+
+    const code=L.join('\n');
+    document.getElementById('gmodal-pre').innerHTML=syntaxHL(code);
+    window._globalScript=code;
+    openM('m-global');
   },
   async copyGlobal(){try{await navigator.clipboard.writeText(window._globalScript||'');document.getElementById('gcopy-ok').style.display='block';toast('✓ Copiado!');setTimeout(()=>document.getElementById('gcopy-ok').style.display='none',2000)}catch(e){}}
 };
 
 App.project={
   clear(){if(!App.state.nodes.length)return;if(!confirm('Limpar canvas?'))return;App.state.nodes.forEach(n=>{const d=document.getElementById('n-'+n.uid);if(d)d.remove()});App.state.nodes=[];App.state.selId=null;App.props.render();App.nodes.upCount();App.autosave.save()},
-  exportJSON(){const d=JSON.stringify({v4:true,nodes:App.state.nodes,fx:App.state.savedFx,c:{x:App.state.cx,y:App.state.cy,z:App.state.cz}},null,2);const b=new Blob([d],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='roforger-projeto.json';a.click();toast('📤 Exportado!')},
-  importJSON(){const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);App.state.nodes.forEach(n=>{const el=document.getElementById('n-'+n.uid);if(el)el.remove()});App.state.nodes=d.nodes||[];App.state.savedFx=d.fx||[];App.state.nc=Math.max(...(App.state.nodes.map(n=>n.uid)||[0]),0)+1;if(d.c){App.state.cx=d.c.x||0;App.state.cy=d.c.y||0;App.state.cz=d.c.z||1}App.state.nodes.forEach(n=>App.nodes.renderOne(n));App.nodes.upCount();App.canvas.upTf();toast('📥 Importado! '+App.state.nodes.length+' elementos','i')}catch(err){toast('Arquivo inválido','e')}};reader.readAsText(file)};input.click()}
+  exportJSON(){const d=JSON.stringify({v4:true,nodes:App.state.nodes,connections:App.state.connections||[],fx:App.state.savedFx,c:{x:App.state.cx,y:App.state.cy,z:App.state.cz}},null,2);const b=new Blob([d],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='roforger-projeto.json';a.click();toast('📤 Exportado!')},
+  importJSON(){const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);App.state.nodes.forEach(n=>{const el=document.getElementById('n-'+n.uid);if(el)el.remove()});App.state.nodes=d.nodes||[];App.state.connections=d.connections||[];App.state.savedFx=d.fx||[];App.state.nc=Math.max(...(App.state.nodes.map(n=>n.uid)||[0]),0)+1;if(d.c){App.state.cx=d.c.x||0;App.state.cy=d.c.y||0;App.state.cz=d.c.z||1}App.state.nodes.forEach(n=>App.nodes.renderOne(n));App.nodes.upCount();App.canvas.upTf();toast('📥 Importado! '+App.state.nodes.length+' elementos','i')}catch(err){toast('Arquivo inválido','e')}};reader.readAsText(file)};input.click()}
 };
 
 App.autosave={
   _t:null,
-  init(){setInterval(()=>this.save(),10000)},
+  init(){if(this._interval)return;this._interval=setInterval(()=>this.save(),10000)},
   schedule(){clearTimeout(this._t);this._t=setTimeout(()=>this.save(),2000)},
   save(){
     if(!App.state.nodes.length&&!App.state.savedFx.length)return;
     try{
-      const data=JSON.stringify({v4:true,nodes:App.state.nodes,fx:App.state.savedFx,nc:App.state.nc,c:{x:App.state.cx,y:App.state.cy,z:App.state.cz}});
+      const data=JSON.stringify({v4:true,nodes:App.state.nodes,connections:App.state.connections||[],fx:App.state.savedFx,nc:App.state.nc,c:{x:App.state.cx,y:App.state.cy,z:App.state.cz}});
       const projKey=(function(){try{const p=JSON.parse(sessionStorage.getItem('rf_current_project'));return p&&p.id?'roforger-proj-'+p.id:null;}catch(e){return null;}})();
       if(projKey)localStorage.setItem(projKey,data);
       localStorage.setItem('roforger-v4',data);
@@ -1972,7 +2166,7 @@ App.loadFromStorage=function(){
     if(!raw)return;
     const d=JSON.parse(raw);
     if(!d||!d.nodes||!d.nodes.length)return;
-    App.state.nodes=d.nodes;App.state.savedFx=d.fx||[];
+    App.state.nodes=d.nodes;App.state.connections=d.connections||[];App.state.savedFx=d.fx||[];
     App.state.nc=d.nc||(Math.max(...d.nodes.map(n=>n.uid),0)+1);
     if(d.c){App.state.cx=d.c.x||0;App.state.cy=d.c.y||0;App.state.cz=d.c.z||1}
     App.state.nodes.forEach(n=>App.nodes.renderOne(n));App.nodes.upCount();App.canvas.upTf();
@@ -1991,7 +2185,7 @@ App.shortcuts={
       if(ctrl&&e.key==='d'){e.preventDefault();App.nodes.duplicateSelected()}
       if(ctrl&&e.key==='s'){e.preventDefault();App.autosave.save();toast('💾 Salvo localmente!')}
       if(e.key==='Delete'||e.key==='Backspace')App.nodes.deleteSelected();
-      if(e.key==='Escape'){App.nodes.deselect();Cmd.close();closeM('m-script');closeM('m-global')}
+      if(e.key==='Escape'){App.connections.cancelConnect();App.nodes.deselect();Cmd.close();closeM('m-script');closeM('m-global')}
     });
   }
 };
@@ -2292,7 +2486,10 @@ mouse.Button1Down:Connect(function()
 
     -- Raycast
     local unitRay = workspace.CurrentCamera:ScreenPointToRay(mouse.X, mouse.Y)
-    local result = workspace:Raycast(unitRay.Origin, unitRay.Direction * 500)
+    local params = RaycastParams.new()
+    params.FilterDescendantsInstances = {char}
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    local result = workspace:Raycast(unitRay.Origin, unitRay.Direction * 500, params)
     if result and RE then
         RE:FireServer(result.Instance, DAMAGE)
     end
