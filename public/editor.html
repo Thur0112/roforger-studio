@@ -2179,17 +2179,10 @@ function syntaxHL(code){return code.replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 window.addEventListener('load', () => {
   setTimeout(() => {
     const proj = loadProjectFromSession();
-    if (!proj) {
-      // Sem projeto na sessão = usuário não veio da home corretamente
-      if (typeof window.RFError === 'function') {
-        window.RFError(401);
-      } else {
-        window.location.href = '/home.html';
-      }
-      return;
+    if (proj) {
+      document.getElementById('ed-pname').textContent = proj.name;
+      toast(`"${proj.name}" aberto! 🔨`, 'i');
     }
-    document.getElementById('ed-pname').textContent = proj.name;
-    toast(`"${proj.name}" aberto! 🔨`, 'i');
     App.init();
     App.loadFromStorage();
   }, 100);
