@@ -218,7 +218,6 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
 @media(max-width:700px){
   #sidebar{position:fixed;left:-210px;top:0;bottom:0;z-index:100;transition:left .25s ease}
   #sidebar.open{left:0}
-  #sb-overlay{display:block!important}
   #sb-toggle{display:flex}
   #content{padding:14px}
   .stats-row{grid-template-columns:repeat(2,1fr)}
@@ -732,8 +731,17 @@ function switchView(name, el) {
 }
 
 // ── Sidebar mobile ──
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-function closeSidebar()  { document.getElementById('sidebar').classList.remove('open'); }
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sb-overlay');
+  sidebar.classList.toggle('open');
+  if (overlay) overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  const overlay = document.getElementById('sb-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
 
 // ── PWA Install ──
 let _pwaPrompt = null;
