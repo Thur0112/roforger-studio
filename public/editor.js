@@ -3084,3 +3084,43 @@ const GameTemplates = {
   }
 };
 
+
+
+// ── Init on load ──
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    // Firebase fallback
+    if (window._fb && !HS.fbReady) {
+      HS.fbReady = true;
+      const {auth, onAuthStateChanged} = window._fb;
+      onAuthStateChanged(auth, u => { HS.user = u; });
+    }
+    setTimeout(() => {
+      if (!HS.fbReady) {
+        console.error('[RoForger] Firebase nao inicializou em 4s.');
+      }
+    }, 4000);
+
+    // Load project from session
+    const proj = loadProjectFromSession();
+    if (proj) {
+      document.getElementById('ed-pname').textContent = proj.name;
+      toast('"' + proj.name + '" aberto! 🔨', 'i');
+    }
+
+    // Init app
+    App.init();
+    App.loadFromStorage();
+    Gen.init();
+    Learn.init();
+    GameTemplates.init();
+  }, 100);
+});
+
+function goHome() { window.location.href = '/home.html'; }
+function loadProjectFromSession() {
+  try {
+    const raw = sessionStorage.getItem('rf_current_project');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
