@@ -597,15 +597,11 @@ templates:[
 {name:'Open World RPG',icon:'🌍',desc:'Mundo completo com clima, dia/noite e NPCs',tags:['DayNight','Weather','BasicNPC','Enemy','SaveLoad']}],
 
 tabs:[
-{id:'builder',icon:'🔨',label:'🔨 Builder'},
-{id:'systems',icon:'📦',label:'📦 Sistemas'},
-{id:'effects',icon:'✨',label:'✨ Efeitos'},
-{id:'templates',icon:'📋',label:'📋 Templates'},
-{id:'docs',icon:'📖',label:'📖 Docs'},
-{id:'gerador',icon:'⚡',label:'⚡ Gerador'},
-{id:'aprender',icon:'🎓',label:'🎓 Aprender'},
-{id:'game-templates',icon:'🎮',label:'🎮 Jogos'},
-],
+{id:'builder',icon:'🔨',label:'Builder'},
+{id:'systems',icon:'📦',label:'Sistemas'},
+{id:'effects',icon:'✨',label:'Efeitos'},
+{id:'templates',icon:'📋',label:'Templates'},
+{id:'docs',icon:'📖',label:'Docs'}],
 
 docs:{
 sections:[{id:'intro',icon:'🏠',label:'Início'},{id:'builder',icon:'🔨',label:'Builder',section:'Guias'},{id:'systems',icon:'📦',label:'Sistemas',section:'Guias'},{id:'effects',icon:'✨',label:'Efeitos',section:'Guias'},{id:'shortcuts',icon:'⌨️',label:'Atalhos',section:'Extra'}],
@@ -717,7 +713,17 @@ explorer:{
         const el=document.createElement('div');el.className='exp-item';el.draggable=true;
         el.innerHTML=`<span class="exp-ico">${item.icon}</span><span class="exp-name">${item.name}</span>`;
         el.title=item.desc;
-        el.addEventListener('dragstart',e=>e.dataTransfer.setData('itemId',item.id));
+        el.addEventListener('dragstart',e=>{
+          e.dataTransfer.setData('text/plain',item.id);
+          e.dataTransfer.effectAllowed='copy';
+          // drag image customizada
+          const ghost=document.createElement('div');
+          ghost.style.cssText='position:fixed;top:-999px;background:#0f1629;color:#e8eaf0;padding:6px 12px;border-radius:6px;font-size:11px;border:1px solid rgba(255,77,26,.4);font-family:JetBrains Mono,monospace';
+          ghost.textContent=item.icon+' '+item.name;
+          document.body.appendChild(ghost);
+          e.dataTransfer.setDragImage(ghost,0,0);
+          setTimeout(()=>ghost.remove(),0);
+        });
         el.addEventListener('dblclick',()=>App.nodes.add(item.id,100+App.state.nodes.length*35,80+App.state.nodes.length*25));
         ch.appendChild(el);
       });grp.appendChild(ch);b.appendChild(grp);
@@ -730,10 +736,11 @@ canvas:{
   init(){
     const cvs=document.getElementById('inf-canvas'),vp=document.getElementById('canvas-vp');
     // Remove old listeners by cloning
-    const newCvs=cvs.cloneNode(false);
-    while(cvs.firstChild)newCvs.appendChild(cvs.firstChild);
-    cvs.parentNode.replaceChild(newCvs,cvs);
-    const c=document.getElementById('inf-canvas');
+    // Não clonar o canvas — isso remove listeners de outros sistemas
+    // Em vez disso, usar flag para evitar dupla inicialização
+    if(cvs._rfInited){return;}
+    cvs._rfInited=true;
+    const c=cvs;
 
     c.addEventListener('mousedown',e=>{
       if(App.state.tool==='pan'||e.button===1){App.state.panning=true;App.state._ps={x:e.clientX,y:e.clientY,ox:App.state.cx,oy:App.state.cy};c.style.cursor='grabbing';e.preventDefault()}
@@ -761,12 +768,17 @@ canvas:{
       this.upTf();
     },{passive:false});
     c.addEventListener('dragover',e=>e.preventDefault());
+    c.addEventListener('dragenter',e=>e.preventDefault());
     c.addEventListener('drop',e=>{
-      e.preventDefault();const id=e.dataTransfer.getData('itemId');if(!id)return;
-      const rect=c.getBoundingClientRect();
-      const x=Math.round((e.clientX-rect.left-App.state.cx)/App.state.cz);
-      const y=Math.round((e.clientY-rect.top-App.state.cy)/App.state.cz);
-      App.nodes.add(id,x,y);
+      e.preventDefault();
+      const id=e.dataTransfer.getData('text/plain');
+      if(!id)return;
+      // Sempre usa inf-canvas como referência (independente de onde soltou)
+      const canvas=document.getElementById('inf-canvas');
+      const rect=canvas.getBoundingClientRect();
+      const x=(e.clientX-rect.left-App.state.cx)/App.state.cz;
+      const y=(e.clientY-rect.top-App.state.cy)/App.state.cz;
+      App.nodes.add(id,Math.round(x),Math.round(y));
     });
   },
   upTf(){
@@ -3115,7 +3127,9 @@ window.addEventListener('load', () => {
     // Init app
     App.init();
     App.loadFromStorage();
-    // Gen/Learn/GameTemplates inicializam lazily em switchView
+    Gen.init();
+    Learn.init();
+    GameTemplates.init();
   }, 100);
 });
 
