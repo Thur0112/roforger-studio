@@ -597,11 +597,15 @@ templates:[
 {name:'Open World RPG',icon:'🌍',desc:'Mundo completo com clima, dia/noite e NPCs',tags:['DayNight','Weather','BasicNPC','Enemy','SaveLoad']}],
 
 tabs:[
-{id:'builder',icon:'🔨',label:'Builder'},
-{id:'systems',icon:'📦',label:'Sistemas'},
-{id:'effects',icon:'✨',label:'Efeitos'},
-{id:'templates',icon:'📋',label:'Templates'},
-{id:'docs',icon:'📖',label:'Docs'}],
+{id:'builder',icon:'🔨',label:'🔨 Builder'},
+{id:'systems',icon:'📦',label:'📦 Sistemas'},
+{id:'effects',icon:'✨',label:'✨ Efeitos'},
+{id:'templates',icon:'📋',label:'📋 Templates'},
+{id:'docs',icon:'📖',label:'📖 Docs'},
+{id:'gerador',icon:'⚡',label:'⚡ Gerador'},
+{id:'aprender',icon:'🎓',label:'🎓 Aprender'},
+{id:'game-templates',icon:'🎮',label:'🎮 Jogos'},
+],
 
 docs:{
 sections:[{id:'intro',icon:'🏠',label:'Início'},{id:'builder',icon:'🔨',label:'Builder',section:'Guias'},{id:'systems',icon:'📦',label:'Sistemas',section:'Guias'},{id:'effects',icon:'✨',label:'Efeitos',section:'Guias'},{id:'shortcuts',icon:'⌨️',label:'Atalhos',section:'Extra'}],
@@ -3111,9 +3115,7 @@ window.addEventListener('load', () => {
     // Init app
     App.init();
     App.loadFromStorage();
-    Gen.init();
-    Learn.init();
-    GameTemplates.init();
+    // Gen/Learn/GameTemplates inicializam lazily em switchView
   }, 100);
 });
 
