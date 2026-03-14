@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#050810"/>
+<link rel="manifest" href="/manifest.json"/>
+<title>RoForger — Aprender Roblox Scripting</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;600&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#050810;--card:#0f1629;--hover:#141c35;--acc:#ff4d1a;--acc2:#ff8c42;--acc-glow:rgba(255,77,26,.25);--green:#00ff9d;--blue:#1a8cff;--purple:#9b42ff;--yellow:#ffd600;--txt:#e8eaf0;--dim:#6b7594;--mid:#9ba3c0;--dark:#363a5c;--brd:rgba(255,77,26,.18);--r:8px;--tr:.15s cubic-bezier(.4,0,.2,1)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:13px}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(255,77,26,.3);border-radius:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes pulse{50%{opacity:.4}}
+
+/* ── Layout ── */
+#app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+#topbar{height:50px;background:rgba(5,8,16,.98);border-bottom:1px solid var(--brd);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}
+#topbar-logo{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;color:var(--acc);letter-spacing:2px}
+#topbar-logo span{color:var(--acc2)}
+#topbar-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim)}
+#main{display:flex;flex:1;overflow:hidden}
+
+/* ── Sidebar ── */
+#sidebar{width:220px;background:rgba(8,12,24,.98);border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+#sb-head{padding:14px 16px 10px;border-bottom:1px solid rgba(255,255,255,.06)}
+#sb-title{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--txt);letter-spacing:2px;margin-bottom:10px}
+#sb-progress-wrap{background:rgba(255,255,255,.06);border-radius:4px;height:4px;overflow:hidden}
+#sb-progress-bar{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:4px;transition:width .4s ease}
+#sb-progress-txt{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);margin-top:4px}
+#sb-nav{flex:1;overflow-y:auto;padding:6px 0}
+.sb-cat{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dark);padding:12px 16px 4px}
+.sb-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;color:var(--dim);font-size:11px;font-weight:600;transition:all var(--tr);border-left:2px solid transparent}
+.sb-item:hover{background:rgba(255,255,255,.04);color:var(--txt)}
+.sb-item.active{background:rgba(255,77,26,.08);color:var(--txt);border-left-color:var(--acc)}
+.sb-item.done{color:var(--green)}
+.sb-item .sb-check{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--dark);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px}
+.sb-item.done .sb-check{background:var(--green);border-color:var(--green);color:#04120a}
+
+/* ── Content ── */
+#content{flex:1;overflow-y:auto;padding:28px 32px 60px}
+.lesson{display:none;animation:fadeUp .25s ease}
+.lesson.active{display:block}
+
+/* ── Lesson header ── */
+.lesson-header{margin-bottom:24px}
+.lesson-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:rgba(255,77,26,.1);border:1px solid rgba(255,77,26,.3);font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--acc2);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.lesson-title{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--txt);margin-bottom:6px;letter-spacing:1px}
+.lesson-sub{font-size:13px;color:var(--dim);line-height:1.7;font-family:'JetBrains Mono',monospace}
+
+/* ── Theory cards ── */
+.theory-block{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.theory-block h3{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--txt);letter-spacing:1px;margin-bottom:10px}
+.theory-block p{font-size:12px;color:var(--dim);line-height:1.9}
+.theory-block ul{list-style:none;margin-top:8px}
+.theory-block ul li{font-size:12px;color:var(--dim);line-height:1.9;padding-left:14px;position:relative}
+.theory-block ul li::before{content:'›';position:absolute;left:0;color:var(--acc2)}
+
+/* ── Code block ── */
+.code-block{background:#04060f;border:1px solid rgba(255,255,255,.07);border-radius:var(--r);overflow:hidden;margin:12px 0}
+.code-block-hdr{padding:6px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between}
+.code-block-hdr span{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dark)}
+.code-copy{font-size:9px;cursor:pointer;color:var(--dim);padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.08);transition:all var(--tr)}
+.code-copy:hover{color:var(--green);border-color:rgba(0,255,157,.3)}
+.code-body{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;color:#c9d1d9;padding:14px;overflow-x:auto;white-space:pre}
+.lua-kw{color:#ff79c6}.lua-str{color:#a5d6ff}.lua-num{color:#f0883e}.lua-cmt{color:#6c7086;font-style:italic}.lua-bool{color:#42b3ff}
+
+/* ── Tip box ── */
+.tip{background:rgba(0,255,157,.04);border:1px solid rgba(0,255,157,.18);border-radius:var(--r);padding:12px 16px;margin:12px 0;font-size:12px;color:var(--dim);line-height:1.8}
+.tip strong{color:var(--green)}
+.warn{background:rgba(255,214,0,.04);border:1px solid rgba(255,214,0,.18);border-radius:var(--r);padding:12px 16px;margin:12px 0;font-size:12px;color:var(--dim);line-height:1.8}
+.warn strong{color:var(--yellow)}
+
+/* ── Quiz ── */
+.quiz-block{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:20px;margin:20px 0}
+.quiz-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acc2);margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.quiz-q{font-size:14px;font-weight:700;color:var(--txt);margin-bottom:14px;line-height:1.6}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.quiz-opt{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all var(--tr);font-size:12px;color:var(--mid)}
+.quiz-opt:hover{border-color:rgba(255,77,26,.4);background:rgba(255,77,26,.06);color:var(--txt)}
+.quiz-opt.correct{border-color:var(--green);background:rgba(0,255,157,.08);color:var(--green)}
+.quiz-opt.wrong{border-color:var(--acc);background:rgba(255,77,26,.08);color:var(--acc)}
+.quiz-opt.disabled{cursor:default;opacity:.6}
+.quiz-opt .opt-letter{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;font-family:'JetBrains Mono',monospace}
+.quiz-feedback{font-size:12px;line-height:1.7;padding:10px 14px;border-radius:6px;display:none}
+.quiz-feedback.show{display:block}
+.quiz-feedback.correct{background:rgba(0,255,157,.08);border:1px solid rgba(0,255,157,.2);color:var(--green)}
+.quiz-feedback.wrong{background:rgba(255,77,26,.08);border:1px solid rgba(255,77,26,.2);color:#ff8c42}
+
+/* ── Code Exercise ── */
+.exercise-block{background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);overflow:hidden;margin:20px 0}
+.exercise-hdr{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(155,66,255,.06)}
+.exercise-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);margin-bottom:4px;font-family:'JetBrains Mono',monospace}
+.exercise-title{font-size:14px;font-weight:700;color:var(--txt);line-height:1.5}
+.exercise-desc{font-size:12px;color:var(--dim);margin-top:4px;line-height:1.7}
+.exercise-editor{position:relative}
+.exercise-textarea{width:100%;background:#04060f;color:#c9d1d9;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;padding:16px;border:none;outline:none;resize:vertical;min-height:140px;tab-size:2}
+.exercise-actions{display:flex;gap:8px;padding:10px 14px;border-top:1px solid rgba(255,255,255,.06);background:rgba(8,12,24,.5)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:var(--r);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all var(--tr)}
+.btn-acc{background:linear-gradient(135deg,var(--acc),#c93300);color:#fff}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--mid);border:1px solid rgba(255,255,255,.1)}
+.btn-ghost:hover{background:rgba(255,255,255,.09);color:var(--txt)}
+.btn-purple{background:linear-gradient(135deg,var(--purple),#7730cc);color:#fff}
+.exercise-result{padding:12px 16px;font-size:12px;line-height:1.7;display:none;border-top:1px solid rgba(255,255,255,.06)}
+.exercise-result.show{display:block}
+.exercise-result.pass{background:rgba(0,255,157,.06);color:var(--green)}
+.exercise-result.fail{background:rgba(255,77,26,.06);color:#ff8c42}
+.exercise-result.hint{background:rgba(26,140,255,.06);color:#42b3ff}
+
+/* ── Lesson nav ── */
+.lesson-nav{display:flex;gap:10px;margin-top:32px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06)}
+.lesson-nav .btn{flex:1;justify-content:center}
+
+/* ── XP badge ── */
+.xp-pop{position:fixed;top:60px;right:20px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;padding:8px 16px;border-radius:20px;z-index:9999;animation:fadeUp .3s ease;display:none}
+
+/* ── Mobile ── */
+@media(max-width:700px){
+  #sidebar{position:fixed;left:-230px;top:0;bottom:0;z-index:100;transition:left .25s ease;width:220px}
+  #sidebar.open{left:0}
+  #content{padding:18px 16px 60px}
+  .lesson-title{font-size:16px}
+  #sb-toggle{display:flex}
+}
+#sb-toggle{display:none;width:36px;height:36px;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.1);border-radius:var(--r);cursor:pointer;color:var(--dim);font-size:16px;background:rgba(255,255,255,.05)}
+#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+</style>
+</head>
+<body>
+<div id="xp-pop" class="xp-pop">+10 XP ⭐</div>
+
+<div id="app">
+  <!-- Topbar -->
+  <div id="topbar">
+    <button id="sb-toggle" onclick="toggleSidebar()">☰</button>
+    <div id="topbar-logo">RO<span>FORGER</span></div>
+    <div id="topbar-title">// Aprender Roblox Scripting</div>
+    <div style="flex:1"></div>
+    <a href="/home.html" style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:var(--r);background:rgba(255,255,255,.05);color:var(--mid);border:1px solid rgba(255,255,255,.1);font-size:11px;font-weight:700;text-decoration:none;transition:all var(--tr)" onmouseover="this.style.color='var(--txt)'" onmouseout="this.style.color='var(--mid)'">🏠 Home</a>
+  </div>
+
+  <div id="main">
+    <div id="sb-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+      <div id="sb-head">
+        <div id="sb-title">🎓 LIÇÕES</div>
+        <div id="sb-progress-wrap"><div id="sb-progress-bar" style="width:0%"></div></div>
+        <div id="sb-progress-txt">0 / 0 concluídas</div>
+      </div>
+      <div id="sb-nav"></div>
+    </div>
+
+    <!-- Content -->
+    <div id="content" id="lessons-content"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  ROFORGER LEARN — Dados das lições
+// ════════════════════════════════════════════════
+const LESSONS = [
+  // ── CATEGORIA 1: FUNDAMENTOS ──
+  {
+    id: 'o-que-e-scripting',
+    cat: 'Fundamentos',
+    icon: '🚀',
+    title: 'O que é Scripting no Roblox?',
+    sub: 'Entenda o papel dos scripts e por que eles são essenciais em todo jogo.',
+    content: `
+      <div class="theory-block">
+        <h3>O QUE É UM SCRIPT?</h3>
+        <p>Um script é um arquivo de código escrito em <strong style="color:var(--acc2)">Lua</strong> que diz ao Roblox o que fazer. Sem scripts, seu jogo não tem lógica — os jogadores não ganham moedas, inimigos não atacam, portas não abrem.</p>
+      </div>
+      <div class="theory-block">
+        <h3>ONDE OS SCRIPTS VIVEM?</h3>
+        <ul>
+          <li><strong style="color:var(--acc2)">ServerScriptService</strong> — scripts que rodam no servidor (invisíveis para o jogador)</li>
+          <li><strong style="color:var(--purple)">StarterPlayerScripts</strong> — LocalScripts que rodam no cliente de cada jogador</li>
+          <li><strong style="color:var(--purple)">StarterCharacterScripts</strong> — LocalScripts que rodam no personagem</li>
+          <li><strong style="color:var(--blue)">ReplicatedStorage</strong> — ModuleScripts acessíveis por todos</li>
+        </ul>
+      </div>
+      <div class="tip"><strong>💡 Dica:</strong> Todo jogo popular do Roblox tem centenas ou milhares de linhas de Lua. Você vai chegar lá — um script de cada vez.</div>
+      <div class="code-block">
+        <div class="code-block-hdr"><span>Lua — Seu primeiro script</span><span class="code-copy" onclick="copyCode(this)">📋 Copiar</span></div>
+        <div class="code-body"><span class="lua-kw">print</span>(<span class="lua-str">"Olá, Roblox!"</span>)  <span class="lua-cmt">-- Isso aparece no Output do Studio</span></div>
+      </div>
+    `,
+    quizzes: [
+      {
+        q: 'Qual linguagem de programação é usada no Roblox Studio?',
+        opts: ['Python', 'JavaScript', 'Lua', 'C++'],
+        correct: 2,
+        feedback: 'Correto! O Roblox usa Lua, uma linguagem leve e rápida, muito usada em jogos.'
+      },
+      {
+        q: 'Onde você coloca scripts que devem rodar no servidor e ficam invisíveis para o jogador?',
+        opts: ['StarterGui', 'ReplicatedStorage', 'ServerScriptService', 'Workspace'],
+        correct: 2,
+        feedback: 'Certo! ServerScriptService é o lugar seguro para lógica do servidor — o cliente nunca vê esse código.'
+      }
+    ],
+    exercises: []
+  },
+
+  // ── Script vs LocalScript vs ModuleScript ──
+  {
+    id: 'tipos-de-script',
+    cat: 'Fundamentos',
+    icon: '📋',
+    title: 'Script vs LocalScript vs ModuleScript',
+    sub: 'Cada tipo tem um papel diferente. Usar o errado causa bugs sérios.',
+    content: `
+      <div class="theory-block">
+        <h3>📜 SCRIPT (Servidor)</h3>
+        <p>Roda no <strong style="color:var(--acc2)">servidor</strong>. Todos os jogadores são afetados. Use para: dano, DataStore, lógica do jogo, spawnar NPCs.</p>
+        <div class="code-block" style="margin-top:10px">
+          <div class="code-block-hdr"><span>Script — ServerScriptService</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+          <div class="code-body"><span class="lua-kw">local</span> Players = game:GetService(<span class="lua-str">"Players"</span>)
+Players.PlayerAdded:Connect(<span class="lua-kw">function</span>(player)
+    <span class="lua-kw">print</span>(player.Name .. <span class="lua-str">" entrou no jogo!"</span>)
+<span class="lua-kw">end</span>)</div>
+        </div>
+      </div>
+      <div class="theory-block">
+        <h3>📜 LOCALSCRIPT (Cliente)</h3>
+        <p>Roda no <strong style="color:var(--purple)">cliente</strong> de cada jogador. Só aquele jogador é afetado. Use para: UI, input do teclado, câmera, efeitos visuais.</p>
+        <div class="code-block" style="margin-top:10px">
+          <div class="code-block-hdr"><span>LocalScript — StarterPlayerScripts</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+          <div class="code-body"><span class="lua-kw">local</span> Players = game:GetService(<span class="lua-str">"Players"</span>)
+<span class="lua-kw">local</span> player = Players.LocalPlayer
+<span class="lua-kw">print</span>(<span class="lua-str">"Eu sou: "</span> .. player.Name)</div>
+        </div>
+      </div>
+      <div class="theory-block">
+        <h3>📦 MODULESCRIPT (Biblioteca)</h3>
+        <p>Não roda sozinho. É chamado por outros scripts com <code style="color:var(--acc2)">require()</code>. Use para: funções reutilizáveis, configurações, dados compartilhados.</p>
+        <div class="code-block" style="margin-top:10px">
+          <div class="code-block-hdr"><span>ModuleScript — ReplicatedStorage</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+          <div class="code-body"><span class="lua-kw">local</span> Config = {}
+Config.WalkSpeed = <span class="lua-num">20</span>
+Config.JumpPower = <span class="lua-num">55</span>
+<span class="lua-kw">return</span> Config
+
+<span class="lua-cmt">-- Em outro script:</span>
+<span class="lua-kw">local</span> Config = require(game.ReplicatedStorage.Config)
+<span class="lua-kw">print</span>(Config.WalkSpeed) <span class="lua-cmt">-- 20</span></div>
+        </div>
+      </div>
+      <div class="warn"><strong>⚠️ Regra de ouro:</strong> Nunca coloque lógica de dano em LocalScript. O cliente pode ser hackeado. Sempre valide no servidor.</div>
+    `,
+    quizzes: [
+      {
+        q: 'Qual tipo de script você usa para detectar quando o jogador pressiona uma tecla?',
+        opts: ['Script (servidor)', 'LocalScript (cliente)', 'ModuleScript', 'Qualquer um dos três'],
+        correct: 1,
+        feedback: 'Correto! UserInputService só funciona em LocalScript porque detecta input do jogador local.'
+      },
+      {
+        q: 'Você quer salvar dados do jogador no DataStore. Qual tipo de script usar?',
+        opts: ['LocalScript', 'ModuleScript', 'Script (servidor)', 'Não precisa de script'],
+        correct: 2,
+        feedback: 'Certo! DataStoreService só funciona no servidor — use um Script em ServerScriptService.'
+      },
+      {
+        q: 'Para que serve o ModuleScript?',
+        opts: ['Rodar código no servidor', 'Rodar código no cliente', 'Ser uma biblioteca reutilizável chamada com require()', 'Controlar a câmera'],
+        correct: 2,
+        feedback: 'Exato! ModuleScript é uma biblioteca. Você escreve funções nele e chama com require() em qualquer outro script.'
+      }
+    ],
+    exercises: [
+      {
+        title: 'Identifique o tipo correto',
+        desc: 'Complete o código abaixo. Você está criando um sistema de WalkSpeed. Qual tipo de script e onde colocar?',
+        placeholder: `-- Resposta: Este deve ser um __________ (Script/LocalScript)
+-- Colocar em: __________
+-- Motivo: __________
+
+-- Agora escreva o código:
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hum = char:WaitForChild("Humanoid")
+hum.WalkSpeed = `,
+        hint: 'WalkSpeed afeta o personagem visualmente para o próprio jogador — isso é responsabilidade do cliente.',
+        checkFn: (code) => {
+          const hasWalkSpeed = code.includes('WalkSpeed');
+          const hasNumber = /WalkSpeed\s*=\s*\d+/.test(code);
+          if (hasNumber) return {pass: true, msg: '✅ Perfeito! WalkSpeed configurado corretamente. Use LocalScript em StarterCharacterScripts.'};
+          if (hasWalkSpeed) return {pass: false, msg: '⚠️ Falta atribuir um valor numérico. Ex: hum.WalkSpeed = 20'};
+          return {pass: false, msg: '❌ Você precisa modificar o WalkSpeed do Humanoid.'};
+        }
+      }
+    ]
+  },
+
+  // ── RemoteEvents ──
+  {
+    id: 'remote-events',
+    cat: 'Fundamentos',
+    icon: '🔗',
+    title: 'RemoteEvents — Cliente ↔ Servidor',
+    sub: 'Como o cliente e o servidor se comunicam com segurança.',
+    content: `
+      <div class="theory-block">
+        <h3>POR QUE PRECISAMOS DE REMOTEEVENT?</h3>
+        <p>O cliente (LocalScript) e o servidor (Script) não conseguem chamar funções um do outro diretamente. O RemoteEvent é o canal de comunicação entre eles.</p>
+      </div>
+      <div class="theory-block">
+        <h3>FLUXO CLIENTE → SERVIDOR</h3>
+        <p>O cliente dispara um evento. O servidor escuta e executa a ação (como causar dano).</p>
+        <div class="code-block" style="margin-top:10px">
+          <div class="code-block-hdr"><span>LocalScript — cliente dispara</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+          <div class="code-body"><span class="lua-kw">local</span> RE = game.ReplicatedStorage:WaitForChild(<span class="lua-str">"MeuEvento"</span>)
+RE:FireServer(<span class="lua-str">"ataque"</span>, <span class="lua-num">25</span>)  <span class="lua-cmt">-- envia dados para o servidor</span></div>
+        </div>
+        <div class="code-block" style="margin-top:8px">
+          <div class="code-block-hdr"><span>Script — servidor escuta</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+          <div class="code-body"><span class="lua-kw">local</span> RE = game.ReplicatedStorage:WaitForChild(<span class="lua-str">"MeuEvento"</span>)
+RE.OnServerEvent:Connect(<span class="lua-kw">function</span>(player, acao, dano)
+    <span class="lua-kw">print</span>(player.Name .. <span class="lua-str">" fez: "</span> .. acao .. <span class="lua-str">" com dano "</span> .. dano)
+<span class="lua-kw">end</span>)</div>
+        </div>
+      </div>
+      <div class="theory-block">
+        <h3>FLUXO SERVIDOR → CLIENTE</h3>
+        <div class="code-block" style="margin-top:8px">
+          <div class="code-block-hdr"><span>Script — servidor dispara para um cliente</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+          <div class="code-body">RE:FireClient(player, <span class="lua-str">"mensagem"</span>)  <span class="lua-cmt">-- só para um jogador</span>
+RE:FireAllClients(<span class="lua-str">"mensagem"</span>)       <span class="lua-cmt">-- para todos</span></div>
+        </div>
+      </div>
+      <div class="tip"><strong>💡 Onde criar o RemoteEvent?</strong> Crie manualmente em ReplicatedStorage no Studio, ou crie via Script no servidor antes de usar. O nome deve ser igual nos dois lados.</div>
+      <div class="warn"><strong>⚠️ Segurança:</strong> Nunca confie nos dados enviados pelo cliente. Sempre valide no servidor. Ex: o cliente envia "dano = 9999" — o servidor deve ignorar e usar o valor fixo do jogo.</div>
+    `,
+    quizzes: [
+      {
+        q: 'Qual método o LocalScript usa para enviar um evento ao servidor?',
+        opts: ['FireClient()', 'FireAllClients()', 'FireServer()', 'OnServerEvent'],
+        correct: 2,
+        feedback: 'Correto! FireServer() é usado pelo cliente para enviar dados ao servidor.'
+      },
+      {
+        q: 'O servidor quer enviar uma notificação para TODOS os jogadores. Qual método usar?',
+        opts: ['FireServer()', 'FireClient(player)', 'FireAllClients()', 'OnClientEvent'],
+        correct: 2,
+        feedback: 'Certo! FireAllClients() dispara o evento para todos os clientes conectados.'
+      }
+    ],
+    exercises: [
+      {
+        title: 'Crie um sistema de coletar moeda',
+        desc: 'Escreva o código do SERVIDOR que escuta o evento "ColetarMoeda" e adiciona 10 moedas ao leaderstats do jogador.',
+        placeholder: `-- Script em ServerScriptService
+local RE = game.ReplicatedStorage:WaitForChild("ColetarMoeda")
+
+RE.OnServerEvent:Connect(function(player)
+    -- Acesse o leaderstats do player
+    -- Adicione 10 moedas
+    
+end)`,
+        hint: 'Acesse player:FindFirstChild("leaderstats") e então leaderstats:FindFirstChild("Coins").Value += 10',
+        checkFn: (code) => {
+          const hasOnServerEvent = code.includes('OnServerEvent');
+          const hasLeaderstats = code.includes('leaderstats');
+          const hasCoins = code.includes('Coins') || code.includes('coins') || code.includes('Value');
+          if (hasOnServerEvent && hasLeaderstats && hasCoins) return {pass: true, msg: '✅ Excelente! Você conectou o evento, acessou o leaderstats e modificou as moedas corretamente.'};
+          if (hasOnServerEvent && !hasLeaderstats) return {pass: false, msg: '⚠️ Bom começo! Agora acesse o leaderstats: player:FindFirstChild("leaderstats")'};
+          return {pass: false, msg: '❌ Use OnServerEvent:Connect(function(player) ... end) para escutar o evento.'};
+        }
+      }
+    ]
+  },
+
+  // ── WalkSpeed & Movimento ──
+  {
+    id: 'walkspeed',
+    cat: 'Movimento',
+    icon: '🏃',
+    title: 'WalkSpeed, JumpPower e Sprint',
+    sub: 'Controle total sobre como o personagem se move.',
+    content: `
+      <div class="theory-block">
+        <h3>HUMANOID — O CONTROLADOR DO PERSONAGEM</h3>
+        <p>O <strong style="color:var(--acc2)">Humanoid</strong> é o objeto dentro do personagem que controla vida, velocidade e pulo. Valores padrão do Roblox: WalkSpeed = 16, JumpPower = 50.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-block-hdr"><span>LocalScript — WalkSpeed básico</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+        <div class="code-body"><span class="lua-kw">local</span> Players = game:GetService(<span class="lua-str">"Players"</span>)
+<span class="lua-kw">local</span> player = Players.LocalPlayer
+<span class="lua-kw">local</span> char = player.Character <span class="lua-kw">or</span> player.CharacterAdded:Wait()
+<span class="lua-kw">local</span> hum = char:WaitForChild(<span class="lua-str">"Humanoid"</span>)
+
+hum.WalkSpeed = <span class="lua-num">20</span>   <span class="lua-cmt">-- velocidade (padrão: 16)</span>
+hum.JumpPower = <span class="lua-num">60</span>   <span class="lua-cmt">-- altura do pulo (padrão: 50)</span></div>
+      </div>
+      <div class="theory-block">
+        <h3>SISTEMA DE SPRINT</h3>
+        <p>Use <strong style="color:var(--acc2)">UserInputService</strong> para detectar quando o jogador segura Shift e aumentar o WalkSpeed.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-block-hdr"><span>LocalScript — Sprint com Shift</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+        <div class="code-body"><span class="lua-kw">local</span> UIS = game:GetService(<span class="lua-str">"UserInputService"</span>)
+<span class="lua-kw">local</span> hum = game.Players.LocalPlayer.Character:WaitForChild(<span class="lua-str">"Humanoid"</span>)
+
+<span class="lua-kw">local</span> WALK = <span class="lua-num">16</span>
+<span class="lua-kw">local</span> SPRINT = <span class="lua-num">28</span>
+
+UIS.InputBegan:Connect(<span class="lua-kw">function</span>(input, gp)
+    <span class="lua-kw">if</span> gp <span class="lua-kw">then</span> <span class="lua-kw">return</span> <span class="lua-kw">end</span>  <span class="lua-cmt">-- ignora input do jogo</span>
+    <span class="lua-kw">if</span> input.KeyCode == Enum.KeyCode.LeftShift <span class="lua-kw">then</span>
+        hum.WalkSpeed = SPRINT
+    <span class="lua-kw">end</span>
+<span class="lua-kw">end</span>)
+
+UIS.InputEnded:Connect(<span class="lua-kw">function</span>(input)
+    <span class="lua-kw">if</span> input.KeyCode == Enum.KeyCode.LeftShift <span class="lua-kw">then</span>
+        hum.WalkSpeed = WALK
+    <span class="lua-kw">end</span>
+<span class="lua-kw">end</span>)</div>
+      </div>
+    `,
+    quizzes: [
+      {
+        q: 'Qual propriedade do Humanoid controla a velocidade de caminhada?',
+        opts: ['Speed', 'WalkSpeed', 'MoveSpeed', 'Velocity'],
+        correct: 1,
+        feedback: 'Correto! hum.WalkSpeed é a propriedade certa. O valor padrão do Roblox é 16.'
+      },
+      {
+        q: 'Em qual tipo de script você deve colocar um sistema de sprint com Shift?',
+        opts: ['Script (servidor)', 'LocalScript (cliente)', 'ModuleScript', 'Qualquer um'],
+        correct: 1,
+        feedback: 'Certo! UserInputService só funciona em LocalScript porque lê o input do jogador local.'
+      }
+    ],
+    exercises: [
+      {
+        title: 'Crie um sistema de WalkSpeed customizado',
+        desc: 'Escreva um LocalScript que define o WalkSpeed como 25 e o JumpPower como 70. Coloque em StarterCharacterScripts.',
+        placeholder: `-- LocalScript em StarterCharacterScripts
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hum = char:WaitForChild("Humanoid")
+
+-- Defina WalkSpeed como 25 e JumpPower como 70:
+
+`,
+        hint: 'Use hum.WalkSpeed = 25 e hum.JumpPower = 70',
+        checkFn: (code) => {
+          const ws = /WalkSpeed\s*=\s*25/.test(code);
+          const jp = /JumpPower\s*=\s*70/.test(code);
+          if (ws && jp) return {pass: true, msg: '✅ Perfeito! WalkSpeed = 25 e JumpPower = 70 definidos corretamente.'};
+          if (ws && !jp) return {pass: false, msg: '⚠️ WalkSpeed correto! Agora adicione: hum.JumpPower = 70'};
+          if (!ws && jp) return {pass: false, msg: '⚠️ JumpPower correto! Agora adicione: hum.WalkSpeed = 25'};
+          return {pass: false, msg: '❌ Defina os dois valores: hum.WalkSpeed = 25 e hum.JumpPower = 70'};
+        }
+      },
+      {
+        title: 'Desafio: Sprint com tecla customizada',
+        desc: 'Modifique o sistema de sprint para usar a tecla "Q" em vez de Shift. Quando pressionar Q, velocidade = 30. Quando soltar, volta para 16.',
+        placeholder: `-- LocalScript
+local UIS = game:GetService("UserInputService")
+local hum = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")
+
+-- Use Enum.KeyCode.Q como tecla de sprint
+-- Sprint: 30, Normal: 16
+
+`,
+        hint: 'Troque Enum.KeyCode.LeftShift por Enum.KeyCode.Q',
+        checkFn: (code) => {
+          const hasQ = code.includes('KeyCode.Q');
+          const has30 = code.includes('30');
+          const has16 = code.includes('16');
+          if (hasQ && has30 && has16) return {pass: true, msg: '✅ Excelente! Sprint com Q implementado corretamente.'};
+          if (hasQ && !has30) return {pass: false, msg: '⚠️ Tecla Q detectada! Agora defina WalkSpeed = 30 ao pressionar.'};
+          return {pass: false, msg: '❌ Use Enum.KeyCode.Q e defina velocidades 16 (normal) e 30 (sprint).'};
+        }
+      }
+    ]
+  },
+
+  // ── Leaderstats ──
+  {
+    id: 'leaderstats',
+    cat: 'Dados',
+    icon: '🏆',
+    title: 'Leaderstats — Placar do Jogo',
+    sub: 'Crie um placar com Coins, XP e Level visível para todos.',
+    content: `
+      <div class="theory-block">
+        <h3>O QUE É LEADERSTATS?</h3>
+        <p>O Roblox reconhece automaticamente um folder chamado <strong style="color:var(--acc2)">"leaderstats"</strong> dentro do Player e exibe os valores como placar no canto direito da tela. É uma funcionalidade nativa — você só precisa criar o folder com o nome certo.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-block-hdr"><span>Script — ServerScriptService</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+        <div class="code-body"><span class="lua-kw">local</span> Players = game:GetService(<span class="lua-str">"Players"</span>)
+
+Players.PlayerAdded:Connect(<span class="lua-kw">function</span>(player)
+    <span class="lua-cmt">-- O folder PRECISA se chamar "leaderstats"</span>
+    <span class="lua-kw">local</span> ls = Instance.new(<span class="lua-str">"Folder"</span>)
+    ls.Name = <span class="lua-str">"leaderstats"</span>
+    ls.Parent = player
+
+    <span class="lua-kw">local</span> coins = Instance.new(<span class="lua-str">"IntValue"</span>)
+    coins.Name = <span class="lua-str">"Coins"</span>
+    coins.Value = <span class="lua-num">0</span>
+    coins.Parent = ls
+
+    <span class="lua-kw">local</span> level = Instance.new(<span class="lua-str">"IntValue"</span>)
+    level.Name = <span class="lua-str">"Level"</span>
+    level.Value = <span class="lua-num">1</span>
+    level.Parent = ls
+<span class="lua-kw">end</span>)</div>
+      </div>
+      <div class="tip"><strong>💡 Tipos de Value:</strong> IntValue (números inteiros), NumberValue (decimais), StringValue (texto), BoolValue (true/false).</div>
+      <div class="theory-block">
+        <h3>COMO DAR MOEDAS AO JOGADOR</h3>
+        <div class="code-block" style="margin-top:8px">
+          <div class="code-block-hdr"><span>Dar 10 moedas</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+          <div class="code-body"><span class="lua-kw">local</span> ls = player:FindFirstChild(<span class="lua-str">"leaderstats"</span>)
+<span class="lua-kw">if</span> ls <span class="lua-kw">then</span>
+    ls.Coins.Value = ls.Coins.Value + <span class="lua-num">10</span>
+<span class="lua-kw">end</span></div>
+        </div>
+      </div>
+    `,
+    quizzes: [
+      {
+        q: 'Qual deve ser o nome EXATO do folder para o Roblox exibir o placar?',
+        opts: ['Leaderboard', 'leaderstats', 'Stats', 'PlayerStats'],
+        correct: 1,
+        feedback: 'Exato! O nome precisa ser "leaderstats" (tudo minúsculo) para o Roblox reconhecer automaticamente.'
+      },
+      {
+        q: 'Você quer guardar o nome do time do jogador (texto). Qual tipo de Value usar?',
+        opts: ['IntValue', 'NumberValue', 'StringValue', 'BoolValue'],
+        correct: 2,
+        feedback: 'Correto! StringValue armazena texto. IntValue = números inteiros, NumberValue = decimais, BoolValue = true/false.'
+      }
+    ],
+    exercises: [
+      {
+        title: 'Crie um Leaderstats completo',
+        desc: 'Escreva um Script que cria o leaderstats com: Coins (0), XP (0) e Level (1) para cada jogador que entrar.',
+        placeholder: `-- Script em ServerScriptService
+local Players = game:GetService("Players")
+
+Players.PlayerAdded:Connect(function(player)
+    -- Crie o folder leaderstats
+    -- Adicione: Coins (IntValue, valor 0)
+    -- Adicione: XP (IntValue, valor 0)  
+    -- Adicione: Level (IntValue, valor 1)
+    
+end)`,
+        hint: 'Use Instance.new("Folder") para o leaderstats, e Instance.new("IntValue") para cada stat.',
+        checkFn: (code) => {
+          const hasFolder = code.includes('Folder');
+          const hasLeaderstats = code.includes('leaderstats');
+          const hasCoins = code.includes('Coins');
+          const hasXP = code.includes('XP') || code.includes('xp');
+          const hasLevel = code.includes('Level') || code.includes('level');
+          if (hasFolder && hasLeaderstats && hasCoins && hasXP && hasLevel)
+            return {pass: true, msg: '✅ Perfeito! Leaderstats criado com Coins, XP e Level.'};
+          if (!hasLeaderstats) return {pass: false, msg: '❌ O folder precisa ter o nome "leaderstats" (minúsculo).'};
+          if (!hasCoins) return {pass: false, msg: '⚠️ Falta adicionar Coins ao leaderstats.'};
+          if (!hasXP) return {pass: false, msg: '⚠️ Falta adicionar XP ao leaderstats.'};
+          return {pass: false, msg: '⚠️ Quase lá! Verifique se todos os 3 stats estão criados.'};
+        }
+      }
+    ]
+  },
+
+  // ── DataStore ──
+  {
+    id: 'datastore',
+    cat: 'Dados',
+    icon: '💾',
+    title: 'DataStore — Salvar Dados Permanentes',
+    sub: 'Salve coins, level e progresso do jogador entre sessões.',
+    content: `
+      <div class="theory-block">
+        <h3>O QUE É DATASTORE?</h3>
+        <p>DataStore é o sistema do Roblox para salvar dados permanentemente nos servidores deles. Mesmo que o jogador feche o jogo, os dados persistem.</p>
+      </div>
+      <div class="warn"><strong>⚠️ Ativar no Studio:</strong> Game Settings → Security → Enable Studio Access to API Services. Sem isso, dá erro no Studio.</div>
+      <div class="code-block">
+        <div class="code-block-hdr"><span>Script — DataStore completo</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+        <div class="code-body"><span class="lua-kw">local</span> DSS = game:GetService(<span class="lua-str">"DataStoreService"</span>)
+<span class="lua-kw">local</span> store = DSS:GetDataStore(<span class="lua-str">"PlayerData_v1"</span>)
+<span class="lua-kw">local</span> Players = game:GetService(<span class="lua-str">"Players"</span>)
+
+Players.PlayerAdded:Connect(<span class="lua-kw">function</span>(player)
+    <span class="lua-kw">local</span> key = <span class="lua-str">"player_"</span> .. player.UserId
+    
+    <span class="lua-cmt">-- Carrega dados</span>
+    <span class="lua-kw">local</span> ok, data = pcall(<span class="lua-kw">function</span>()
+        <span class="lua-kw">return</span> store:GetAsync(key)
+    <span class="lua-kw">end</span>)
+    
+    <span class="lua-kw">local</span> ls = player:WaitForChild(<span class="lua-str">"leaderstats"</span>)
+    <span class="lua-kw">if</span> ok <span class="lua-kw">and</span> data <span class="lua-kw">then</span>
+        ls.Coins.Value = data.Coins <span class="lua-kw">or</span> <span class="lua-num">0</span>
+        ls.Level.Value = data.Level <span class="lua-kw">or</span> <span class="lua-num">1</span>
+    <span class="lua-kw">end</span>
+<span class="lua-kw">end</span>)
+
+Players.PlayerRemoving:Connect(<span class="lua-kw">function</span>(player)
+    <span class="lua-kw">local</span> key = <span class="lua-str">"player_"</span> .. player.UserId
+    <span class="lua-kw">local</span> ls = player:FindFirstChild(<span class="lua-str">"leaderstats"</span>)
+    <span class="lua-kw">if</span> <span class="lua-kw">not</span> ls <span class="lua-kw">then</span> <span class="lua-kw">return</span> <span class="lua-kw">end</span>
+    
+    pcall(<span class="lua-kw">function</span>()
+        store:SetAsync(key, {
+            Coins = ls.Coins.Value,
+            Level = ls.Level.Value
+        })
+    <span class="lua-kw">end</span>)
+<span class="lua-kw">end</span>)</div>
+      </div>
+      <div class="tip"><strong>💡 Por que pcall()?</strong> DataStore pode falhar (servidor do Roblox fora do ar, limite de requisições). pcall() evita que o script inteiro trave por causa disso.</div>
+    `,
+    quizzes: [
+      {
+        q: 'Por que usamos pcall() ao chamar o DataStore?',
+        opts: ['Para deixar o código mais rápido', 'Para evitar que erros do DataStore travem o script inteiro', 'É obrigatório pelo Roblox', 'Para salvar mais dados'],
+        correct: 1,
+        feedback: 'Correto! pcall() (protected call) captura erros sem travar o script. DataStore pode falhar por problemas de rede ou limites de API.'
+      },
+      {
+        q: 'Qual chave única você deve usar para identificar os dados de cada jogador?',
+        opts: ['player.Name (nome do jogador)', 'player.UserId (ID único)', 'math.random()', 'game.PlaceId'],
+        correct: 1,
+        feedback: 'Certo! UserId é um número único e permanente. Name pode mudar, UserId nunca muda.'
+      }
+    ],
+    exercises: []
+  },
+
+  // ── Eventos ──
+  {
+    id: 'eventos',
+    cat: 'Avançado',
+    icon: '⚡',
+    title: 'Eventos — Connect, Touched, Clicked',
+    sub: 'Faça seu jogo reagir a ações dos jogadores.',
+    content: `
+      <div class="theory-block">
+        <h3>O QUE É UM EVENTO?</h3>
+        <p>Eventos são disparados quando algo acontece no jogo. Você "conecta" uma função ao evento com <strong style="color:var(--acc2)">:Connect()</strong> para executar código quando ele ocorre.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-block-hdr"><span>Touched — quando algo toca a parte</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+        <div class="code-body"><span class="lua-kw">local</span> parte = workspace.MinhaParte
+
+parte.Touched:Connect(<span class="lua-kw">function</span>(hit)
+    <span class="lua-cmt">-- hit = o objeto que tocou</span>
+    <span class="lua-kw">local</span> player = game.Players:GetPlayerFromCharacter(hit.Parent)
+    <span class="lua-kw">if</span> player <span class="lua-kw">then</span>
+        <span class="lua-kw">print</span>(player.Name .. <span class="lua-str">" tocou na parte!"</span>)
+    <span class="lua-kw">end</span>
+<span class="lua-kw">end</span>)</div>
+      </div>
+      <div class="code-block">
+        <div class="code-block-hdr"><span>ClickDetector — quando clicam</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+        <div class="code-body"><span class="lua-kw">local</span> parte = workspace.MinhaParte
+<span class="lua-kw">local</span> cd = Instance.new(<span class="lua-str">"ClickDetector"</span>, parte)
+
+cd.MouseClick:Connect(<span class="lua-kw">function</span>(player)
+    <span class="lua-kw">print</span>(player.Name .. <span class="lua-str">" clicou!"</span>)
+<span class="lua-kw">end</span>)</div>
+      </div>
+      <div class="code-block">
+        <div class="code-block-hdr"><span>CharacterAdded — quando personagem aparece</span><span class="code-copy" onclick="copyCode(this)">📋</span></div>
+        <div class="code-body">player.CharacterAdded:Connect(<span class="lua-kw">function</span>(char)
+    <span class="lua-kw">local</span> hum = char:WaitForChild(<span class="lua-str">"Humanoid"</span>)
+    hum.Died:Connect(<span class="lua-kw">function</span>()
+        <span class="lua-kw">print</span>(player.Name .. <span class="lua-str">" morreu!"</span>)
+    <span class="lua-kw">end</span>)
+<span class="lua-kw">end</span>)</div>
+      </div>
+    `,
+    quizzes: [
+      {
+        q: 'Qual evento dispara quando um jogador toca em uma Part?',
+        opts: ['Clicked', 'Touched', 'Hit', 'PlayerAdded'],
+        correct: 1,
+        feedback: 'Correto! parte.Touched:Connect(function(hit) ... end) é disparado quando qualquer objeto toca a parte.'
+      },
+      {
+        q: 'O que o parâmetro "hit" representa no evento Touched?',
+        opts: ['O jogador que tocou', 'A parte que foi tocada', 'O objeto que entrou em contato com a parte', 'A posição do toque'],
+        correct: 2,
+        feedback: 'Certo! "hit" é a parte do personagem (como HumanoidRootPart ou um braço) que tocou. Para obter o player, use game.Players:GetPlayerFromCharacter(hit.Parent).'
+      }
+    ],
+    exercises: [
+      {
+        title: 'Porta que abre ao tocar',
+        desc: 'Escreva um Script que faz a parte "Porta" no Workspace ficar transparente (Transparency = 1) e não-colidente quando um jogador tocar nela.',
+        placeholder: `-- Script em ServerScriptService
+local porta = workspace:WaitForChild("Porta")
+
+porta.Touched:Connect(function(hit)
+    local player = game.Players:GetPlayerFromCharacter(hit.Parent)
+    if player then
+        -- Faça a porta ficar transparente e sem colisão
+        
+    end
+end)`,
+        hint: 'Use porta.Transparency = 1 e porta.CanCollide = false',
+        checkFn: (code) => {
+          const hasTransparency = code.includes('Transparency') && (code.includes('= 1') || code.includes('=1'));
+          const hasCanCollide = code.includes('CanCollide') && (code.includes('false') || code.includes('= false'));
+          if (hasTransparency && hasCanCollide) return {pass: true, msg: '✅ Perfeito! A porta fica invisível e sem colisão quando tocada.'};
+          if (hasTransparency) return {pass: false, msg: '⚠️ Transparency correto! Adicione também: porta.CanCollide = false'};
+          return {pass: false, msg: '❌ Use porta.Transparency = 1 para tornar invisível.'};
+        }
+      }
+    ]
+  }
+];
+
+// ════════════════════════════════════════════════
+//  ESTADO
+// ════════════════════════════════════════════════
+const STATE = {
+  current: 0,
+  done: JSON.parse(localStorage.getItem('rf_learn_done') || '[]'),
+  xp: parseInt(localStorage.getItem('rf_learn_xp') || '0')
+};
+
+function saveDone() {
+  localStorage.setItem('rf_learn_done', JSON.stringify(STATE.done));
+  localStorage.setItem('rf_learn_xp', STATE.xp);
+}
+
+function markDone(id) {
+  if (!STATE.done.includes(id)) {
+    STATE.done.push(id);
+    STATE.xp += 10;
+    saveDone();
+    updateProgress();
+    showXP();
+  }
+}
+
+function showXP() {
+  const el = document.getElementById('xp-pop');
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 2000);
+}
+
+function updateProgress() {
+  const total = LESSONS.length;
+  const done = STATE.done.length;
+  const pct = Math.round(done / total * 100);
+  document.getElementById('sb-progress-bar').style.width = pct + '%';
+  document.getElementById('sb-progress-txt').textContent = done + ' / ' + total + ' concluídas';
+  // Update sidebar items
+  LESSONS.forEach(l => {
+    const item = document.getElementById('sb-' + l.id);
+    if (item) {
+      item.classList.toggle('done', STATE.done.includes(l.id));
+      item.querySelector('.sb-check').textContent = STATE.done.includes(l.id) ? '✓' : '';
+    }
+  });
+}
+
+// ════════════════════════════════════════════════
+//  BUILD SIDEBAR
+// ════════════════════════════════════════════════
+function buildSidebar() {
+  const nav = document.getElementById('sb-nav');
+  let currentCat = '';
+  LESSONS.forEach((lesson, i) => {
+    if (lesson.cat !== currentCat) {
+      currentCat = lesson.cat;
+      const cat = document.createElement('div');
+      cat.className = 'sb-cat';
+      cat.textContent = lesson.cat;
+      nav.appendChild(cat);
+    }
+    const item = document.createElement('div');
+    item.className = 'sb-item' + (i === 0 ? ' active' : '') + (STATE.done.includes(lesson.id) ? ' done' : '');
+    item.id = 'sb-' + lesson.id;
+    item.innerHTML = `<span class="sb-check">${STATE.done.includes(lesson.id) ? '✓' : ''}</span><span>${lesson.icon} ${lesson.title}</span>`;
+    item.onclick = () => goTo(i);
+    nav.appendChild(item);
+  });
+}
+
+// ════════════════════════════════════════════════
+//  BUILD LESSONS
+// ════════════════════════════════════════════════
+function buildLessons() {
+  const content = document.getElementById('content');
+  LESSONS.forEach((lesson, li) => {
+    const div = document.createElement('div');
+    div.className = 'lesson' + (li === 0 ? ' active' : '');
+    div.id = 'lesson-' + lesson.id;
+
+    let html = `
+      <div class="lesson-header">
+        <div class="lesson-tag">${lesson.cat}</div>
+        <div class="lesson-title">${lesson.icon} ${lesson.title}</div>
+        <div class="lesson-sub">${lesson.sub}</div>
+      </div>
+      ${lesson.content}
+    `;
+
+    // Quizzes
+    if (lesson.quizzes && lesson.quizzes.length) {
+      lesson.quizzes.forEach((quiz, qi) => {
+        const qid = `q_${lesson.id}_${qi}`;
+        html += `
+          <div class="quiz-block" id="${qid}">
+            <div class="quiz-label">📝 Quiz ${qi + 1} de ${lesson.quizzes.length}</div>
+            <div class="quiz-q">${quiz.q}</div>
+            <div class="quiz-opts">
+              ${quiz.opts.map((opt, oi) => `
+                <div class="quiz-opt" id="${qid}_${oi}" onclick="answerQuiz('${qid}', ${oi}, ${quiz.correct}, '${lesson.id}')">
+                  <span class="opt-letter">${String.fromCharCode(65+oi)}</span>
+                  <span>${opt}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div class="quiz-feedback" id="${qid}_feedback"></div>
+          </div>
+        `;
+      });
+    }
+
+    // Exercises
+    if (lesson.exercises && lesson.exercises.length) {
+      lesson.exercises.forEach((ex, ei) => {
+        const eid = `ex_${lesson.id}_${ei}`;
+        html += `
+          <div class="exercise-block" id="${eid}">
+            <div class="exercise-hdr">
+              <div class="exercise-label">✏️ Exercício ${ei + 1} de ${lesson.exercises.length}</div>
+              <div class="exercise-title">${ex.title}</div>
+              <div class="exercise-desc">${ex.desc}</div>
+            </div>
+            <div class="exercise-editor">
+              <textarea class="exercise-textarea" id="${eid}_code" spellcheck="false" placeholder="${ex.placeholder.replace(/"/g,'&quot;')}">${ex.placeholder}</textarea>
+            </div>
+            <div class="exercise-actions">
+              <button class="btn btn-acc" onclick="checkExercise('${eid}', ${li}, ${ei})">▶ Verificar</button>
+              <button class="btn btn-ghost" onclick="showHint('${eid}', '${ex.hint.replace(/'/g,"\\'")}')">💡 Dica</button>
+              <button class="btn btn-ghost" onclick="resetExercise('${eid}', ${li}, ${ei})">↺ Resetar</button>
+            </div>
+            <div class="exercise-result" id="${eid}_result"></div>
+          </div>
+        `;
+      });
+    }
+
+    // Nav buttons
+    html += `<div class="lesson-nav">`;
+    if (li > 0) html += `<button class="btn btn-ghost" onclick="goTo(${li-1})">← Anterior</button>`;
+    html += `<button class="btn btn-acc" onclick="completeAndNext(${li})">${li < LESSONS.length - 1 ? 'Próxima lição →' : '🎓 Concluir!'}</button>`;
+    html += `</div>`;
+
+    div.innerHTML = html;
+    content.appendChild(div);
+  });
+}
+
+// ════════════════════════════════════════════════
+//  ACTIONS
+// ════════════════════════════════════════════════
+function goTo(idx) {
+  document.querySelectorAll('.lesson').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('lesson-' + LESSONS[idx].id)?.classList.add('active');
+  document.getElementById('sb-' + LESSONS[idx].id)?.classList.add('active');
+  STATE.current = idx;
+  document.getElementById('content').scrollTop = 0;
+  closeSidebar();
+}
+
+function completeAndNext(idx) {
+  markDone(LESSONS[idx].id);
+  if (idx < LESSONS.length - 1) goTo(idx + 1);
+  else {
+    document.getElementById('content').scrollTop = 0;
+    window.toast && window.toast('🎓 Parabéns! Você concluiu todas as lições!', 's');
+  }
+}
+
+function answerQuiz(qid, chosen, correct, lessonId) {
+  const opts = document.querySelectorAll(`#${qid} .quiz-opt`);
+  opts.forEach(o => o.classList.add('disabled'));
+  const fb = document.getElementById(qid + '_feedback');
+  if (chosen === correct) {
+    opts[chosen].classList.add('correct');
+    const lesson = LESSONS.find(l => l.id === lessonId);
+    const qi = parseInt(qid.split('_').pop());
+    fb.className = 'quiz-feedback show correct';
+    fb.textContent = '✅ ' + (lesson?.quizzes[qi]?.feedback || 'Correto!');
+    markDone(lessonId + '_q' + qi);
+  } else {
+    opts[chosen].classList.add('wrong');
+    opts[correct].classList.add('correct');
+    fb.className = 'quiz-feedback show wrong';
+    fb.textContent = '❌ Resposta errada. A correta está destacada em verde.';
+  }
+}
+
+function checkExercise(eid, li, ei) {
+  const code = document.getElementById(eid + '_code').value;
+  const result = document.getElementById(eid + '_result');
+  const checkFn = LESSONS[li].exercises[ei].checkFn;
+  const {pass, msg} = checkFn(code);
+  result.className = 'exercise-result show ' + (pass ? 'pass' : 'fail');
+  result.textContent = msg;
+  if (pass) markDone(LESSONS[li].id + '_ex' + ei);
+}
+
+function showHint(eid, hint) {
+  const result = document.getElementById(eid + '_result');
+  result.className = 'exercise-result show hint';
+  result.textContent = '💡 Dica: ' + hint;
+}
+
+function resetExercise(eid, li, ei) {
+  document.getElementById(eid + '_code').value = LESSONS[li].exercises[ei].placeholder;
+  const result = document.getElementById(eid + '_result');
+  result.className = 'exercise-result';
+}
+
+function copyCode(btn) {
+  const code = btn.closest('.code-block').querySelector('.code-body').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = '✓ Copiado!';
+    setTimeout(() => btn.textContent = '📋 Copiar', 2000);
+  });
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sb-overlay');
+  sb.classList.toggle('open');
+  ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').style.display = 'none';
+}
+
+// ── Init ──
+buildSidebar();
+buildLessons();
+updateProgress();
+</script>
+</body>
+</html>

@@ -287,6 +287,9 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
       <div class="sb-item" onclick="switchView('docs',this)">
         <span class="sb-item-ico">📖</span> Docs
       </div>
+      <div class="sb-item" onclick="window.location.href='/learn.html'">
+        <span class="sb-item-ico">🎓</span> Aprender Scripting
+      </div>
       <div class="sb-item" onclick="switchView('updates',this)" id="nav-updates">
         <span class="sb-item-ico">📋</span> Atualizações
         <span class="sb-badge" id="update-badge" style="background:var(--acc);color:#fff;display:none">1</span>
@@ -386,6 +389,11 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
               <div class="qc-title">Templates</div>
               <div class="qc-sub">Projetos pré-montados</div>
             </div>
+          </div>
+          <div class="quick-card" onclick="window.location.href='/learn.html'">
+            <div class="quick-icon">🎓</div>
+            <div class="quick-label">Aprender</div>
+            <div class="quick-sub">Quizzes e exercícios de Lua</div>
           </div>
           <div class="quick-card" onclick="switchView('docs',null)">
             <div class="qc-ico" style="background:rgba(0,255,157,.1)">📖</div>
@@ -731,17 +739,8 @@ function switchView(name, el) {
 }
 
 // ── Sidebar mobile ──
-function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sb-overlay');
-  sidebar.classList.toggle('open');
-  if (overlay) overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  const overlay = document.getElementById('sb-overlay');
-  if (overlay) overlay.style.display = 'none';
-}
+function toggleSidebar() { const sb=document.getElementById('sidebar'),ov=document.getElementById('sb-overlay'); sb.classList.toggle('open'); if(ov) ov.style.display=sb.classList.contains('open')?'block':'none'; }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); const ov=document.getElementById('sb-overlay'); if(ov) ov.style.display='none'; }
 
 // ── PWA Install ──
 let _pwaPrompt = null;
