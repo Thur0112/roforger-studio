@@ -1,33 +1,6 @@
 // ═══════════════════════════════════════════════
 //  ROFORGER STUDIO — editor.js
-//  Main orchestrator. Imports from modular files.
-//  Original App logic preserved below.
 // ═══════════════════════════════════════════════
-
-import { HS, initFirebase, saveCloud } from './src/core/firebase.js';
-import { DebugConsole } from './src/core/errors.js';
-import { Storage } from './src/utils/storage.js';
-import { copyText, downloadFile, fmtDate } from './src/utils/helpers.js';
-import { Canvas } from './src/editor/canvas.js';
-import { Nodes } from './src/editor/nodes.js';
-import { Connections } from './src/editor/connections.js';
-import { Explorer } from './src/ui/explorer.js';
-import { Toolbar } from './src/ui/toolbar.js';
-import { buildDebugPanel, buildVersionPanel } from './src/ui/panels.js';
-
-// ── Init Firebase ──
-initFirebase();
-
-// ── Expose DebugConsole globally ──
-window._DebugConsole = DebugConsole;
-DebugConsole.init();
-
-// ════════════════════════════════════════════════
-//  EXISTING APP LOGIC (preserved, not refactored)
-//  The following is the original monolithic code,
-//  kept intact to avoid breaking changes.
-//  Future: gradually migrate to module pattern.
-// ════════════════════════════════════════════════
 
 const DATA={
 explorer:[
