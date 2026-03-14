@@ -585,7 +585,7 @@ window.addEventListener('fb-ready', () => {
     HS.user = u;
     if (u) {
       await fetchProjects();
-      toast(`Olá, ${u.displayName?.split(' ')[0]}! 🎮`);
+      toast(`Olá, ${(u.displayName ? u.displayName.split(' ')[0] : 'User')}! 🎮`);
     }
     hideLoading();
     renderAll();
@@ -620,7 +620,7 @@ async function doLogin() {
     HS.user = r.user;
     await fetchProjects();
     renderAll();
-    toast(`Bem-vindo, ${r.user.displayName?.split(' ')[0]}! 🎮`);
+    toast(`Bem-vindo, ${(r.user.displayName ? r.user.displayName.split(' ')[0] : 'User')}! 🎮`);
   } catch (e) { if (e.code !== 'auth/popup-closed-by-user') toast('Erro no login', 'e'); }
 }
 async function doLogout() {
@@ -647,7 +647,7 @@ function renderUser() {
       <div class="sb-user-card" onclick="doLogout()">
         ${ph}
         <div class="sb-user-info">
-          <div class="sb-user-name">${HS.user.displayName?.split(' ')[0] || 'User'}</div>
+          <div class="sb-user-name">${(HS.user.displayName ? HS.user.displayName.split(' ')[0] : 'User')}</div>
           <div class="sb-user-sub">Google account</div>
         </div>
         <span class="sb-logout" title="Sair">↩</span>
@@ -718,12 +718,12 @@ function switchView(name, el) {
   if (name === 'updates') {
     renderUpdates('updates-container');
     // Hide badge once seen
-    localStorage.setItem('rf_seen_update', window.UPDATES && window.UPDATES[0]?.version);
+    localStorage.setItem('rf_seen_update', window.UPDATES && window.UPDATES[0] && window.UPDATES[0].version);
     const badge = document.getElementById('update-badge');
     if (badge) badge.style.display = 'none';
   }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('v-' + name)?.classList.add('active');
+  var _vEl=document.getElementById('v-'+name);if(_vEl)_vEl.classList.add('active');
   document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
   if (el) el.classList.add('active');
   const titles = { dashboard: 'Dashboard', projects: 'Meus Projetos', systems: 'Sistemas', templates: 'Templates', docs: 'Documentação', updates: 'Atualizações' };
@@ -812,7 +812,7 @@ async function createProject() {
   const type = document.getElementById('np-type').value;
   const proj = {
     name, type, emoji: HS.emoji,
-    uid: HS.user?.uid || 'demo',
+    uid: (HS.user && HS.user.uid ? HS.user.uid : 'demo'),
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
     updatedAt: Date.now(), createdAt: Date.now()
   };

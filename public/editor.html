@@ -134,7 +134,7 @@ function switchStab(el,id) {
   document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.stab-body').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById(id)?.classList.add('active');
+  var _el=document.getElementById(id);if(_el)_el.classList.add('active');
 }
 function insertSnippet(type) {
   const snippets={
@@ -896,7 +896,7 @@ canvas:{
       App.autosave.schedule();
     });
     c.addEventListener('wheel',e=>{
-      e.preventDefault();const delta=e.deltaY<0?.1:-.1;const rect=c.getBoundingClientRect();
+      e.preventDefault();const delta=e.deltaY<0 ? 0.1 : -0.1;const rect=c.getBoundingClientRect();
       const mx=e.clientX-rect.left,my=e.clientY-rect.top;const prev=App.state.cz;
       App.state.cz=Math.min(Math.max(App.state.cz+delta,.15),3);
       App.state.cx=mx-(mx-App.state.cx)*(App.state.cz/prev);
@@ -1082,7 +1082,7 @@ systems:{
     items.forEach(item=>{
       const card=document.createElement('div');card.className='sys-card';
       card.style.setProperty('--card-color',item.color);
-      card.querySelector?.('*')
+      (card.querySelector ? card.querySelector('*') : null)
       card.innerHTML=`<div class="sys-card-head"><div class="sys-card-ico" style="background:${item.color}20;color:${item.color}">${item.icon}</div><div><div class="sys-card-name">${item.name}</div><div class="sys-card-type">📍 ${item.where}</div></div></div><div class="sys-card-desc">${item.desc}</div><div class="sys-card-tags">${item.tags.map(t=>`<span class="sys-tag" style="background:${item.color}18;color:${item.color};border:1px solid ${item.color}33">${t}</span>`).join('')}</div><div class="sys-code-prev">${item.code.split('\n').slice(0,5).join('\n')}</div><div style="display:flex;gap:6px"><button class="sys-card-btn" style="background:linear-gradient(135deg,${item.color},${item.color}cc)" onclick="App.systems.copyItem('${item.id}')">📋 Copiar Código</button><button class="sys-card-btn btn-ghost" style="background:rgba(255,255,255,.05);color:var(--mid);border:1px solid rgba(255,255,255,.1);flex:0;padding:7px 12px" onclick="App.systems.addToBuilderItem('${item.id}')" title="Adicionar ao Builder">➕</button></div>`;
       card.style.setProperty('--before-bg',`linear-gradient(90deg,${item.color},${item.color}88)`);
       // Set the gradient via style override
@@ -2114,7 +2114,7 @@ App.loadFromStorage=function(){
 App.shortcuts={
   init(){
     document.addEventListener('keydown',e=>{
-      if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)){if(e.key==='Escape')document.activeElement.blur();return}
+      if(['INPUT','TEXTAREA','SELECT'].includes((document.activeElement && document.activeElement.tagName))){if(e.key==='Escape')document.activeElement.blur();return}
       const ctrl=e.ctrlKey||e.metaKey;
       if(ctrl&&e.key==='k'){e.preventDefault();Cmd.open()}
       if(ctrl&&e.key==='z'){e.preventDefault();History.undo()}
