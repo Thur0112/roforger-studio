@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#050810"/>
+<title>RoForger — Editor de Scripts</title>
+<link rel="manifest" href="/manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;600&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#050810;--card:#0c1020;--card2:#111828;--hover:#141c35;
+  --acc:#ff4d1a;--acc2:#ff8c42;--acc-glow:rgba(255,77,26,.25);
+  --green:#00ff9d;--blue:#1a8cff;--purple:#9b42ff;--yellow:#ffd600;--pink:#ff79c6;
+  --txt:#e8eaf0;--dim:#6b7594;--mid:#9ba3c0;--dark:#363a5c;
+  --brd:rgba(255,255,255,.07);--r:8px;--tr:.15s ease;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:13px;overflow:hidden}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{50%{opacity:.4}}
+
+/* ─── Layout ─── */
+#app{display:flex;flex-direction:column;height:100vh}
+#topbar{height:44px;background:rgba(5,8,16,.98);border-bottom:1px solid rgba(255,77,26,.2);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0;z-index:100}
+#topbar-logo{font-family:'Orbitron',monospace;font-size:12px;font-weight:900;color:var(--acc);letter-spacing:2px;white-space:nowrap}
+#topbar-logo span{color:var(--acc2)}
+#pname{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);white-space:nowrap}
+#main-tabs{display:flex;gap:2px;flex:1;justify-content:center;overflow-x:auto}
+.main-tab{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;color:var(--dim);transition:all var(--tr);white-space:nowrap;border:1px solid transparent;font-family:'JetBrains Mono',monospace}
+.main-tab:hover{color:var(--txt);background:rgba(255,255,255,.05)}
+.main-tab.active{color:var(--txt);background:rgba(255,77,26,.12);border-color:rgba(255,77,26,.3)}
+#editor-body{display:flex;flex:1;overflow:hidden}
+
+/* ─── Tabs content ─── */
+.tab-view{display:none;flex:1;overflow:hidden}
+.tab-view.active{display:flex}
+
+/* ─── Shared sidebar ─── */
+.e-sidebar{width:200px;background:var(--card);border-right:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.e-sidebar-head{padding:10px 12px 8px;border-bottom:1px solid var(--brd);flex-shrink:0}
+.e-sidebar-title{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.e-sidebar-search{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--brd);border-radius:6px;padding:5px 8px;color:var(--txt);font-size:10px;font-family:'JetBrains Mono',monospace}
+.e-sidebar-body{flex:1;overflow-y:auto;padding:4px 0}
+.e-cat{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dark);padding:10px 12px 3px}
+.e-item{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:grab;color:var(--mid);font-size:11px;font-weight:600;transition:all var(--tr);border-left:2px solid transparent}
+.e-item:hover{background:rgba(255,255,255,.04);color:var(--txt);border-left-color:var(--acc)}
+.e-item-ico{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+
+/* ─── Canvas central ─── */
+.e-canvas-wrap{flex:1;position:relative;overflow:hidden;background:#030509}
+.e-canvas-bg{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:28px 28px;pointer-events:none}
+#scripts-canvas,#sound-canvas,#manual-canvas{width:100%;height:100%;position:relative;overflow:hidden;cursor:default}
+.canvas-vp{position:absolute;top:0;left:0;transform-origin:0 0;width:0;height:0}
+
+/* ─── Canvas toolbar ─── */
+.canvas-tb{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px;background:rgba(8,12,24,.95);border:1px solid var(--brd);border-radius:8px;padding:4px 6px;z-index:10}
+.ctb-btn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;color:var(--dim);transition:all var(--tr);font-family:'JetBrains Mono',monospace;border:none;background:none}
+.ctb-btn:hover{color:var(--txt);background:rgba(255,255,255,.06)}
+.ctb-btn.active{color:var(--txt);background:rgba(255,77,26,.15)}
+.ctb-sep{width:1px;background:var(--brd);margin:0 2px}
+#zoom-lbl-s{font-size:9px;color:var(--dim);min-width:34px;text-align:center;line-height:1;padding:4px 0;font-family:'JetBrains Mono',monospace}
+
+/* ─── Canvas nodes ─── */
+.cnode{position:absolute;background:var(--card2);border:1px solid var(--brd);border-radius:10px;min-width:180px;cursor:pointer;user-select:none;transition:box-shadow .15s}
+.cnode:hover{box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.cnode.sel{box-shadow:0 0 0 2px var(--acc),0 4px 20px var(--acc-glow)}
+.nd-head{display:flex;align-items:center;gap:8px;padding:10px 10px 8px;border-bottom:1px solid var(--brd)}
+.nd-ico{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.nd-name{font-size:12px;font-weight:700;color:var(--txt)}
+.nd-type{font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.nd-acts{display:flex;gap:4px;margin-left:auto}
+.nd-act{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:var(--dim);transition:all var(--tr)}
+.nd-act:hover{background:rgba(255,255,255,.1);color:var(--txt)}
+.nd-act.danger:hover{background:rgba(255,77,26,.15);color:var(--acc)}
+.nd-body{padding:8px 10px}
+.nd-tag{display:inline-block;font-size:9px;padding:2px 7px;border-radius:10px;font-family:'JetBrains Mono',monospace;font-weight:700;margin-bottom:6px}
+.nd-desc{font-size:10px;color:var(--dim);line-height:1.6;margin-bottom:6px}
+.nd-open{font-size:9px;padding:4px 0;text-align:center;border-radius:5px;background:rgba(255,255,255,.04);border:1px solid var(--brd);cursor:pointer;color:var(--dim);font-family:'JetBrains Mono',monospace;transition:all var(--tr);margin-top:2px}
+.nd-open:hover{border-color:rgba(255,77,26,.4);color:var(--acc)}
+.nd-open.has{background:rgba(255,77,26,.08);border-color:rgba(255,77,26,.3);color:var(--acc2)}
+
+/* ─── Right panel ─── */
+.e-right{width:240px;background:var(--card);border-left:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden}
+.e-right-tabs{display:flex;border-bottom:1px solid var(--brd);flex-shrink:0}
+.ert{flex:1;padding:7px 4px;text-align:center;font-size:10px;font-weight:700;cursor:pointer;color:var(--dim);transition:all var(--tr);font-family:'JetBrains Mono',monospace;border-bottom:2px solid transparent}
+.ert:hover{color:var(--mid)}
+.ert.active{color:var(--txt);border-bottom-color:var(--acc)}
+.e-right-content{flex:1;overflow-y:auto}
+.erc{display:none;padding:12px}
+.erc.active{display:block;animation:fadeUp .2s ease}
+.erc-empty{color:var(--dim);font-size:11px;text-align:center;padding:24px 0;font-family:'JetBrains Mono',monospace;line-height:1.7}
+
+/* ─── Code editor ─── */
+.code-area{width:100%;height:200px;background:#03050c;color:#c9d1d9;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;padding:10px;border:1px solid var(--brd);border-radius:6px;resize:vertical;outline:none;tab-size:2}
+.code-area:focus{border-color:rgba(255,77,26,.4)}
+.prop-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.prop-lbl{font-size:10px;color:var(--dim)}
+.prop-val{font-size:10px;font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,.06);border:1px solid var(--brd);border-radius:4px;padding:2px 6px;color:var(--txt);width:100px;text-align:right}
+.prop-check{cursor:pointer}
+.section-hd{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:10px 0 5px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:all var(--tr)}
+.btn-acc{background:linear-gradient(135deg,var(--acc),#c93300);color:#fff}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--mid);border:1px solid var(--brd)}
+.btn-ghost:hover{background:rgba(255,255,255,.1);color:var(--txt)}
+.btn-blue{background:linear-gradient(135deg,var(--blue),#0f5fa0);color:#fff}
+.btn-sm{padding:4px 10px;font-size:10px}
+.btn-full{width:100%;justify-content:center;margin-bottom:5px}
+
+/* ─── Lua syntax ─── */
+.lua-kw{color:#ff79c6}.lua-str{color:#a5d6ff}.lua-num{color:#f0883e}.lua-cmt{color:#6c7086;font-style:italic}.lua-bool{color:#42b3ff}
+
+/* ─── Effects simulator ─── */
+#fx-simulator{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;position:relative;overflow:hidden}
+#fx-workspace{width:320px;height:240px;background:#0a0f1a;border:1px solid var(--brd);border-radius:10px;position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;flex-shrink:0}
+#fx-part{width:80px;height:80px;background:#1a2540;border-radius:6px;position:absolute;bottom:20px;left:50%;transform:translateX(-50%);border:1px solid rgba(255,255,255,.1)}
+#fx-canvas-overlay{position:absolute;inset:0;pointer-events:none}
+.fx-ctrl{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+
+/* ─── Sound tab ─── */
+.snd-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;border:1px solid var(--brd);cursor:grab;transition:all var(--tr);margin-bottom:4px}
+.snd-item:hover{border-color:rgba(255,77,26,.3);background:rgba(255,77,26,.05)}
+.snd-play{width:28px;height:28px;border-radius:50%;background:rgba(255,77,26,.15);border:1px solid rgba(255,77,26,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--tr);flex-shrink:0}
+.snd-play:hover{background:rgba(255,77,26,.3)}
+.snd-node{position:absolute;background:var(--card2);border:1px solid var(--brd);border-radius:10px;min-width:160px;padding:0;cursor:pointer;user-select:none}
+.snd-node-head{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--brd)}
+.snd-node-body{padding:8px 10px}
+.snd-node-play{font-size:18px;cursor:pointer;padding:4px;transition:transform .1s}
+.snd-node-play:hover{transform:scale(1.2)}
+
+/* ─── Animations ─── */
+.anim-category{margin-bottom:12px}
+.anim-cat-title{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:8px 12px 4px}
+.anim-item{display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;color:var(--mid);font-size:11px;font-weight:600;transition:all var(--tr);border-left:2px solid transparent}
+.anim-item:hover{background:rgba(255,255,255,.04);color:var(--txt);border-left-color:var(--purple)}
+.anim-preview{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.anim-preview-canvas{flex:1;position:relative;overflow:hidden;background:#030509;display:flex;align-items:center;justify-content:center}
+.anim-demo-obj{width:60px;height:60px;background:#1a8cff;border-radius:8px;position:relative;transition:none}
+.anim-scripts-list{overflow-y:auto;max-height:280px}
+.anim-script-card{background:var(--card2);border:1px solid var(--brd);border-radius:8px;padding:12px;margin-bottom:8px}
+.anim-script-title{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:4px}
+.anim-code{font-family:'JetBrains Mono',monospace;font-size:10px;color:#c9d1d9;background:#030509;padding:8px;border-radius:6px;border:1px solid var(--brd);overflow-x:auto;white-space:pre;line-height:1.7;margin:6px 0}
+
+/* ─── File explorer (Pastas) ─── */
+.folder-explorer{flex:1;display:flex;overflow:hidden}
+.folder-tree{width:240px;border-right:1px solid var(--brd);overflow-y:auto;padding:6px 0}
+.folder-content{flex:1;overflow-y:auto;padding:10px}
+.ftree-item{display:flex;align-items:center;gap:6px;padding:5px 10px;cursor:pointer;color:var(--mid);font-size:11px;transition:all var(--tr);border-radius:4px}
+.ftree-item:hover{background:rgba(255,255,255,.04);color:var(--txt)}
+.ftree-item.active{background:rgba(255,77,26,.08);color:var(--txt)}
+.ftree-indent{padding-left:20px}
+.fitem{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:var(--card2);border:1px solid var(--brd);border-radius:6px;font-size:11px;cursor:pointer;color:var(--mid);transition:all var(--tr);margin:3px}
+.fitem:hover{border-color:rgba(255,77,26,.3);color:var(--txt)}
+
+/* ─── Manual scripts ─── */
+.ms-item{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:grab;color:var(--mid);font-size:11px;font-weight:600;transition:all var(--tr);border-left:2px solid transparent}
+.ms-item:hover{background:rgba(255,255,255,.04);color:var(--txt)}
+.ms-node{position:absolute;background:var(--card2);border:1px solid var(--brd);border-radius:10px;min-width:200px;cursor:pointer;user-select:none}
+
+/* ─── Docs ─── */
+.docs-content{padding:20px;max-width:720px;margin:0 auto}
+.docs-h1{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--txt);margin-bottom:4px;letter-spacing:1px}
+.docs-lead{font-size:12px;color:var(--dim);line-height:1.8;margin-bottom:20px}
+.docs-section{background:var(--card2);border:1px solid var(--brd);border-radius:10px;padding:16px;margin-bottom:12px}
+.docs-section h3{font-size:12px;font-weight:700;color:var(--acc2);margin-bottom:8px;font-family:'JetBrains Mono',monospace}
+.docs-section p{font-size:11px;color:var(--dim);line-height:1.8;margin-bottom:8px}
+.docs-code{background:#030509;border:1px solid var(--brd);border-radius:6px;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#c9d1d9;overflow-x:auto;white-space:pre;line-height:1.7;margin:6px 0}
+.docs-tip{background:rgba(0,255,157,.04);border:1px solid rgba(0,255,157,.18);border-radius:6px;padding:10px 12px;font-size:11px;color:var(--dim);margin:8px 0;line-height:1.7}
+.docs-tip strong{color:var(--green)}
+
+/* ─── Toast ─── */
+#toastWrap{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
+.toast-item{background:#0a0f20;border-radius:8px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;box-shadow:0 4px 20px rgba(0,0,0,.6);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.toast-s{border:1px solid rgba(0,255,157,.35);color:#00ff9d}
+.toast-e{border:1px solid rgba(255,77,26,.4);color:#ff4d1a}
+.toast-i{border:1px solid rgba(26,140,255,.35);color:#42b3ff}
+.toast-w{border:1px solid rgba(255,214,0,.3);color:#ffd600}
+
+/* ─── Autosave ─── */
+#autosave-ind{position:fixed;bottom:10px;right:12px;background:rgba(0,255,157,.08);border:1px solid rgba(0,255,157,.2);color:var(--green);font-size:9px;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:10px;opacity:0;transition:opacity .3s;pointer-events:none}
+
+/* ─── Responsivo ─── */
+@media(max-width:700px){
+  .e-sidebar{width:160px}
+  .e-right{width:200px}
+  .main-tab{padding:5px 8px;font-size:9px}
+}
+</style>
+</head>
+<body>
+<div id="toastWrap"></div>
+<div id="autosave-ind">💾 Salvo</div>
+
+<div id="app">
+  <!-- Topbar -->
+  <div id="topbar">
+    <div id="topbar-logo">RO<span>FORGER</span></div>
+    <div id="pname">// <span id="proj-name-lbl">Scripts</span></div>
+    <div id="main-tabs">
+      <div class="main-tab active" onclick="switchTab('scripts',this)">📜 Scripts</div>
+      <div class="main-tab" onclick="switchTab('effects',this)">✨ Efeitos</div>
+      <div class="main-tab" onclick="switchTab('sounds',this)">🔊 Som</div>
+      <div class="main-tab" onclick="switchTab('animations',this)">🎬 Animações</div>
+      <div class="main-tab" onclick="switchTab('folders',this)">📁 Pastas</div>
+      <div class="main-tab" onclick="switchTab('manual',this)">⌨ Manual</div>
+      <div class="main-tab" onclick="switchTab('docs',this)">📖 Docs</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-shrink:0">
+      <button class="btn btn-ghost btn-sm" onclick="exportProject()">📤</button>
+      <button class="btn btn-acc btn-sm" onclick="generateScript()">⚡ Gerar</button>
+      <button class="btn btn-ghost btn-sm" onclick="goHome()">🏠</button>
+    </div>
+  </div>
+
+  <div id="editor-body">
+
+    <!-- ════ TAB: SCRIPTS ════ -->
+    <div class="tab-view active" id="tv-scripts">
+      <!-- Left: Systems library -->
+      <div class="e-sidebar">
+        <div class="e-sidebar-head">
+          <div class="e-sidebar-title">Sistemas Lua</div>
+          <input class="e-sidebar-search" placeholder="Buscar..." oninput="filterLib('scripts',this.value)"/>
+        </div>
+        <div class="e-sidebar-body" id="scripts-lib"></div>
+      </div>
+      <!-- Center: Canvas -->
+      <div class="e-canvas-wrap" id="scripts-canvas-wrap">
+        <div class="e-canvas-bg"></div>
+        <div class="canvas-tb">
+          <div class="ctb-btn active" id="stb-sel" onclick="ScriptCanvas.setTool('select',this)">↖</div>
+          <div class="ctb-btn" id="stb-pan" onclick="ScriptCanvas.setTool('pan',this)">✋</div>
+          <div class="ctb-sep"></div>
+          <div class="ctb-btn" onclick="ScriptCanvas.zoom(.1)">+</div>
+          <div id="zoom-lbl-s">100%</div>
+          <div class="ctb-btn" onclick="ScriptCanvas.zoom(-.1)">−</div>
+          <div class="ctb-btn" onclick="ScriptCanvas.resetView()">⊡</div>
+          <div class="ctb-sep"></div>
+          <div class="ctb-btn" onclick="ScriptCanvas.deleteSelected()">🗑</div>
+          <div class="ctb-btn" onclick="ScriptCanvas.duplicateSelected()">⧉</div>
+          <div class="ctb-btn" onclick="generateScript()">⚡ Gerar</div>
+        </div>
+        <div id="scripts-canvas">
+          <div id="scripts-vp" class="canvas-vp"></div>
+        </div>
+        <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--dark);font-family:'JetBrains Mono',monospace;pointer-events:none" id="scripts-count">0 elementos</div>
+      </div>
+      <!-- Right panel -->
+      <div class="e-right" id="scripts-right">
+        <div class="e-right-tabs">
+          <div class="ert active" id="ert-props" onclick="switchRightTab('props',this)">⚙ Props</div>
+          <div class="ert" id="ert-script" onclick="switchRightTab('script',this)">📜 Script</div>
+          <div class="ert" id="ert-logic" onclick="switchRightTab('logic',this)">⚡ Lógica</div>
+          <div class="ert" id="ert-folders" onclick="switchRightTab('rfolder',this)">📁 Pasta</div>
+        </div>
+        <div class="e-right-content">
+          <div class="erc active" id="erc-props">
+            <div class="erc-empty">Selecione um<br>elemento no canvas</div>
+          </div>
+          <div class="erc" id="erc-script">
+            <div class="erc-empty">Selecione um<br>elemento para<br>editar o script</div>
+          </div>
+          <div class="erc" id="erc-logic">
+            <div class="erc-empty">Selecione um<br>elemento para<br>criar condições</div>
+          </div>
+          <div class="erc" id="erc-rfolder">
+            <div class="section-hd">Salvar em Pasta</div>
+            <div id="folder-save-list" style="font-size:10px;color:var(--dim)">Nenhuma pasta criada</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: EFFECTS ════ -->
+    <div class="tab-view" id="tv-effects">
+      <div class="e-sidebar">
+        <div class="e-sidebar-head">
+          <div class="e-sidebar-title">Efeitos</div>
+        </div>
+        <div class="e-sidebar-body" id="fx-lib-list"></div>
+      </div>
+      <div class="e-canvas-wrap" style="flex-direction:column;align-items:stretch">
+        <div id="fx-simulator" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px">
+          <div id="fx-title" style="font-family:'Orbitron',monospace;font-size:14px;color:var(--txt);letter-spacing:1px">SIMULADOR DE EFEITOS</div>
+          <div id="fx-workspace">
+            <div id="fx-part">
+              <div id="fx-effect-container" style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);pointer-events:none"></div>
+            </div>
+          </div>
+          <div class="fx-ctrl" id="fx-ctrl-btns">
+            <button class="btn btn-acc btn-sm" onclick="FX.play()">▶ Simular</button>
+            <button class="btn btn-ghost btn-sm" onclick="FX.stop()">⏹ Parar</button>
+            <button class="btn btn-blue btn-sm" onclick="FX.exportLua()">⚡ Exportar Lua</button>
+          </div>
+          <div id="fx-props-area" style="width:100%;max-width:400px;background:var(--card2);border:1px solid var(--brd);border-radius:8px;padding:12px;display:none">
+            <div id="fx-props-inner"></div>
+          </div>
+        </div>
+      </div>
+      <div class="e-right">
+        <div class="e-right-tabs">
+          <div class="ert active" onclick="switchRightTab2('fxprops',this)">⚙ Props</div>
+          <div class="ert" onclick="switchRightTab2('fxscript',this)">📜 Script</div>
+          <div class="ert" onclick="switchRightTab2('fxlogic',this)">⚡ Lógica</div>
+          <div class="ert" onclick="switchRightTab2('fxfolder',this)">📁 Pasta</div>
+        </div>
+        <div class="e-right-content">
+          <div class="erc active" id="erc2-fxprops"><div class="erc-empty">Selecione um efeito<br>para ver props</div></div>
+          <div class="erc" id="erc2-fxscript"><div class="erc-empty">Selecione um efeito<br>para ver o script</div></div>
+          <div class="erc" id="erc2-fxlogic"><div class="erc-empty">Lógica do efeito</div></div>
+          <div class="erc" id="erc2-fxfolder"><div class="erc-empty">Salvar em pasta</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: SOUNDS ════ -->
+    <div class="tab-view" id="tv-sounds">
+      <div class="e-sidebar">
+        <div class="e-sidebar-head">
+          <div class="e-sidebar-title">Sons do Roblox</div>
+          <input class="e-sidebar-search" placeholder="Buscar som..." oninput="filterSounds(this.value)"/>
+        </div>
+        <div class="e-sidebar-body" id="sounds-lib"></div>
+      </div>
+      <div class="e-canvas-wrap">
+        <div class="e-canvas-bg"></div>
+        <div class="canvas-tb">
+          <div class="ctb-btn active" id="sndtb-sel" onclick="SoundCanvas.setTool('select',this)">↖</div>
+          <div class="ctb-btn" id="sndtb-pan" onclick="SoundCanvas.setTool('pan',this)">✋</div>
+          <div class="ctb-sep"></div>
+          <div class="ctb-btn" onclick="SoundCanvas.zoom(.1)">+</div>
+          <div id="zoom-lbl-snd" style="font-size:9px;color:var(--dim);min-width:34px;text-align:center;padding:4px 0;font-family:'JetBrains Mono',monospace">100%</div>
+          <div class="ctb-btn" onclick="SoundCanvas.zoom(-.1)">−</div>
+          <div class="ctb-btn" onclick="SoundCanvas.resetView()">⊡</div>
+          <div class="ctb-sep"></div>
+          <div class="ctb-btn" onclick="SoundCanvas.deleteSelected()">🗑</div>
+        </div>
+        <div id="sounds-canvas" style="width:100%;height:100%;position:relative;overflow:hidden">
+          <div id="sounds-vp" class="canvas-vp"></div>
+        </div>
+      </div>
+      <div class="e-right">
+        <div class="e-right-tabs">
+          <div class="ert active" onclick="switchRightTab3('snprops',this)">⚙ Props</div>
+          <div class="ert" onclick="switchRightTab3('snscript',this)">📜 Script</div>
+          <div class="ert" onclick="switchRightTab3('snlogic',this)">⚡ Lógica</div>
+          <div class="ert" onclick="switchRightTab3('snfolder',this)">📁 Pasta</div>
+        </div>
+        <div class="e-right-content">
+          <div class="erc active" id="erc3-snprops"><div class="erc-empty">Selecione um som<br>no canvas</div></div>
+          <div class="erc" id="erc3-snscript"><div class="erc-empty">Script do som</div></div>
+          <div class="erc" id="erc3-snlogic"><div class="erc-empty">Lógica do som</div></div>
+          <div class="erc" id="erc3-snfolder"><div class="erc-empty">Salvar em pasta</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: ANIMATIONS ════ -->
+    <div class="tab-view" id="tv-animations">
+      <div class="e-sidebar">
+        <div class="e-sidebar-head">
+          <div class="e-sidebar-title">Animações</div>
+        </div>
+        <div class="e-sidebar-body" id="anim-lib"></div>
+      </div>
+      <div class="e-canvas-wrap" style="flex-direction:column">
+        <div class="anim-preview" style="flex:1;padding:20px;overflow-y:auto;gap:16px;display:flex;flex-direction:column">
+          <div class="anim-preview-canvas" style="height:180px;border-radius:10px;border:1px solid var(--brd);flex-shrink:0" id="anim-demo-wrap">
+            <div id="anim-demo" class="anim-demo-obj"></div>
+            <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace" id="anim-demo-lbl">Selecione uma animação</div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:center;flex-shrink:0">
+            <button class="btn btn-acc btn-sm" onclick="Anim.play()">▶ Preview</button>
+            <button class="btn btn-ghost btn-sm" onclick="Anim.stop()">⏹ Parar</button>
+            <button class="btn btn-blue btn-sm" onclick="Anim.exportLua()">⚡ Exportar Lua</button>
+          </div>
+          <div class="anim-scripts-list" id="anim-scripts-list">
+            <div style="color:var(--dim);font-size:11px;text-align:center;padding:20px;font-family:'JetBrains Mono',monospace">← Selecione uma animação</div>
+          </div>
+        </div>
+      </div>
+      <div class="e-right">
+        <div class="e-right-tabs">
+          <div class="ert active" onclick="switchRightTab4('anprops',this)">⚙ Props</div>
+          <div class="ert" onclick="switchRightTab4('anscript',this)">📜 Script</div>
+          <div class="ert" onclick="switchRightTab4('anlogic',this)">⚡ Lógica</div>
+          <div class="ert" onclick="switchRightTab4('anfolder',this)">📁 Pasta</div>
+        </div>
+        <div class="e-right-content">
+          <div class="erc active" id="erc4-anprops"><div class="erc-empty">Selecione uma<br>animação</div></div>
+          <div class="erc" id="erc4-anscript"><div class="erc-empty">Script da animação</div></div>
+          <div class="erc" id="erc4-anlogic"><div class="erc-empty">Lógica</div></div>
+          <div class="erc" id="erc4-anfolder"><div class="erc-empty">Salvar em pasta</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: PASTAS ════ -->
+    <div class="tab-view" id="tv-folders">
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:10px 14px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--card)">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);flex:1">EXPLORADOR DE ARQUIVOS</div>
+          <button class="btn btn-acc btn-sm" onclick="Folders.newFolder()">📁 Nova Pasta</button>
+          <button class="btn btn-ghost btn-sm" onclick="Folders.newScript()">📄 Novo Script</button>
+        </div>
+        <div class="folder-explorer">
+          <!-- Tree: esquerda (estilo Windows Explorer) -->
+          <div class="folder-tree" id="folder-tree-left" style="width:220px">
+            <div style="font-size:9px;color:var(--dim);padding:8px 12px;font-family:'JetBrains Mono',monospace">📁 Meu Projeto</div>
+          </div>
+          <!-- Content: meio (arquivos da pasta selecionada) -->
+          <div class="folder-content" id="folder-content-mid" style="flex:1;border-right:1px solid var(--brd)">
+            <div style="color:var(--dim);font-size:11px;font-family:'JetBrains Mono',monospace">Selecione uma pasta</div>
+          </div>
+          <!-- Right: simulação do Roblox Studio explorer -->
+          <div style="width:220px;background:var(--card);border-left:1px solid var(--brd);overflow-y:auto;padding:8px 0">
+            <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:6px 12px">ROBLOX EXPLORER</div>
+            <div id="roblox-explorer-tree">
+              <!-- Simula árvore do Roblox Studio -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: SCRIPTS MANUAIS ════ -->
+    <div class="tab-view" id="tv-manual">
+      <div class="e-sidebar">
+        <div class="e-sidebar-head">
+          <div class="e-sidebar-title">Tipos de Script</div>
+        </div>
+        <div class="e-sidebar-body" id="manual-lib"></div>
+      </div>
+      <div class="e-canvas-wrap">
+        <div class="e-canvas-bg"></div>
+        <div class="canvas-tb">
+          <div class="ctb-btn active" id="mtb-sel" onclick="ManualCanvas.setTool('select',this)">↖</div>
+          <div class="ctb-btn" id="mtb-pan" onclick="ManualCanvas.setTool('pan',this)">✋</div>
+          <div class="ctb-sep"></div>
+          <div class="ctb-btn" onclick="ManualCanvas.zoom(.1)">+</div>
+          <div id="zoom-lbl-m" style="font-size:9px;color:var(--dim);min-width:34px;text-align:center;padding:4px 0;font-family:'JetBrains Mono',monospace">100%</div>
+          <div class="ctb-btn" onclick="ManualCanvas.zoom(-.1)">−</div>
+          <div class="ctb-btn" onclick="ManualCanvas.resetView()">⊡</div>
+          <div class="ctb-sep"></div>
+          <div class="ctb-btn" onclick="ManualCanvas.deleteSelected()">🗑</div>
+        </div>
+        <div id="manual-canvas" style="width:100%;height:100%;position:relative;overflow:hidden">
+          <div id="manual-vp" class="canvas-vp"></div>
+        </div>
+      </div>
+      <div class="e-right">
+        <div class="e-right-tabs">
+          <div class="ert active" onclick="switchRightTab5('msprops',this)">⚙ Props</div>
+          <div class="ert" onclick="switchRightTab5('msscript',this)">📜 Script</div>
+          <div class="ert" onclick="switchRightTab5('mslogic',this)">⚡ Lógica</div>
+          <div class="ert" onclick="switchRightTab5('msfolder',this)">📁 Pasta</div>
+        </div>
+        <div class="e-right-content">
+          <div class="erc active" id="erc5-msprops"><div class="erc-empty">Selecione um script<br>no canvas</div></div>
+          <div class="erc" id="erc5-msscript">
+            <div class="section-hd">Editor de Script</div>
+            <textarea class="code-area" id="manual-code-editor" placeholder="-- Escreva seu script Lua aqui&#10;&#10;local Players = game:GetService('Players')&#10;"></textarea>
+            <div style="display:flex;gap:5px;margin-top:6px">
+              <button class="btn btn-acc btn-sm" onclick="ManualCanvas.saveScript()" style="flex:1;justify-content:center">💾 Salvar</button>
+              <button class="btn btn-ghost btn-sm" onclick="ManualCanvas.copyScript()" style="flex:1;justify-content:center">📋 Copiar</button>
+            </div>
+            <div style="margin-top:8px">
+              <div class="section-hd">Decisões Lógicas</div>
+              <button class="btn btn-ghost btn-sm btn-full" onclick="ManualCanvas.addIf()">+ If/Then</button>
+              <button class="btn btn-ghost btn-sm btn-full" onclick="ManualCanvas.addLoop()">+ Loop</button>
+              <button class="btn btn-ghost btn-sm btn-full" onclick="ManualCanvas.addFunc()">+ Função</button>
+            </div>
+          </div>
+          <div class="erc" id="erc5-mslogic">
+            <div class="section-hd">Adicionar Lógica</div>
+            <div id="logic-blocks" style="display:flex;flex-direction:column;gap:4px"></div>
+            <button class="btn btn-ghost btn-sm btn-full" style="margin-top:8px" onclick="ManualCanvas.addLogicBlock()">+ Adicionar Bloco</button>
+          </div>
+          <div class="erc" id="erc5-msfolder"><div class="erc-empty">Salvar em pasta</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: DOCS ════ -->
+    <div class="tab-view" id="tv-docs" style="overflow-y:auto">
+      <div class="docs-content" id="docs-body"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: Gerar Script Global -->
+<div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;align-items:center;justify-content:center" id="m-gen" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:20px;max-width:600px;width:90%;max-height:80vh;display:flex;flex-direction:column;gap:12px">
+    <div style="font-family:'Orbitron',monospace;font-size:13px;font-weight:900;color:var(--txt)">⚡ SCRIPT GERADO</div>
+    <pre id="gen-code" style="background:#030509;border:1px solid var(--brd);border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#c9d1d9;overflow:auto;flex:1;line-height:1.8;max-height:400px;white-space:pre-wrap"></pre>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-acc" onclick="copyGenScript()">📋 Copiar</button>
+      <button class="btn btn-ghost" onclick="downloadGenScript()">💾 Baixar .lua</button>
+      <button class="btn btn-ghost" style="margin-left:auto" onclick="document.getElementById('m-gen').style.display='none'">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/shared.js"></script>
+<script>
+// ════════════════════════════════════════════════
+//  RoForger Editor Scripts — JavaScript
+// ════════════════════════════════════════════════
+
+function toast(msg, type='s') {
+  const w = document.getElementById('toastWrap');
+  const d = document.createElement('div');
+  const icons = {s:'✔',e:'✖',w:'⚠',i:'ℹ'};
+  d.className = 'toast-item toast-' + (type||'i');
+  d.textContent = (icons[type]||'ℹ') + ' ' + msg;
+  w.appendChild(d);
+  setTimeout(() => d.remove(), 3000);
+}
+function goHome() { window.location.href = '/home.html'; }
+function syntaxHL(c) {
+  return c.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/(--[^\n]*)/g,'<span class="lua-cmt">$1</span>')
+    .replace(/\b(local|function|end|if|then|else|elseif|return|for|in|do|while|repeat|until|not|and|or|break|task|pcall|ipairs|pairs)\b/g,'<span class="lua-kw">$1</span>')
+    .replace(/\b(true|false|nil)\b/g,'<span class="lua-bool">$1</span>')
+    .replace(/(\"[^\"]*\")/g,'<span class="lua-str">$1</span>')
+    .replace(/\b(\d+(\.\d+)?)\b/g,'<span class="lua-num">$1</span>');
+}
+
+// Load project name
+try {
+  const p = JSON.parse(sessionStorage.getItem('rf_current_project'));
+  if(p) document.getElementById('proj-name-lbl').textContent = p.name || 'Scripts';
+} catch(e){}
+
+// ── Tab switching ──
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+  const tv = document.getElementById('tv-' + id);
+  if(tv) tv.classList.add('active');
+  if(el) el.classList.add('active');
+  if(id === 'docs') renderDocs();
+  if(id === 'animations') Anim.render();
+  if(id === 'folders') Folders.render();
+}
+function switchRightTab(id, el) {
+  document.querySelectorAll('.erc').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.ert').forEach(e => e.classList.remove('active'));
+  document.getElementById('erc-' + id)?.classList.add('active');
+  if(el) el.classList.add('active');
+}
+function switchRightTab2(id, el) {
+  document.querySelectorAll('#tv-effects .erc').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('#tv-effects .ert').forEach(e => e.classList.remove('active'));
+  document.getElementById('erc2-' + id)?.classList.add('active');
+  if(el) el.classList.add('active');
+}
+function switchRightTab3(id, el) {
+  document.querySelectorAll('#tv-sounds .erc').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('#tv-sounds .ert').forEach(e => e.classList.remove('active'));
+  document.getElementById('erc3-' + id)?.classList.add('active');
+  if(el) el.classList.add('active');
+}
+function switchRightTab4(id, el) {
+  document.querySelectorAll('#tv-animations .erc').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('#tv-animations .ert').forEach(e => e.classList.remove('active'));
+  document.getElementById('erc4-' + id)?.classList.add('active');
+  if(el) el.classList.add('active');
+}
+function switchRightTab5(id, el) {
+  document.querySelectorAll('#tv-manual .erc').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('#tv-manual .ert').forEach(e => e.classList.remove('active'));
+  document.getElementById('erc5-' + id)?.classList.add('active');
+  if(el) el.classList.add('active');
+}
+
+// ════════════════════════════════════════════════
+//  SCRIPTS LIBRARY DATA
+// ════════════════════════════════════════════════
+const SCRIPTS_LIB = [
+  {cat:'Movimento', color:'#4d8fff', items:[
+    {id:'walkspeed', icon:'🏃', name:'WalkSpeed', desc:'Velocidade de caminhada', code:`local Players = game:GetService("Players")\nlocal player = Players.LocalPlayer\nlocal char = player.Character or player.CharacterAdded:Wait()\nlocal hum = char:WaitForChild("Humanoid")\nhum.WalkSpeed = 20\nhum.JumpPower = 55`},
+    {id:'sprint', icon:'💨', name:'Sprint (Shift)', desc:'Correr segurando Shift', code:`local UIS = game:GetService("UserInputService")\nlocal hum = game.Players.LocalPlayer.Character:WaitForChild("Humanoid")\nlocal WALK, SPRINT = 16, 28\nUIS.InputBegan:Connect(function(i, gp)\n  if gp then return end\n  if i.KeyCode == Enum.KeyCode.LeftShift then hum.WalkSpeed = SPRINT end\nend)\nUIS.InputEnded:Connect(function(i)\n  if i.KeyCode == Enum.KeyCode.LeftShift then hum.WalkSpeed = WALK end\nend)`},
+    {id:'doublejump', icon:'🦘', name:'Double Jump', desc:'Pulo duplo', code:`local UIS = game:GetService("UserInputService")\nlocal char = game.Players.LocalPlayer.Character\nlocal hum = char:WaitForChild("Humanoid")\nlocal jumped = false\nhum.StateChanged:Connect(function(_, new)\n  if new == Enum.HumanoidStateType.Landed then jumped = false end\nend)\nUIS.JumpRequest:Connect(function()\n  if not jumped and hum:GetState() == Enum.HumanoidStateType.Freefall then\n    jumped = true\n    hum:ChangeState(Enum.HumanoidStateType.Jumping)\n  end\nend)`},
+    {id:'dash', icon:'⚡', name:'Dash (Q)', desc:'Dash rápido', code:`local UIS = game:GetService("UserInputService")\nlocal char = game.Players.LocalPlayer.Character\nlocal hrp = char:WaitForChild("HumanoidRootPart")\nlocal CD = false\nUIS.InputBegan:Connect(function(i, gp)\n  if gp or CD then return end\n  if i.KeyCode == Enum.KeyCode.Q then\n    CD = true\n    hrp.AssemblyLinearVelocity = hrp.CFrame.LookVector * 60\n    task.wait(0.8)\n    CD = false\n  end\nend)`},
+  ]},
+  {cat:'Combate', color:'#ff4d1a', items:[
+    {id:'damage', icon:'⚔', name:'Dano', desc:'Sistema de dano básico', code:`local function dealDamage(char, amount)\n  local hum = char:FindFirstChildOfClass("Humanoid")\n  if hum then hum.Health = hum.Health - amount end\nend\n-- Uso: dealDamage(hit.Parent, 25)`},
+    {id:'killbrick', icon:'🔥', name:'Kill Brick', desc:'Tijolo que mata', code:`local part = script.Parent\npart.Touched:Connect(function(hit)\n  local hum = hit.Parent:FindFirstChildOfClass("Humanoid")\n  if hum then hum.Health = 0 end\nend)`},
+    {id:'healthregen', icon:'💚', name:'Regen HP', desc:'Regeneração de vida', code:`local Players = game:GetService("Players")\nPlayers.PlayerAdded:Connect(function(player)\n  player.CharacterAdded:Connect(function(char)\n    local hum = char:WaitForChild("Humanoid")\n    while hum and hum.Parent do\n      if hum.Health < hum.MaxHealth then\n        hum.Health = math.min(hum.Health + 1, hum.MaxHealth)\n      end\n      task.wait(1)\n    end\n  end)\nend)`},
+  ]},
+  {cat:'Economia', color:'#f5c542', items:[
+    {id:'leaderstats', icon:'🏆', name:'Leaderstats', desc:'Placar de pontuação', code:`local Players = game:GetService("Players")\nPlayers.PlayerAdded:Connect(function(player)\n  local ls = Instance.new("Folder")\n  ls.Name = "leaderstats"\n  ls.Parent = player\n  local coins = Instance.new("IntValue")\n  coins.Name = "Coins"\n  coins.Value = 0\n  coins.Parent = ls\n  local level = Instance.new("IntValue")\n  level.Name = "Level"\n  level.Value = 1\n  level.Parent = ls\nend)`},
+    {id:'datastore', icon:'💾', name:'DataStore', desc:'Salvar dados do jogador', code:`local DSS = game:GetService("DataStoreService")\nlocal store = DSS:GetDataStore("PlayerData_v1")\nlocal Players = game:GetService("Players")\n\nPlayers.PlayerAdded:Connect(function(player)\n  local key = "player_" .. player.UserId\n  local ok, data = pcall(function() return store:GetAsync(key) end)\n  local ls = player:WaitForChild("leaderstats")\n  if ok and data then\n    ls.Coins.Value = data.Coins or 0\n  end\nend)\n\nPlayers.PlayerRemoving:Connect(function(player)\n  local key = "player_" .. player.UserId\n  local ls = player:FindFirstChild("leaderstats")\n  if not ls then return end\n  pcall(function() store:SetAsync(key, {Coins = ls.Coins.Value}) end)\nend)`},
+    {id:'shopcoin', icon:'🛒', name:'Compra Moeda', desc:'Transação de loja', code:`local function buyItem(player, price, itemName)\n  local ls = player:FindFirstChild("leaderstats")\n  if not ls then return false end\n  local coins = ls:FindFirstChild("Coins")\n  if not coins then return false end\n  if coins.Value >= price then\n    coins.Value = coins.Value - price\n    print(player.Name .. " comprou: " .. itemName)\n    return true\n  end\n  return false\nend`},
+  ]},
+  {cat:'Mundo', color:'#00ff9d', items:[
+    {id:'teleport', icon:'🌀', name:'Teleporte', desc:'Teleportar jogador', code:`local part = workspace:FindFirstChild("TeleportPad")\nif not part then warn("TeleportPad não encontrado") return end\npart.Touched:Connect(function(hit)\n  local player = game.Players:GetPlayerFromCharacter(hit.Parent)\n  if player then\n    local dest = workspace:FindFirstChild("TeleportDest")\n    if dest then\n      hit.Parent:WaitForChild("HumanoidRootPart").CFrame = dest.CFrame + Vector3.new(0,3,0)\n    end\n  end\nend)`},
+    {id:'door', icon:'🚪', name:'Porta', desc:'Porta que abre/fecha', code:`local TS = game:GetService("TweenService")\nlocal door = workspace:FindFirstChild("Door")\nif not door then warn("Door não encontrado") return end\nlocal open = false\nlocal openGoal = {CFrame = door.CFrame * CFrame.new(0, 0, -6)}\nlocal closeGoal = {CFrame = door.CFrame}\nlocal info = TweenInfo.new(1, Enum.EasingStyle.Sine)\n\nlocal button = workspace:FindFirstChild("DoorButton")\nif button then\n  local cd = Instance.new("ClickDetector", button)\n  cd.MouseClick:Connect(function()\n    open = not open\n    local tween = TS:Create(door, info, open and openGoal or closeGoal)\n    tween:Play()\n  end)\nend`},
+  ]},
+];
+
+// ── Build scripts library ──
+function buildScriptsLib(filter='') {
+  const el = document.getElementById('scripts-lib');
+  if(!el) return;
+  el.innerHTML = '';
+  SCRIPTS_LIB.forEach(cat => {
+    const items = filter ? cat.items.filter(i => i.name.toLowerCase().includes(filter.toLowerCase())) : cat.items;
+    if(!items.length) return;
+    const catEl = document.createElement('div');
+    catEl.className = 'e-cat';
+    catEl.textContent = cat.cat;
+    el.appendChild(catEl);
+    items.forEach(item => {
+      const d = document.createElement('div');
+      d.className = 'e-item';
+      d.draggable = true;
+      d.innerHTML = `<span class="e-item-ico">${item.icon}</span><div><div style="font-size:11px">${item.name}</div><div style="font-size:9px;color:var(--dim)">${item.desc}</div></div>`;
+      d.style.borderLeftColor = 'transparent';
+      d.onmouseenter = () => d.style.borderLeftColor = cat.color;
+      d.onmouseleave = () => d.style.borderLeftColor = 'transparent';
+      d.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', item.id);
+        e.dataTransfer.effectAllowed = 'copy';
+        const g = document.createElement('div');
+        g.style.cssText = 'position:fixed;top:-999px;background:#0f1629;color:#e8eaf0;padding:5px 10px;border-radius:6px;font-size:10px;border:1px solid '+cat.color+';font-family:JetBrains Mono,monospace';
+        g.textContent = item.icon + ' ' + item.name;
+        document.body.appendChild(g);
+        e.dataTransfer.setDragImage(g, 0, 0);
+        setTimeout(() => g.remove(), 0);
+      });
+      d.addEventListener('dblclick', () => ScriptCanvas.addNode(item.id, 120, 80 + ScriptCanvas.nodes.length * 30));
+      el.appendChild(d);
+    });
+  });
+}
+function filterLib(tab, v) { buildScriptsLib(v); }
+
+// ════════════════════════════════════════════════
+//  SCRIPT CANVAS
+// ════════════════════════════════════════════════
+const ScriptCanvas = {
+  nodes: [], _nc: 1, _sel: null,
+  _cx: 0, _cy: 0, _cz: 1,
+  _tool: 'select',
+  _drag: {active:false}, _pan: {active:false},
+  _inited: false,
+
+  init() {
+    if(this._inited) return;
+    this._inited = true;
+    const wrap = document.getElementById('scripts-canvas-wrap');
+    const canvas = document.getElementById('scripts-canvas');
+    if(!wrap) return;
+
+    wrap.addEventListener('dragover', e => e.preventDefault());
+    wrap.addEventListener('dragenter', e => e.preventDefault());
+    wrap.addEventListener('drop', e => {
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain');
+      if(!id) return;
+      const rect = wrap.getBoundingClientRect();
+      const x = (e.clientX - rect.left - this._cx) / this._cz;
+      const y = (e.clientY - rect.top - this._cy) / this._cz;
+      this.addNode(id, Math.round(x), Math.round(y));
+    });
+
+    canvas.addEventListener('mousedown', e => {
+      if(e.target.id === 'scripts-canvas' || e.target.id === 'scripts-vp') this.select(null);
+      if(this._tool === 'pan' || e.button === 1) {
+        this._pan = {active:true, sx:e.clientX, sy:e.clientY, ox:this._cx, oy:this._cy};
+        canvas.style.cursor = 'grabbing'; e.preventDefault();
+      }
+    });
+    document.addEventListener('mousemove', e => {
+      if(this._pan.active) {
+        this._cx = this._pan.ox + (e.clientX - this._pan.sx);
+        this._cy = this._pan.oy + (e.clientY - this._pan.sy);
+        this.upTf();
+      }
+      if(this._drag.active) this.dragMove(e);
+    });
+    document.addEventListener('mouseup', () => {
+      this._pan.active = false;
+      if(this._drag.active) { this._drag.active = false; this.save(); }
+      canvas.style.cursor = this._tool === 'pan' ? 'grab' : '';
+    });
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      const d = e.deltaY < 0 ? 0.1 : -0.1;
+      const rect = wrap.getBoundingClientRect();
+      const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      const prev = this._cz;
+      this._cz = Math.min(Math.max(this._cz + d, 0.15), 3);
+      this._cx = mx - (mx - this._cx) * (this._cz / prev);
+      this._cy = my - (my - this._cy) * (this._cz / prev);
+      this.upTf();
+    }, {passive:false});
+    this.loadSave();
+  },
+
+  _findItem(id) {
+    for(const cat of SCRIPTS_LIB) { const i = cat.items.find(x => x.id === id); if(i) return {item:i, cat}; }
+    return null;
+  },
+
+  addNode(id, x=120, y=80) {
+    const found = this._findItem(id);
+    if(!found) return;
+    const {item, cat} = found;
+    const node = {uid: this._nc++, id, x, y, name:item.name, icon:item.icon, color:cat.color, code:item.code, props:{}};
+    this.nodes.push(node);
+    this.renderNode(node);
+    this.select(node.uid);
+    this.updateCount();
+    this.save();
+    toast(item.icon + ' ' + item.name + ' adicionado', 'i');
+  },
+
+  renderNode(node) {
+    const vp = document.getElementById('scripts-vp');
+    let el = document.getElementById('sn-' + node.uid);
+    if(!el) {
+      el = document.createElement('div');
+      el.id = 'sn-' + node.uid;
+      el.className = 'cnode';
+      el.addEventListener('mousedown', e => {
+        if(e.target.closest('.nd-act')) return;
+        e.stopPropagation();
+        this.select(node.uid);
+        if(this._tool === 'select') {
+          const rect = el.getBoundingClientRect();
+          this._drag = {active:true, uid:node.uid, offX:(e.clientX-rect.left)/this._cz, offY:(e.clientY-rect.top)/this._cz, sx:node.x, sy:node.y};
+        }
+      });
+      vp.appendChild(el);
+    }
+    const sel = this._sel === node.uid;
+    el.style.left = node.x + 'px';
+    el.style.top = node.y + 'px';
+    if(sel) el.classList.add('sel'); else el.classList.remove('sel');
+    el.innerHTML = `
+      <div class="nd-head">
+        <div class="nd-ico" style="background:${node.color}22;color:${node.color}">${node.icon}</div>
+        <div><div class="nd-name">${node.name}</div><div class="nd-type">${node.id}</div></div>
+        <div class="nd-acts">
+          <div class="nd-act" title="Ver Script" onclick="ScriptCanvas.openScript(${node.uid})">📜</div>
+          <div class="nd-act" title="Duplicar" onclick="ScriptCanvas.duplicate(${node.uid})">⧉</div>
+          <div class="nd-act danger" title="Remover" onclick="ScriptCanvas.remove(${node.uid})">✕</div>
+        </div>
+      </div>
+      <div class="nd-body">
+        <span class="nd-tag" style="background:${node.color}18;color:${node.color}">${node.id}</span>
+        <div class="nd-open ${node.code?'has':''}" onclick="ScriptCanvas.openScript(${node.uid})">${node.code?'✓ Script — clique para editar':'＋ Adicionar Script'}</div>
+      </div>`;
+  },
+
+  dragMove(e) {
+    const d = this._drag;
+    if(!d.active) return;
+    const node = this.nodes.find(n => n.uid === d.uid); if(!node) return;
+    const wrap = document.getElementById('scripts-canvas-wrap');
+    const rect = wrap.getBoundingClientRect();
+    node.x = Math.round((e.clientX - rect.left - this._cx) / this._cz - d.offX);
+    node.y = Math.round((e.clientY - rect.top - this._cy) / this._cz - d.offY);
+    const el = document.getElementById('sn-' + node.uid);
+    if(el) { el.style.left = node.x + 'px'; el.style.top = node.y + 'px'; }
+  },
+
+  select(uid) {
+    this._sel = uid;
+    this.nodes.forEach(n => this.renderNode(n));
+    this.renderProps(uid);
+  },
+
+  renderProps(uid) {
+    const node = this.nodes.find(n => n.uid === uid);
+    const props = document.getElementById('erc-props');
+    const script = document.getElementById('erc-script');
+    if(!node) {
+      props.innerHTML = '<div class="erc-empty">Selecione um<br>elemento no canvas</div>';
+      script.innerHTML = '<div class="erc-empty">Selecione um<br>elemento para<br>editar o script</div>';
+      return;
+    }
+    props.innerHTML = `
+      <div style="font-size:10px;font-weight:700;color:${node.color};margin-bottom:8px">${node.icon} ${node.name}</div>
+      <div class="prop-row"><span class="prop-lbl">ID</span><span style="font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace">${node.id}</span></div>
+      <div class="prop-row"><span class="prop-lbl">Posição X</span><input class="prop-val" type="number" value="${node.x}" onchange="ScriptCanvas.setProp(${node.uid},'x',this.value)"/></div>
+      <div class="prop-row"><span class="prop-lbl">Posição Y</span><input class="prop-val" type="number" value="${node.y}" onchange="ScriptCanvas.setProp(${node.uid},'y',this.value)"/></div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px">
+        <button class="btn btn-ghost btn-sm btn-full" onclick="ScriptCanvas.duplicate(${node.uid})">⧉ Duplicar</button>
+        <button class="btn btn-ghost btn-sm btn-full" style="color:var(--acc);border-color:rgba(255,77,26,.3)" onclick="ScriptCanvas.remove(${node.uid})">🗑 Remover</button>
+      </div>`;
+    script.innerHTML = `
+      <div style="font-size:9px;font-weight:700;color:var(--dim);margin-bottom:8px;text-transform:uppercase">Script Lua</div>
+      <textarea class="code-area" id="sc-code-${node.uid}" style="height:180px">${node.code||''}</textarea>
+      <div style="display:flex;gap:5px;margin-top:6px">
+        <button class="btn btn-acc btn-sm" style="flex:1;justify-content:center" onclick="ScriptCanvas.saveNodeCode(${node.uid})">💾 Salvar</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;justify-content:center" onclick="ScriptCanvas.copyNodeCode(${node.uid})">📋 Copiar</button>
+      </div>`;
+  },
+
+  openScript(uid) {
+    switchRightTab('script', document.getElementById('ert-script'));
+    this.renderProps(uid);
+  },
+
+  saveNodeCode(uid) {
+    const node = this.nodes.find(n => n.uid === uid); if(!node) return;
+    const ta = document.getElementById('sc-code-' + uid);
+    if(ta) { node.code = ta.value; this.renderNode(node); this.save(); toast('💾 Script salvo!'); }
+  },
+
+  async copyNodeCode(uid) {
+    const node = this.nodes.find(n => n.uid === uid); if(!node) return;
+    try { await navigator.clipboard.writeText(node.code||''); toast('📋 Copiado!'); } catch(e) {}
+  },
+
+  setProp(uid, key, val) {
+    const node = this.nodes.find(n => n.uid === uid); if(!node) return;
+    node[key] = parseFloat(val) || 0;
+    const el = document.getElementById('sn-' + uid);
+    if(el) { el.style.left = node.x+'px'; el.style.top = node.y+'px'; }
+    this.save();
+  },
+
+  remove(uid) {
+    const el = document.getElementById('sn-' + uid); if(el) el.remove();
+    this.nodes = this.nodes.filter(n => n.uid !== uid);
+    if(this._sel === uid) { this._sel = null; this.renderProps(null); }
+    this.updateCount(); this.save();
+  },
+
+  duplicate(uid) {
+    const orig = this.nodes.find(n => n.uid === uid); if(!orig) return;
+    const copy = {...orig, uid:this._nc++, x:orig.x+20, y:orig.y+20};
+    this.nodes.push(copy); this.renderNode(copy); this.select(copy.uid);
+    this.updateCount(); this.save();
+  },
+
+  deleteSelected() { if(this._sel) this.remove(this._sel); },
+  duplicateSelected() { if(this._sel) this.duplicate(this._sel); },
+  setTool(t, el) {
+    this._tool = t;
+    document.querySelectorAll('[id^="stb-"]').forEach(b => b.classList.remove('active'));
+    if(el) el.classList.add('active');
+    document.getElementById('scripts-canvas').style.cursor = t==='pan'?'grab':'';
+  },
+  zoom(d) { this._cz = Math.min(Math.max(this._cz+d,0.15),3); this.upTf(); },
+  resetView() { this._cx=0; this._cy=0; this._cz=1; this.upTf(); },
+  upTf() {
+    const vp = document.getElementById('scripts-vp');
+    if(vp) vp.style.transform = `translate(${this._cx}px,${this._cy}px) scale(${this._cz})`;
+    const lbl = document.getElementById('zoom-lbl-s');
+    if(lbl) lbl.textContent = Math.round(this._cz*100)+'%';
+  },
+  updateCount() {
+    const el = document.getElementById('scripts-count');
+    if(el) el.textContent = this.nodes.length + ' elementos';
+  },
+  save() {
+    try { localStorage.setItem('rf_scripts_canvas_v1', JSON.stringify({nodes:this.nodes, nc:this._nc})); } catch(e){}
+    const ind = document.getElementById('autosave-ind');
+    if(ind) { ind.style.opacity='1'; setTimeout(()=>ind.style.opacity='0', 1500); }
+  },
+  loadSave() {
+    try {
+      const raw = localStorage.getItem('rf_scripts_canvas_v1');
+      if(!raw) return;
+      const d = JSON.parse(raw);
+      if(!d||!d.nodes) return;
+      this.nodes = d.nodes;
+      this._nc = d.nc || (Math.max(...d.nodes.map(n=>n.uid),0)+1);
+      this.nodes.forEach(n => this.renderNode(n));
+      this.updateCount();
+    } catch(e) {}
+  }
+};
+
+// ════════════════════════════════════════════════
+//  EFFECTS SYSTEM
+// ════════════════════════════════════════════════
+const FX_LIBRARY = [
+  {id:'fire',    icon:'🔥', name:'Fire',      color:'#ff4d1a', desc:'Fogo animado',
+    props:{Heat:10,Size:8,Color:'255,77,26'},
+    simulate(container){
+      clearInterval(FX._interval);
+      FX._interval = setInterval(()=>{
+        const flame = document.createElement('div');
+        flame.style.cssText = `position:absolute;bottom:${Math.random()*20}px;left:${30+Math.random()*20}px;width:${20+Math.random()*20}px;height:${20+Math.random()*20}px;background:rgba(255,${100+Math.random()*100},0,.8);border-radius:50%;filter:blur(6px);animation:none;pointer-events:none`;
+        container.appendChild(flame);
+        setTimeout(()=>flame.remove(), 400);
+      }, 80);
+    },
+    lua:(p)=>`local part = script.Parent\nlocal fire = Instance.new("Fire")\nfire.Heat = ${p.Heat}\nfire.Size = ${p.Size}\nfire.Color = Color3.fromRGB(${p.Color})\nfire.Parent = part`
+  },
+  {id:'sparkles', icon:'✨', name:'Sparkles',  color:'#ffd600', desc:'Partículas brilhantes',
+    props:{SparkleColor:'255,214,0',TimeScale:1},
+    simulate(container){
+      clearInterval(FX._interval);
+      FX._interval = setInterval(()=>{
+        const spark = document.createElement('div');
+        const angle = Math.random()*Math.PI*2;
+        const r = 20+Math.random()*30;
+        spark.style.cssText = `position:absolute;width:4px;height:4px;background:#ffd600;border-radius:50%;left:${40+Math.cos(angle)*r}px;top:${20+Math.sin(angle)*r}px;pointer-events:none;opacity:1;transition:opacity .4s`;
+        container.appendChild(spark);
+        setTimeout(()=>spark.style.opacity='0',200);
+        setTimeout(()=>spark.remove(),500);
+      }, 60);
+    },
+    lua:(p)=>`local part = script.Parent\nlocal sparkles = Instance.new("Sparkles")\nsparkles.SparkleColor = Color3.fromRGB(${p.SparkleColor})\nsparkles.TimeScale = ${p.TimeScale}\nsparkles.Parent = part`
+  },
+  {id:'smoke', icon:'💨', name:'Smoke',    color:'#888', desc:'Fumaça',
+    props:{Color:'128,128,128',Opacity:0.5,Size:5},
+    simulate(container){
+      clearInterval(FX._interval);
+      FX._interval = setInterval(()=>{
+        const s = document.createElement('div');
+        s.style.cssText = `position:absolute;bottom:${Math.random()*10}px;left:${25+Math.random()*30}px;width:${30+Math.random()*20}px;height:${30+Math.random()*20}px;background:rgba(180,180,180,.3);border-radius:50%;filter:blur(8px);pointer-events:none;transition:all .8s`;
+        container.appendChild(s);
+        setTimeout(()=>{s.style.transform='translateY(-40px)';s.style.opacity='0'},100);
+        setTimeout(()=>s.remove(),900);
+      }, 150);
+    },
+    lua:(p)=>`local part = script.Parent\nlocal smoke = Instance.new("Smoke")\nsmoke.Color = Color3.fromRGB(${p.Color})\nsmoke.Opacity = ${p.Opacity}\nsmoke.Size = ${p.Size}\nsmoke.Parent = part`
+  },
+  {id:'explosion', icon:'💥', name:'Explosion', color:'#ff8c42', desc:'Explosão',
+    props:{BlastRadius:10,BlastPressure:500000},
+    simulate(container){
+      clearInterval(FX._interval);
+      const burst = document.createElement('div');
+      burst.style.cssText = 'position:absolute;inset:0;background:radial-gradient(circle,rgba(255,140,0,.8),rgba(255,77,26,.4),transparent 70%);border-radius:50%;animation:none;pointer-events:none;opacity:1;transition:all .3s';
+      container.appendChild(burst);
+      setTimeout(()=>{burst.style.opacity='0';burst.style.transform='scale(2)'},50);
+      setTimeout(()=>burst.remove(),350);
+    },
+    lua:(p)=>`local explosion = Instance.new("Explosion")\nexplosion.BlastRadius = ${p.BlastRadius}\nexplosion.BlastPressure = ${p.BlastPressure}\nexplosion.Position = script.Parent.Position\nexplosion.Parent = workspace`
+  },
+  {id:'neon', icon:'🌟', name:'Neon Glow', color:'#9b42ff', desc:'Brilho neon',
+    props:{Color:'155,66,255',Material:'Neon'},
+    simulate(container){
+      clearInterval(FX._interval);
+      const part = document.getElementById('fx-part');
+      part.style.background = 'rgba(155,66,255,.8)';
+      part.style.boxShadow = '0 0 30px rgba(155,66,255,.8)';
+      FX._stopFn = () => { part.style.background=''; part.style.boxShadow=''; };
+    },
+    lua:(p)=>`-- Aplique o material Neon e a cor na parte\nlocal part = script.Parent\npart.Material = Enum.Material.Neon\npart.Color = Color3.fromRGB(${p.Color})`
+  },
+];
+
+const FX = {
+  _current: null,
+  _interval: null,
+  _stopFn: null,
+
+  init() {
+    const lib = document.getElementById('fx-lib-list');
+    if(!lib) return;
+    FX_LIBRARY.forEach(fx => {
+      const d = document.createElement('div');
+      d.className = 'e-item';
+      d.innerHTML = `<span class="e-item-ico">${fx.icon}</span><div><div style="font-size:11px">${fx.name}</div><div style="font-size:9px;color:var(--dim)">${fx.desc}</div></div>`;
+      d.style.borderLeftColor = 'transparent';
+      d.onmouseenter = () => d.style.borderLeftColor = fx.color;
+      d.onmouseleave = () => d.style.borderLeftColor = 'transparent';
+      d.onclick = () => FX.select(fx.id);
+      lib.appendChild(d);
+    });
+  },
+
+  select(id) {
+    this.stop();
+    this._current = FX_LIBRARY.find(f => f.id === id);
+    if(!this._current) return;
+    document.getElementById('fx-title').textContent = this._current.icon + ' ' + this._current.name;
+    const propsArea = document.getElementById('fx-props-area');
+    const inner = document.getElementById('fx-props-inner');
+    propsArea.style.display = 'block';
+    inner.innerHTML = `<div style="font-size:9px;font-weight:700;color:var(--dim);margin-bottom:8px;text-transform:uppercase">${this._current.name} — Propriedades</div>` +
+      Object.entries(this._current.props).map(([k,v]) =>
+        `<div class="prop-row"><span class="prop-lbl">${k}</span><input class="prop-val" value="${v}" onchange="FX.setProp('${k}',this.value)"/></div>`
+      ).join('');
+    // Update right panel
+    document.getElementById('erc2-fxscript').innerHTML = `
+      <div class="section-hd">Script Lua</div>
+      <div class="docs-code">${syntaxHL(this._current.lua(this._current.props))}</div>
+      <button class="btn btn-acc btn-sm btn-full" style="margin-top:6px" onclick="FX.exportLua()">💾 Baixar .lua</button>`;
+    document.getElementById('erc2-fxprops').innerHTML = inner.innerHTML;
+    toast(this._current.icon + ' ' + this._current.name + ' selecionado', 'i');
+  },
+
+  setProp(key, val) {
+    if(this._current) this._current.props[key] = isNaN(val) ? val : parseFloat(val);
+  },
+
+  play() {
+    if(!this._current) { toast('Selecione um efeito primeiro', 'w'); return; }
+    this.stop();
+    const container = document.getElementById('fx-effect-container');
+    container.innerHTML = '';
+    this._current.simulate(container);
+    toast(this._current.icon + ' Simulando ' + this._current.name, 'i');
+  },
+
+  stop() {
+    clearInterval(this._interval);
+    this._interval = null;
+    if(this._stopFn) { this._stopFn(); this._stopFn = null; }
+    const container = document.getElementById('fx-effect-container');
+    if(container) container.innerHTML = '';
+    const part = document.getElementById('fx-part');
+    if(part) { part.style.background=''; part.style.boxShadow=''; }
+  },
+
+  exportLua() {
+    if(!this._current) return;
+    const code = this._current.lua(this._current.props);
+    const b = new Blob([code], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b);
+    a.download = this._current.id + '_effect.lua';
+    a.click();
+    toast('⚡ Lua exportado!', 's');
+  }
+};
+
+// ════════════════════════════════════════════════
+//  SOUNDS
+// ════════════════════════════════════════════════
+const SOUNDS_LIB = [
+  {id:'click',     icon:'🖱', name:'Click UI',      rbxid:'6042053626',  cat:'Interface'},
+  {id:'success',   icon:'✅', name:'Success',        rbxid:'4590662766',  cat:'Interface'},
+  {id:'error',     icon:'❌', name:'Error',          rbxid:'9118360500',  cat:'Interface'},
+  {id:'collect',   icon:'💰', name:'Coin Collect',   rbxid:'4590662766',  cat:'Gameplay'},
+  {id:'hit',       icon:'💥', name:'Hit/Damage',     rbxid:'3788072075',  cat:'Gameplay'},
+  {id:'jump',      icon:'🦘', name:'Jump',           rbxid:'803785499',   cat:'Gameplay'},
+  {id:'death',     icon:'💀', name:'Death',          rbxid:'161006193',   cat:'Gameplay'},
+  {id:'levelup',   icon:'⭐', name:'Level Up',       rbxid:'4590663293',  cat:'Gameplay'},
+  {id:'door',      icon:'🚪', name:'Door Open',      rbxid:'3779563716',  cat:'Ambiente'},
+  {id:'footstep',  icon:'👟', name:'Footstep',       rbxid:'3888781398',  cat:'Ambiente'},
+  {id:'thunder',   icon:'⚡', name:'Thunder',        rbxid:'3238853895',  cat:'Ambiente'},
+  {id:'wind',      icon:'🌬', name:'Wind',           rbxid:'3235861130',  cat:'Ambiente'},
+  {id:'bgmusic',   icon:'🎵', name:'BG Music',       rbxid:'1846920803',  cat:'Música'},
+  {id:'victory',   icon:'🏆', name:'Victory',        rbxid:'4590663293',  cat:'Música'},
+];
+
+const SoundCanvas = {
+  nodes:[], _nc:1, _sel:null,
+  _cx:0,_cy:0,_cz:1, _tool:'select',
+  _drag:{active:false}, _pan:{active:false},
+  _inited:false, _audio:null,
+
+  init() {
+    if(this._inited) return;
+    this._inited = true;
+    // Build library
+    const lib = document.getElementById('sounds-lib');
+    let lastCat = '';
+    SOUNDS_LIB.forEach(snd => {
+      if(snd.cat !== lastCat) {
+        lastCat = snd.cat;
+        const c = document.createElement('div');
+        c.className = 'e-cat';
+        c.textContent = snd.cat;
+        lib.appendChild(c);
+      }
+      const d = document.createElement('div');
+      d.className = 'snd-item';
+      d.draggable = true;
+      d.innerHTML = `<div class="snd-play" onclick="SoundCanvas.previewSound('${snd.rbxid}','${snd.name}');event.stopPropagation()">▶</div><div><div style="font-size:11px;font-weight:700;color:var(--txt)">${snd.icon} ${snd.name}</div><div style="font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace">ID: ${snd.rbxid}</div></div>`;
+      d.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', snd.id);
+        e.dataTransfer.effectAllowed = 'copy';
+      });
+      d.addEventListener('dblclick', () => SoundCanvas.addNode(snd.id, 150, 100 + SoundCanvas.nodes.length*20));
+      lib.appendChild(d);
+    });
+    // Canvas events
+    const wrap = document.getElementById('tv-sounds');
+    const canvas = document.getElementById('sounds-canvas');
+    canvas.addEventListener('dragover', e=>e.preventDefault());
+    canvas.addEventListener('drop', e=>{
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain');
+      if(!id) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX-rect.left-this._cx)/this._cz;
+      const y = (e.clientY-rect.top-this._cy)/this._cz;
+      this.addNode(id, Math.round(x), Math.round(y));
+    });
+    canvas.addEventListener('mousedown', e=>{
+      if(e.target.id==='sounds-canvas'||e.target.id==='sounds-vp') this.select(null);
+      if(this._tool==='pan'||e.button===1){this._pan={active:true,sx:e.clientX,sy:e.clientY,ox:this._cx,oy:this._cy};e.preventDefault();}
+    });
+    document.addEventListener('mousemove', e=>{
+      if(this._pan.active){this._cx=this._pan.ox+(e.clientX-this._pan.sx);this._cy=this._pan.oy+(e.clientY-this._pan.sy);this.upTf();}
+      if(this._drag.active) this.dragMove(e);
+    });
+    document.addEventListener('mouseup',()=>{this._pan.active=false;this._drag.active=false;});
+    canvas.addEventListener('wheel',e=>{
+      e.preventDefault();
+      const d=e.deltaY<0?.1:-.1,rect=canvas.getBoundingClientRect();
+      const mx=e.clientX-rect.left,my=e.clientY-rect.top,prev=this._cz;
+      this._cz=Math.min(Math.max(this._cz+d,.15),3);
+      this._cx=mx-(mx-this._cx)*(this._cz/prev);this._cy=my-(my-this._cy)*(this._cz/prev);
+      this.upTf();
+    },{passive:false});
+  },
+
+  previewSound(rbxid, name) {
+    toast('🔊 ' + name + ' — ID: ' + rbxid + ' (use no Roblox Studio)', 'i');
+  },
+
+  addNode(id, x=150, y=100) {
+    const snd = SOUNDS_LIB.find(s=>s.id===id); if(!snd) return;
+    const node = {uid:this._nc++, id, x, y, name:snd.name, icon:snd.icon, rbxid:snd.rbxid, volume:1, loop:false};
+    this.nodes.push(node);
+    this.renderNode(node);
+    this.select(node.uid);
+    toast(snd.icon + ' ' + snd.name + ' adicionado', 'i');
+  },
+
+  renderNode(node) {
+    const vp = document.getElementById('sounds-vp');
+    let el = document.getElementById('ssn-'+node.uid);
+    if(!el){
+      el = document.createElement('div');
+      el.id = 'ssn-'+node.uid;
+      el.className = 'snd-node';
+      el.addEventListener('mousedown',e=>{
+        if(e.target.closest('.snd-node-play')) return;
+        e.stopPropagation();
+        this.select(node.uid);
+        const rect=el.getBoundingClientRect();
+        this._drag={active:true,uid:node.uid,offX:(e.clientX-rect.left)/this._cz,offY:(e.clientY-rect.top)/this._cz};
+      });
+      vp.appendChild(el);
+    }
+    const sel = this._sel===node.uid;
+    el.style.cssText += `left:${node.x}px;top:${node.y}px;border-color:${sel?'var(--acc)':''};box-shadow:${sel?'0 0 0 2px var(--acc-glow)':''}`;
+    el.style.left=node.x+'px';el.style.top=node.y+'px';
+    el.style.border=sel?'1px solid var(--acc)':'1px solid var(--brd)';
+    el.innerHTML=`
+      <div class="snd-node-head">
+        <span style="font-size:18px">${node.icon}</span>
+        <div><div style="font-size:11px;font-weight:700;color:var(--txt)">${node.name}</div><div style="font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace">ID: ${node.rbxid}</div></div>
+        <div class="nd-act danger" style="margin-left:auto" onclick="SoundCanvas.remove(${node.uid})">✕</div>
+      </div>
+      <div class="snd-node-body">
+        <div class="snd-node-play" onclick="SoundCanvas.playNode(${node.uid})" title="Preview">▶</div>
+      </div>`;
+  },
+
+  playNode(uid) {
+    const node = this.nodes.find(n=>n.uid===uid); if(!node) return;
+    toast('🔊 ' + node.name + ' — rbxassetid://' + node.rbxid, 'i');
+  },
+
+  dragMove(e) {
+    const d=this._drag; if(!d.active) return;
+    const node=this.nodes.find(n=>n.uid===d.uid); if(!node) return;
+    const canvas=document.getElementById('sounds-canvas');
+    const rect=canvas.getBoundingClientRect();
+    node.x=Math.round((e.clientX-rect.left-this._cx)/this._cz-d.offX);
+    node.y=Math.round((e.clientY-rect.top-this._cy)/this._cz-d.offY);
+    const el=document.getElementById('ssn-'+node.uid);
+    if(el){el.style.left=node.x+'px';el.style.top=node.y+'px';}
+  },
+
+  select(uid){this._sel=uid;this.nodes.forEach(n=>this.renderNode(n));this.renderProps(uid);},
+  renderProps(uid){
+    const node=this.nodes.find(n=>n.uid===uid);
+    const el=document.getElementById('erc3-snprops');
+    if(!el) return;
+    if(!node){el.innerHTML='<div class="erc-empty">Selecione um som<br>no canvas</div>';return;}
+    el.innerHTML=`
+      <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:10px">${node.icon} ${node.name}</div>
+      <div class="prop-row"><span class="prop-lbl">SoundId</span><span style="font-size:9px;color:var(--acc2);font-family:'JetBrains Mono',monospace">rbxassetid://${node.rbxid}</span></div>
+      <div class="prop-row"><span class="prop-lbl">Volume</span><input class="prop-val" type="number" min="0" max="10" step="0.1" value="${node.volume}" onchange="SoundCanvas.setProp(${node.uid},'volume',this.value)"/></div>
+      <div class="prop-row"><span class="prop-lbl">Loop</span><input type="checkbox" class="prop-check" ${node.loop?'checked':''} onchange="SoundCanvas.setProp(${node.uid},'loop',this.checked)"/></div>
+      <div class="section-hd" style="margin-top:10px">Script Lua</div>
+      <div style="background:#030509;border:1px solid var(--brd);border-radius:6px;padding:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#c9d1d9;line-height:1.8">local sound = Instance.new("Sound")<br>sound.SoundId = "rbxassetid://${node.rbxid}"<br>sound.Volume = ${node.volume}<br>sound.Looped = ${node.loop}<br>sound.Parent = workspace<br>sound:Play()</div>`;
+  },
+  setProp(uid,key,val){const node=this.nodes.find(n=>n.uid===uid);if(!node)return;node[key]=val==='true'?true:val==='false'?false:isNaN(val)?val:parseFloat(val);this.renderProps(uid);},
+  remove(uid){const el=document.getElementById('ssn-'+uid);if(el)el.remove();this.nodes=this.nodes.filter(n=>n.uid!==uid);if(this._sel===uid){this._sel=null;this.renderProps(null);}},
+  deleteSelected(){if(this._sel)this.remove(this._sel);},
+  setTool(t,el){this._tool=t;document.querySelectorAll('[id^="sndtb-"]').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');},
+  zoom(d){this._cz=Math.min(Math.max(this._cz+d,.15),3);this.upTf();},
+  resetView(){this._cx=0;this._cy=0;this._cz=1;this.upTf();},
+  upTf(){const vp=document.getElementById('sounds-vp');if(vp)vp.style.transform=`translate(${this._cx}px,${this._cy}px) scale(${this._cz})`;const lbl=document.getElementById('zoom-lbl-snd');if(lbl)lbl.textContent=Math.round(this._cz*100)+'%';},
+};
+
+// ════════════════════════════════════════════════
+//  ANIMATIONS
+// ════════════════════════════════════════════════
+const ANIM_LIB = [
+  {cat:'Personagem', items:[
+    {id:'char_walk',  icon:'🚶', name:'Caminhar',  desc:'Animation ID'},
+    {id:'char_run',   icon:'🏃', name:'Correr',    desc:'Animation ID'},
+    {id:'char_jump',  icon:'🦘', name:'Pular',     desc:'Animation ID'},
+    {id:'char_idle',  icon:'🧍', name:'Idle',      desc:'Animation ID'},
+    {id:'char_attack',icon:'⚔',  name:'Atacar',    desc:'Animation ID'},
+  ]},
+  {cat:'TweenService', items:[
+    {id:'tween_move',    icon:'↗', name:'Mover',       desc:'Posição'},
+    {id:'tween_rotate',  icon:'🔄', name:'Rotacionar',  desc:'CFrame'},
+    {id:'tween_scale',   icon:'📐', name:'Escalar',     desc:'Tamanho'},
+    {id:'tween_fade',    icon:'👁', name:'Fade',        desc:'Transparência'},
+    {id:'tween_bounce',  icon:'🏀', name:'Bounce',      desc:'Elástico'},
+    {id:'tween_pulse',   icon:'💓', name:'Pulsar',      desc:'Escala repetida'},
+  ]},
+  {cat:'Loop Manual', items:[
+    {id:'loop_float',   icon:'🎈', name:'Flutuar',     desc:'Sobe e desce'},
+    {id:'loop_spin',    icon:'🌀', name:'Girar',       desc:'Rotação contínua'},
+    {id:'loop_color',   icon:'🌈', name:'Cor cíclica', desc:'Muda de cor'},
+    {id:'loop_door',    icon:'🚪', name:'Porta',       desc:'Abre e fecha'},
+  ]},
+];
+
+const ANIM_SCRIPTS = {
+  char_walk:  {title:'Tocar Animação (walk)',  css:'', code:`local humanoid = script.Parent:WaitForChild("Humanoid")\nlocal animation = Instance.new("Animation")\nanimation.AnimationId = "rbxassetid://COLOQUE_SEU_ID_AQUI"\nlocal track = humanoid:LoadAnimation(animation)\ntrack:Play()`},
+  char_run:   {title:'Tocar Animação (run)',   css:'', code:`local humanoid = script.Parent:WaitForChild("Humanoid")\nlocal animation = Instance.new("Animation")\nanimation.AnimationId = "rbxassetid://COLOQUE_SEU_ID_AQUI"\nlocal track = humanoid:LoadAnimation(animation)\ntrack:Play()\ntrack:AdjustSpeed(1.5)`},
+  char_jump:  {title:'Detectar Pulo',          css:'', code:`local humanoid = script.Parent:WaitForChild("Humanoid")\nhumanoid.Jumping:Connect(function(active)\n  if active then\n    print("Personagem pulou!")\n  end\nend)`},
+  char_idle:  {title:'Idle Animation',         css:'', code:`local humanoid = script.Parent:WaitForChild("Humanoid")\nlocal idle = Instance.new("Animation")\nidle.AnimationId = "rbxassetid://COLOQUE_SEU_ID_AQUI"\nlocal track = humanoid:LoadAnimation(idle)\ntrack.Looped = true\ntrack:Play()`},
+  char_attack:{title:'Animação de Ataque',     css:'', code:`local humanoid = script.Parent:WaitForChild("Humanoid")\nlocal attackAnim = Instance.new("Animation")\nattackAnim.AnimationId = "rbxassetid://COLOQUE_SEU_ID_AQUI"\nlocal track = humanoid:LoadAnimation(attackAnim)\n\nlocal UIS = game:GetService("UserInputService")\nUIS.InputBegan:Connect(function(i, gp)\n  if gp then return end\n  if i.KeyCode == Enum.KeyCode.E then\n    track:Play()\n  end\nend)`},
+  tween_move: {title:'TweenService — Mover',   css:'transform: translateY(-40px)', code:`local TS = game:GetService("TweenService")\nlocal part = workspace.Part\nlocal goal = {Position = part.Position + Vector3.new(0, 10, 0)}\nlocal info = TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)\nlocal tween = TS:Create(part, info, goal)\ntween:Play()`},
+  tween_rotate:{title:'TweenService — Rotacionar', css:'transform: rotate(360deg)', code:`local TS = game:GetService("TweenService")\nlocal part = workspace.Part\nlocal goal = {CFrame = part.CFrame * CFrame.Angles(0, math.rad(180), 0)}\nlocal info = TweenInfo.new(1, Enum.EasingStyle.Bounce)\nTS:Create(part, info, goal):Play()`},
+  tween_scale:{title:'TweenService — Escalar',  css:'transform: scale(1.5)',  code:`local TS = game:GetService("TweenService")\nlocal part = workspace.Part\nlocal goal = {Size = part.Size * 2}\nlocal info = TweenInfo.new(1, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out)\nTS:Create(part, info, goal):Play()`},
+  tween_fade: {title:'TweenService — Fade',     css:'opacity: 0',            code:`local TS = game:GetService("TweenService")\nlocal part = workspace.Part\nlocal goal = {Transparency = 1}\nlocal info = TweenInfo.new(1)\nTS:Create(part, info, goal):Play()`},
+  tween_bounce:{title:'TweenService — Bounce',  css:'transform: translateY(-30px) scaleY(1.2)', code:`local TS = game:GetService("TweenService")\nlocal part = workspace.Part\nlocal info = TweenInfo.new(0.5, Enum.EasingStyle.Bounce, Enum.EasingDirection.Out)\nTS:Create(part, info, {Position = part.Position + Vector3.new(0,5,0)}):Play()`},
+  tween_pulse:{title:'Pulsar (loop)',            css:'transform: scale(1.2)',  code:`local TS = game:GetService("TweenService")\nlocal part = workspace.Part\nlocal big = {Size = part.Size * 1.3}\nlocal small = {Size = part.Size}\nlocal info = TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)\nTS:Create(part, info, big):Play()`},
+  loop_float: {title:'Item Flutuando',          css:'animation: float 1s ease-in-out infinite alternate', code:`while true do\n  script.Parent.Position = script.Parent.Position + Vector3.new(0, 0.05, 0)\n  task.wait(0.05)\n  script.Parent.Position = script.Parent.Position - Vector3.new(0, 0.05, 0)\n  task.wait(0.05)\nend`},
+  loop_spin:  {title:'Girar Continuamente',     css:'animation: spin 2s linear infinite', code:`while true do\n  script.Parent.CFrame = script.Parent.CFrame * CFrame.Angles(0, math.rad(2), 0)\n  task.wait()\nend`},
+  loop_color: {title:'Cor Cíclica',             css:'animation: colorCycle 2s linear infinite', code:`local colors = {\n  Color3.fromRGB(255, 0, 0),\n  Color3.fromRGB(0, 255, 0),\n  Color3.fromRGB(0, 0, 255)\n}\nlocal i = 1\nwhile true do\n  script.Parent.Color = colors[i]\n  i = (i % #colors) + 1\n  task.wait(0.5)\nend`},
+  loop_door:  {title:'Porta Abre/Fecha',        css:'transform: rotateY(90deg)', code:`local TS = game:GetService("TweenService")\nlocal door = workspace.Door\nlocal open = false\nlocal info = TweenInfo.new(1, Enum.EasingStyle.Sine)\nlocal function toggle()\n  local goal = open and {CFrame=door.CFrame} or {CFrame=door.CFrame*CFrame.Angles(0,math.rad(90),0)}\n  open = not open\n  TS:Create(door, info, goal):Play()\nend\n-- Chame toggle() quando necessário`},
+};
+
+const Anim = {
+  _current: null,
+  _animFrame: null,
+  _styles: '',
+
+  render() {
+    const lib = document.getElementById('anim-lib');
+    if(!lib || lib.dataset.built) return;
+    lib.dataset.built = '1';
+    ANIM_LIB.forEach(cat => {
+      const catEl = document.createElement('div');
+      catEl.className = 'anim-category';
+      catEl.innerHTML = `<div class="anim-cat-title">${cat.cat}</div>`;
+      cat.items.forEach(item => {
+        const d = document.createElement('div');
+        d.className = 'anim-item';
+        d.innerHTML = `<span style="font-size:14px">${item.icon}</span><div><div>${item.name}</div><div style="font-size:9px;color:var(--dim)">${item.desc}</div></div>`;
+        d.onclick = () => Anim.select(item.id);
+        catEl.appendChild(d);
+      });
+      lib.appendChild(catEl);
+    });
+  },
+
+  select(id) {
+    this.stop();
+    this._current = ANIM_SCRIPTS[id];
+    if(!this._current) return;
+    const demo = document.getElementById('anim-demo');
+    const lbl = document.getElementById('anim-demo-lbl');
+    if(lbl) lbl.textContent = this._current.title;
+    // Show scripts
+    const list = document.getElementById('anim-scripts-list');
+    if(list) list.innerHTML = `
+      <div class="anim-script-card">
+        <div class="anim-script-title">${this._current.title}</div>
+        <div class="anim-code">${this._current.code}</div>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button class="btn btn-acc btn-sm" onclick="Anim.exportLua('${id}')">⚡ Baixar .lua</button>
+          <button class="btn btn-ghost btn-sm" onclick="Anim.copyLua('${id}')">📋 Copiar</button>
+        </div>
+      </div>`;
+    // Update right panel
+    document.getElementById('erc4-anscript').innerHTML = `
+      <div class="section-hd">${this._current.title}</div>
+      <div class="docs-code" style="font-size:9px">${syntaxHL(this._current.code)}</div>
+      <button class="btn btn-acc btn-sm btn-full" style="margin-top:6px" onclick="Anim.exportLua('${id}')">⚡ Exportar</button>`;
+    toast('🎬 ' + this._current.title, 'i');
+  },
+
+  play() {
+    if(!this._current) { toast('Selecione uma animação', 'w'); return; }
+    const demo = document.getElementById('anim-demo');
+    if(!demo) return;
+    demo.style.transition = 'all 0.5s ease';
+    demo.style.cssText += this._current.css;
+    toast('▶ Preview: ' + this._current.title, 'i');
+  },
+
+  stop() {
+    const demo = document.getElementById('anim-demo');
+    if(demo) { demo.style.cssText = 'width:60px;height:60px;background:#1a8cff;border-radius:8px;position:relative;transition:all 0.3s ease'; }
+  },
+
+  exportLua(id) {
+    const a = ANIM_SCRIPTS[id]; if(!a) return;
+    const b = new Blob([a.code], {type:'text/plain'});
+    const el = document.createElement('a');
+    el.href = URL.createObjectURL(b);
+    el.download = id + '_anim.lua';
+    el.click();
+    toast('⚡ Lua exportado!', 's');
+  },
+
+  async copyLua(id) {
+    const a = ANIM_SCRIPTS[id]; if(!a) return;
+    try { await navigator.clipboard.writeText(a.code); toast('📋 Copiado!'); } catch(e) {}
+  }
+};
+
+// ════════════════════════════════════════════════
+//  FOLDERS
+// ════════════════════════════════════════════════
+const Folders = {
+  _data: {folders:[{id:'scripts',name:'Scripts',icon:'📜',items:[]},{id:'effects',name:'Efeitos',icon:'✨',items:[]},{id:'sounds',name:'Sons',icon:'🔊',items:[]},{id:'animations',name:'Animações',icon:'🎬',items:[]}]},
+  _sel: 'scripts',
+
+  load() {
+    try { const d = JSON.parse(localStorage.getItem('rf_folders_v1')); if(d) this._data = d; } catch(e) {}
+  },
+
+  save() {
+    try { localStorage.setItem('rf_folders_v1', JSON.stringify(this._data)); } catch(e) {}
+  },
+
+  render() {
+    this.load();
+    this.renderTree();
+    this.renderContent();
+    this.renderRoblox();
+  },
+
+  renderTree() {
+    const tree = document.getElementById('folder-tree-left');
+    if(!tree) return;
+    tree.innerHTML = '<div style="font-size:9px;color:var(--dim);padding:8px 12px;font-family:\'JetBrains Mono\',monospace">📁 Meu Projeto</div>';
+    this._data.folders.forEach(f => {
+      const d = document.createElement('div');
+      d.className = 'ftree-item ftree-indent' + (this._sel===f.id?' active':'');
+      d.innerHTML = `${f.icon} ${f.name} <span style="margin-left:auto;font-size:9px;color:var(--dark)">${f.items.length}</span>`;
+      d.onclick = () => { this._sel = f.id; this.render(); };
+      tree.appendChild(d);
+    });
+    const addBtn = document.createElement('div');
+    addBtn.className = 'ftree-item ftree-indent';
+    addBtn.style.color = 'var(--acc)';
+    addBtn.textContent = '+ Nova Pasta';
+    addBtn.onclick = () => this.newFolder();
+    tree.appendChild(addBtn);
+  },
+
+  renderContent() {
+    const el = document.getElementById('folder-content-mid');
+    if(!el) return;
+    const folder = this._data.folders.find(f => f.id === this._sel);
+    if(!folder) { el.innerHTML = '<div style="color:var(--dim);font-size:11px">Selecione uma pasta</div>'; return; }
+    el.innerHTML = `<div style="font-size:10px;font-weight:700;color:var(--txt);margin-bottom:10px">${folder.icon} ${folder.name}</div>`;
+    if(!folder.items.length) { el.innerHTML += '<div style="color:var(--dim);font-size:11px;font-family:\'JetBrains Mono\',monospace">Pasta vazia</div>'; return; }
+    folder.items.forEach(item => {
+      const d = document.createElement('span');
+      d.className = 'fitem';
+      d.textContent = item.icon + ' ' + item.name;
+      el.appendChild(d);
+    });
+  },
+
+  renderRoblox() {
+    const el = document.getElementById('roblox-explorer-tree');
+    if(!el) return;
+    const tree = [
+      {icon:'🎮', name:'Game', children:[
+        {icon:'📡', name:'ReplicatedStorage', children:[]},
+        {icon:'🖥', name:'ServerScriptService', children:[
+          {icon:'📜', name:'Script', leaf:true},
+        ]},
+        {icon:'👤', name:'StarterPlayer', children:[
+          {icon:'📄', name:'StarterPlayerScripts', children:[{icon:'📝', name:'LocalScript', leaf:true}]},
+        ]},
+        {icon:'🌍', name:'Workspace', children:[]},
+      ]},
+    ];
+    const render = (items, depth=0) => {
+      let html = '';
+      items.forEach(item => {
+        const pad = depth * 14;
+        html += `<div class="ftree-item" style="padding-left:${12+pad}px;font-size:${item.leaf?9:10}px;color:${item.leaf?'var(--dim)':'var(--mid)'}">${item.icon} ${item.name}</div>`;
+        if(item.children) html += render(item.children, depth+1);
+      });
+      return html;
+    };
+    el.innerHTML = render(tree);
+  },
+
+  newFolder() {
+    const name = prompt('Nome da pasta:');
+    if(!name) return;
+    this._data.folders.push({id:'f'+Date.now(), name, icon:'📁', items:[]});
+    this.save();
+    this.render();
+    toast('📁 Pasta criada!', 's');
+  },
+
+  newScript() {
+    const folder = this._data.folders.find(f=>f.id===this._sel);
+    if(!folder) { toast('Selecione uma pasta primeiro', 'w'); return; }
+    const name = prompt('Nome do script:');
+    if(!name) return;
+    folder.items.push({name, icon:'📜', type:'script'});
+    this.save();
+    this.render();
+    toast('📜 Script criado!', 's');
+  }
+};
+
+// ════════════════════════════════════════════════
+//  MANUAL SCRIPTS CANVAS
+// ════════════════════════════════════════════════
+const MANUAL_TYPES = [
+  {id:'script',       icon:'📜', name:'Script',       color:'#4d8fff', desc:'Roda no servidor',         template:`-- Script\nlocal Players = game:GetService("Players")\n\nPlayers.PlayerAdded:Connect(function(player)\n  print(player.Name .. " entrou!")\nend)`},
+  {id:'localscript',  icon:'📝', name:'LocalScript',  color:'#9b42ff', desc:'Roda no cliente',          template:`-- LocalScript\nlocal Players = game:GetService("Players")\nlocal player = Players.LocalPlayer\n\nprint("Olá, " .. player.Name)`},
+  {id:'module',       icon:'📦', name:'ModuleScript',  color:'#f5c542', desc:'Biblioteca reutilizável',  template:`-- ModuleScript\nlocal Module = {}\n\nfunction Module.hello(name)\n  return "Olá, " .. name\nend\n\nreturn Module`},
+  {id:'remoteevent',  icon:'🔗', name:'RemoteEvent',   color:'#00ff9d', desc:'Comunicação cliente↔server', template:`-- No Script (servidor):\nlocal RE = game.ReplicatedStorage:WaitForChild("MeuEvento")\nRE.OnServerEvent:Connect(function(player, data)\n  print(player.Name, data)\nend)\n\n-- No LocalScript (cliente):\n-- RE:FireServer("olá")`},
+  {id:'remotefunction',icon:'⚙', name:'RemoteFunction',color:'#ff8c42', desc:'Função com retorno',        template:`-- No Script (servidor):\nlocal RF = game.ReplicatedStorage:WaitForChild("MinhaFuncao")\nRF.OnServerInvoke = function(player, arg)\n  return "resposta: " .. tostring(arg)\nend\n\n-- No LocalScript:\n-- local result = RF:InvokeServer("oi")`},
+  {id:'bindableevent',icon:'🔔', name:'BindableEvent', color:'#ff79c6', desc:'Evento interno server',      template:`-- BindableEvent — comunicação entre scripts do mesmo lado\nlocal BE = Instance.new("BindableEvent")\nBE.Event:Connect(function(data)\n  print("Recebido:", data)\nend)\nBE:Fire("teste")`},
+  {id:'function',     icon:'λ',  name:'Função Lua',    color:'#42b3ff', desc:'Bloco de código reutilizável', template:`local function minhaFuncao(param1, param2)\n  -- Seu código aqui\n  return param1 + param2\nend\n\nlocal resultado = minhaFuncao(10, 5)\nprint(resultado) -- 15`},
+  {id:'condition',    icon:'🔀', name:'If/Condição',   color:'#ffd600', desc:'Tomada de decisão',          template:`if condicao then\n  -- executa se verdadeiro\nelseif outraCondicao then\n  -- executa se segunda condição\nelse\n  -- executa se nenhuma\nend`},
+  {id:'loop',         icon:'🔁', name:'Loop/Repetição', color:'#ff4d1a', desc:'Repetição de código',       template:`-- While loop\nwhile condicao do\n  -- código repetido\n  task.wait(1)\nend\n\n-- For loop\nfor i = 1, 10 do\n  print(i)\nend\n\n-- For ipairs\nfor i, v in ipairs(tabela) do\n  print(i, v)\nend`},
+];
+
+const ManualCanvas = {
+  nodes:[], _nc:1, _sel:null,
+  _cx:0,_cy:0,_cz:1,_tool:'select',
+  _drag:{active:false},_pan:{active:false},_inited:false,
+
+  init() {
+    if(this._inited) return;
+    this._inited = true;
+    // Build lib
+    const lib = document.getElementById('manual-lib');
+    MANUAL_TYPES.forEach(t => {
+      const d = document.createElement('div');
+      d.className = 'ms-item';
+      d.draggable = true;
+      d.style.borderLeftColor = 'transparent';
+      d.innerHTML = `<span style="font-size:18px;flex-shrink:0">${t.icon}</span><div><div style="font-size:11px">${t.name}</div><div style="font-size:9px;color:var(--dim)">${t.desc}</div></div>`;
+      d.onmouseenter = () => d.style.borderLeftColor = t.color;
+      d.onmouseleave = () => d.style.borderLeftColor = 'transparent';
+      d.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', t.id);
+        e.dataTransfer.effectAllowed = 'copy';
+      });
+      d.addEventListener('dblclick', () => ManualCanvas.addNode(t.id, 150, 80+ManualCanvas.nodes.length*25));
+      lib.appendChild(d);
+    });
+    // Canvas
+    const canvas = document.getElementById('manual-canvas');
+    canvas.addEventListener('dragover',e=>e.preventDefault());
+    canvas.addEventListener('dragenter',e=>e.preventDefault());
+    canvas.addEventListener('drop',e=>{
+      e.preventDefault();
+      const id=e.dataTransfer.getData('text/plain');if(!id)return;
+      const rect=canvas.getBoundingClientRect();
+      const x=(e.clientX-rect.left-this._cx)/this._cz;
+      const y=(e.clientY-rect.top-this._cy)/this._cz;
+      this.addNode(id,Math.round(x),Math.round(y));
+    });
+    canvas.addEventListener('mousedown',e=>{
+      if(e.target.id==='manual-canvas'||e.target.id==='manual-vp') this.select(null);
+      if(this._tool==='pan'||e.button===1){this._pan={active:true,sx:e.clientX,sy:e.clientY,ox:this._cx,oy:this._cy};e.preventDefault();}
+    });
+    document.addEventListener('mousemove',e=>{
+      if(this._pan.active){this._cx=this._pan.ox+(e.clientX-this._pan.sx);this._cy=this._pan.oy+(e.clientY-this._pan.sy);this.upTf();}
+      if(this._drag.active) this.dragMove(e);
+    });
+    document.addEventListener('mouseup',()=>{this._pan.active=false;this._drag.active=false;});
+    canvas.addEventListener('wheel',e=>{
+      e.preventDefault();
+      const d=e.deltaY<0?.1:-.1,rect=canvas.getBoundingClientRect();
+      const mx=e.clientX-rect.left,my=e.clientY-rect.top,prev=this._cz;
+      this._cz=Math.min(Math.max(this._cz+d,.15),3);
+      this._cx=mx-(mx-this._cx)*(this._cz/prev);this._cy=my-(my-this._cy)*(this._cz/prev);
+      this.upTf();
+    },{passive:false});
+  },
+
+  addNode(id,x=150,y=80) {
+    const t=MANUAL_TYPES.find(x=>x.id===id);if(!t) return;
+    const node={uid:this._nc++,id,x,y,name:t.name,icon:t.icon,color:t.color,code:t.template};
+    this.nodes.push(node);this.renderNode(node);this.select(node.uid);
+    toast(t.icon+' '+t.name+' adicionado','i');
+  },
+
+  renderNode(node) {
+    const vp=document.getElementById('manual-vp');
+    let el=document.getElementById('mn-'+node.uid);
+    if(!el){
+      el=document.createElement('div');el.id='mn-'+node.uid;el.className='ms-node';
+      el.addEventListener('mousedown',e=>{
+        if(e.target.closest('.nd-act')) return;
+        e.stopPropagation();this.select(node.uid);
+        const rect=el.getBoundingClientRect();
+        this._drag={active:true,uid:node.uid,offX:(e.clientX-rect.left)/this._cz,offY:(e.clientY-rect.top)/this._cz};
+      });
+      vp.appendChild(el);
+    }
+    const sel=this._sel===node.uid;
+    el.style.left=node.x+'px';el.style.top=node.y+'px';
+    el.style.border=sel?`1px solid ${node.color}`:'1px solid var(--brd)';
+    el.style.boxShadow=sel?`0 0 0 2px ${node.color}33`:'';
+    el.innerHTML=`
+      <div class="nd-head">
+        <div class="nd-ico" style="background:${node.color}22;color:${node.color}">${node.icon}</div>
+        <div><div class="nd-name">${node.name}</div><div class="nd-type" style="color:${node.color}aa">${node.id}</div></div>
+        <div class="nd-acts">
+          <div class="nd-act" onclick="ManualCanvas.openEdit(${node.uid})">📜</div>
+          <div class="nd-act danger" onclick="ManualCanvas.remove(${node.uid})">✕</div>
+        </div>
+      </div>
+      <div class="nd-body">
+        <div class="nd-open has" onclick="ManualCanvas.openEdit(${node.uid})">✓ Clique para editar</div>
+      </div>`;
+  },
+
+  openEdit(uid) {
+    const node=this.nodes.find(n=>n.uid===uid);if(!node) return;
+    switchRightTab5('msscript',document.getElementById('ert-ms-script'));
+    const ta=document.getElementById('manual-code-editor');
+    if(ta){ta.value=node.code||'';ta.dataset.uid=uid;}
+  },
+
+  saveScript() {
+    const ta=document.getElementById('manual-code-editor');
+    const uid=parseInt(ta.dataset.uid);if(!uid) return;
+    const node=this.nodes.find(n=>n.uid===uid);if(!node) return;
+    node.code=ta.value;this.renderNode(node);
+    toast('💾 Script salvo!','s');
+  },
+
+  async copyScript() {
+    const ta=document.getElementById('manual-code-editor');
+    try{await navigator.clipboard.writeText(ta.value);toast('📋 Copiado!');}catch(e){}
+  },
+
+  addIf(){const ta=document.getElementById('manual-code-editor');ta.value+='\nif condicao then\n  -- código\nend';},
+  addLoop(){const ta=document.getElementById('manual-code-editor');ta.value+='\nwhile true do\n  task.wait(1)\nend';},
+  addFunc(){const ta=document.getElementById('manual-code-editor');ta.value+='\nlocal function minhaFuncao()\n  -- código\nend';},
+  addLogicBlock(){toast('Em breve: blocos de lógica visual','i');},
+
+  dragMove(e){
+    const d=this._drag;if(!d.active)return;
+    const node=this.nodes.find(n=>n.uid===d.uid);if(!node)return;
+    const canvas=document.getElementById('manual-canvas');
+    const rect=canvas.getBoundingClientRect();
+    node.x=Math.round((e.clientX-rect.left-this._cx)/this._cz-d.offX);
+    node.y=Math.round((e.clientY-rect.top-this._cy)/this._cz-d.offY);
+    const el=document.getElementById('mn-'+node.uid);
+    if(el){el.style.left=node.x+'px';el.style.top=node.y+'px';}
+  },
+
+  select(uid){this._sel=uid;this.nodes.forEach(n=>this.renderNode(n));},
+  remove(uid){const el=document.getElementById('mn-'+uid);if(el)el.remove();this.nodes=this.nodes.filter(n=>n.uid!==uid);if(this._sel===uid)this._sel=null;},
+  deleteSelected(){if(this._sel)this.remove(this._sel);},
+  setTool(t,el){this._tool=t;document.querySelectorAll('[id^="mtb-"]').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');},
+  zoom(d){this._cz=Math.min(Math.max(this._cz+d,.15),3);this.upTf();},
+  resetView(){this._cx=0;this._cy=0;this._cz=1;this.upTf();},
+  upTf(){const vp=document.getElementById('manual-vp');if(vp)vp.style.transform=`translate(${this._cx}px,${this._cy}px) scale(${this._cz})`;const lbl=document.getElementById('zoom-lbl-m');if(lbl)lbl.textContent=Math.round(this._cz*100)+'%';}
+};
+
+// ════════════════════════════════════════════════
+//  DOCS
+// ════════════════════════════════════════════════
+function renderDocs() {
+  const el = document.getElementById('docs-body');
+  if(!el || el.dataset.built) return;
+  el.dataset.built = '1';
+  el.innerHTML = `
+    <div class="docs-h1">📖 DOCUMENTAÇÃO RoForger</div>
+    <div class="docs-lead">Guia completo de todas as funcionalidades. Aprenda Lua e como usar cada sistema.</div>
+
+    <div class="docs-section">
+      <h3>📜 Script vs LocalScript vs ModuleScript</h3>
+      <p><strong style="color:var(--acc2)">Script</strong> — roda no servidor. Use para: DataStore, dano, lógica do jogo.</p>
+      <p><strong style="color:var(--purple)">LocalScript</strong> — roda no cliente de cada jogador. Use para: UI, input, câmera.</p>
+      <p><strong style="color:var(--yellow)">ModuleScript</strong> — biblioteca chamada com <code style="color:var(--acc2)">require()</code>. Reutilizável.</p>
+    </div>
+
+    <div class="docs-section">
+      <h3>🔗 RemoteEvent — Cliente ↔ Servidor</h3>
+      <p>Comunicação entre LocalScript e Script usando RemoteEvents.</p>
+      <div class="docs-code">${syntaxHL(`-- LocalScript (cliente dispara)\nlocal RE = game.ReplicatedStorage:WaitForChild("MeuEvento")\nRE:FireServer("acao", 25)\n\n-- Script (servidor escuta)\nRE.OnServerEvent:Connect(function(player, acao, valor)\n  print(player.Name, acao, valor)\nend)`)}</div>
+    </div>
+
+    <div class="docs-section">
+      <h3>🏆 Leaderstats — Placar</h3>
+      <p>O Roblox exibe automaticamente um folder chamado <strong style="color:var(--acc2)">"leaderstats"</strong> como placar.</p>
+      <div class="docs-code">${syntaxHL(`local Players = game:GetService("Players")\nPlayers.PlayerAdded:Connect(function(player)\n  local ls = Instance.new("Folder")\n  ls.Name = "leaderstats"\n  ls.Parent = player\n  local coins = Instance.new("IntValue")\n  coins.Name = "Coins"\n  coins.Value = 0\n  coins.Parent = ls\nend)`)}</div>
+    </div>
+
+    <div class="docs-section">
+      <h3>💾 DataStore — Salvar Dados</h3>
+      <div class="docs-tip"><strong>⚠️</strong> Ative: Game Settings → Security → Enable Studio Access to API Services</div>
+      <div class="docs-code">${syntaxHL(`local DSS = game:GetService("DataStoreService")\nlocal store = DSS:GetDataStore("PlayerData_v1")\n\n-- Salvar\npcall(function()\n  store:SetAsync("player_" .. player.UserId, {Coins = 100})\nend)\n\n-- Carregar\nlocal ok, data = pcall(function()\n  return store:GetAsync("player_" .. player.UserId)\nend)`)}</div>
+    </div>
+
+    <div class="docs-section">
+      <h3>🎬 TweenService — Animações</h3>
+      <div class="docs-code">${syntaxHL(`local TS = game:GetService("TweenService")\nlocal part = workspace.Part\nlocal info = TweenInfo.new(\n  2,                         -- duração\n  Enum.EasingStyle.Sine,     -- estilo\n  Enum.EasingDirection.Out   -- direção\n)\nTS:Create(part, info, {Position = part.Position + Vector3.new(0,10,0)}):Play()`)}</div>
+    </div>
+
+    <div class="docs-section">
+      <h3>⚙ UserInputService — Teclado/Mouse</h3>
+      <div class="docs-code">${syntaxHL(`local UIS = game:GetService("UserInputService")\nUIS.InputBegan:Connect(function(input, gameProcessed)\n  if gameProcessed then return end\n  if input.KeyCode == Enum.KeyCode.E then\n    print("E pressionado!")\n  end\nend)`)}</div>
+    </div>
+
+    <div class="docs-section">
+      <h3>🔥 Efeitos — Fire, Smoke, Sparkles</h3>
+      <div class="docs-code">${syntaxHL(`-- Fire\nlocal fire = Instance.new("Fire")\nfire.Heat = 10\nfire.Size = 8\nfire.Parent = workspace.Part\n\n-- Smoke\nlocal smoke = Instance.new("Smoke")\nsmoke.Opacity = 0.5\nsmoke.Parent = workspace.Part\n\n-- Sparkles\nlocal sparkles = Instance.new("Sparkles")\nsparkles.Parent = workspace.Part`)}</div>
+    </div>
+
+    <div class="docs-section">
+      <h3>🔊 Som — Sound</h3>
+      <div class="docs-code">${syntaxHL(`local sound = Instance.new("Sound")\nsound.SoundId = "rbxassetid://SEU_ID"\nsound.Volume = 1\nsound.Looped = false\nsound.Parent = workspace\nsound:Play()`)}</div>
+    </div>
+  `;
+}
+
+// ════════════════════════════════════════════════
+//  GENERATE GLOBAL SCRIPT
+// ════════════════════════════════════════════════
+function generateScript() {
+  if(!ScriptCanvas.nodes.length) { toast('Adicione elementos no canvas primeiro', 'w'); return; }
+  const lines = [
+    '-- ══════════════════════════════════════════',
+    '--  RoForger Studio — Script Gerado',
+    '--  ' + ScriptCanvas.nodes.length + ' sistemas · ' + new Date().toLocaleString('pt-BR'),
+    '--  Cole em: ServerScriptService',
+    '-- ══════════════════════════════════════════',
+    '',
+  ];
+  ScriptCanvas.nodes.forEach(n => {
+    lines.push(`-- ─── ${n.icon} ${n.name} ───`);
+    if(n.code) lines.push(n.code);
+    else lines.push(`print("[RoForger] ${n.name} ativo")`);
+    lines.push('');
+  });
+  const code = lines.join('\n');
+  const pre = document.getElementById('gen-code');
+  if(pre) pre.innerHTML = syntaxHL(code);
+  window._genScript = code;
+  document.getElementById('m-gen').style.display = 'flex';
+}
+
+function copyGenScript() {
+  navigator.clipboard.writeText(window._genScript||'').then(()=>toast('📋 Copiado!'));
+}
+
+function downloadGenScript() {
+  const b = new Blob([window._genScript||''], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b);
+  a.download = 'roforger_script.lua';
+  a.click();
+  toast('💾 Baixado!', 's');
+}
+
+function exportProject() { generateScript(); }
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  buildScriptsLib();
+  ScriptCanvas.init();
+  FX.init();
+  SoundCanvas.init();
+  ManualCanvas.init();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if((e.ctrlKey||e.metaKey) && e.key==='s') { e.preventDefault(); ScriptCanvas.save(); toast('💾 Salvo!'); }
+  if(e.key==='Delete') { ScriptCanvas.deleteSelected(); SoundCanvas.deleteSelected(); ManualCanvas.deleteSelected(); }
+  if(e.key==='Escape') document.getElementById('m-gen').style.display='none';
+});
+</script>
+</body>
+</html>

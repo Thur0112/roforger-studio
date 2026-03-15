@@ -1,6 +1,5 @@
+function rfSanitize(str){if(typeof str!=='string')return str;return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 // ═══════════════════════════════════════════════
-
-function rfSanitize(str){if(typeof str!=='string')return str;return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');}
 //  ROFORGER STUDIO — editor.js  v2.0
 //  Build: 202603140725
 // ═══════════════════════════════════════════════
@@ -647,14 +646,18 @@ ui(){const u=document.getElementById('undo-btn'),r=document.getElementById('redo
 };
 
 // APP
+// ── FIX 6: Estado de drag separado do App.state (não é resetado por undo/history) ──
+const App_drag_state={active:false,uid:null,panning:false,_ps:null,offX:0,offY:0,sx:0,sy:0};
+
 const App={
-state:{nodes:[],connections:[],selId:null,nc:1,cx:0,cy:0,cz:1,panning:false,tool:'select',gridSnap:false,showConn:true,showMM:true,savedFx:[],curFx:null,curFxProps:{},fxFrame:null,guidedAns:{},scriptTarget:null},
+state:{nodes:[],selId:null,nc:1,cx:0,cy:0,cz:1,panning:false,tool:'select',gridSnap:false,showConn:false,showMM:true,savedFx:[],curFx:null,curFxProps:{},fxFrame:null,guidedAns:{},scriptTarget:null},
+drag:App_drag_state,
 
 reset(){
   // Reset state for new project
   if(this.state.fxFrame)cancelAnimationFrame(this.state.fxFrame);
   this.state.nodes.forEach(n=>{const d=document.getElementById('n-'+n.uid);if(d)d.remove()});
-  this.state={nodes:[],connections:[],selId:null,nc:1,cx:0,cy:0,cz:1,panning:false,tool:'select',gridSnap:false,showConn:true,showMM:true,savedFx:[],curFx:null,curFxProps:{},fxFrame:null,guidedAns:{},scriptTarget:null};
+  this.state={nodes:[],selId:null,nc:1,cx:0,cy:0,cz:1,panning:false,tool:'select',gridSnap:false,showConn:false,showMM:true,savedFx:[],curFx:null,curFxProps:{},fxFrame:null,guidedAns:{},scriptTarget:null};
   History.stack=[];History.index=-1;History.ui();
   document.getElementById('node-count').textContent='0 elementos';
   document.getElementById('pp-body').innerHTML='<div class="pp-empty">Selecione um<br>elemento no canvas</div>';
@@ -738,48 +741,99 @@ explorer:{
 },
 
 canvas:{
+  // Referências dos handlers para poder remover depois
+  _handlers:{},
   init(){
-    const cvs=document.getElementById('inf-canvas'),vp=document.getElementById('canvas-vp');
-    // Remove old listeners by cloning
-    if(cvs._rfInited){return;}
-    cvs._rfInited=true;
-    const c=cvs;
+    const c=document.getElementById('inf-canvas');
+    if(!c)return;
 
-    c.addEventListener('mousedown',e=>{
-      if(App.state.tool==='pan'||e.button===1){App.state.panning=true;App.state._ps={x:e.clientX,y:e.clientY,ox:App.state.cx,oy:App.state.cy};c.style.cursor='grabbing';e.preventDefault()}
-      if(e.target===c||e.target===document.getElementById('canvas-vp'))App.nodes.deselect();
-    });
-    document.addEventListener('mousemove',e=>{
-      if(App.state.panning){const s=App.state._ps;App.state.cx=s.ox+(e.clientX-s.x);App.state.cy=s.oy+(e.clientY-s.y);this.upTf()}
-      if(App.state._drag)App.nodes.dragMove(e);
-    });
-    document.addEventListener('mouseup',()=>{
-      if(App.state.panning){App.state.panning=false;document.getElementById('inf-canvas').style.cursor=''}
-      if(App.state._drag){
-        const d=App.state._drag;const node=App.state.nodes.find(n=>n.uid===d.uid);
-        if(node&&(node.x!==d.sx||node.y!==d.sy)){const fx=node.x,fy=node.y;History.push({desc:'Mover',undo:()=>{node.x=d.sx;node.y=d.sy;App.nodes.renderOne(node)},redo:()=>{node.x=fx;node.y=fy;App.nodes.renderOne(node)}})}
-        App.state._drag=null;
+    // ── Reinit seguro: remove listeners antigos se existirem ──
+    if(this._handlers.mousedown){
+      document.removeEventListener('mousemove',this._handlers.mousemove);
+      document.removeEventListener('mouseup',this._handlers.mouseup);
+    }
+
+    // ── FIX 5: Deselect apenas se clicou exatamente no canvas (não em filhos) ──
+    const onMousedown = e=>{
+      if(App.state.tool==='pan'||e.button===1){
+        App.drag.panning=true;
+        App.drag._ps={x:e.clientX,y:e.clientY,ox:App.state.cx,oy:App.state.cy};
+        c.style.cursor='grabbing';
+        e.preventDefault();
+      }
+      // Deselect apenas no canvas em si, não em filhos
+      if(e.target.id==='inf-canvas')App.nodes.deselect();
+    };
+
+    // ── FIX 3 + FIX 6: Drag usando App.drag separado do state ──
+    const onMousemove = e=>{
+      if(App.drag.panning){
+        const s=App.drag._ps;
+        App.state.cx=s.ox+(e.clientX-s.x);
+        App.state.cy=s.oy+(e.clientY-s.y);
+        this.upTf();
+      }
+      if(App.drag.active)App.nodes.dragMove(e);
+    };
+
+    const onMouseup = ()=>{
+      if(App.drag.panning){App.drag.panning=false;c.style.cursor=App.state.tool==='pan'?'grab':'';}
+      if(App.drag.active){
+        const d=App.drag;
+        const node=App.state.nodes.find(n=>n.uid===d.uid);
+        if(node&&(node.x!==d.sx||node.y!==d.sy)){
+          const fx=node.x,fy=node.y;
+          History.push({desc:'Mover',undo:()=>{node.x=d.sx;node.y=d.sy;App.nodes.renderOne(node)},redo:()=>{node.x=fx;node.y=fy;App.nodes.renderOne(node)}});
+        }
+        App.drag.active=false;App.drag.uid=null;
         App.connections.render();
       }
       App.autosave.schedule();
-    });
+    };
+
+    // Salvar referências
+    this._handlers={mousedown:onMousedown,mousemove:onMousemove,mouseup:onMouseup};
+
+    c.addEventListener('mousedown',onMousedown);
+    document.addEventListener('mousemove',onMousemove);
+    document.addEventListener('mouseup',onMouseup);
+
     c.addEventListener('wheel',e=>{
-      e.preventDefault();const delta=e.deltaY<0 ? 0.1 : -0.1;const rect=c.getBoundingClientRect();
-      const mx=e.clientX-rect.left,my=e.clientY-rect.top;const prev=App.state.cz;
+      e.preventDefault();
+      const delta=e.deltaY<0?0.1:-0.1;
+      const rect=c.getBoundingClientRect();
+      const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+      const prev=App.state.cz;
       App.state.cz=Math.min(Math.max(App.state.cz+delta,.15),3);
       App.state.cx=mx-(mx-App.state.cx)*(App.state.cz/prev);
       App.state.cy=my-(my-App.state.cy)*(App.state.cz/prev);
       this.upTf();
     },{passive:false});
+
+    // ── FIX 1: Drop no inf-canvas E no canvas-vp ──
+    const onDrop = e=>{
+      e.preventDefault();
+      const id=e.dataTransfer.getData('text/plain');
+      if(!id)return;
+      // Sempre pega rect do inf-canvas (fix 2)
+      const canvas=document.getElementById('inf-canvas');
+      const rect=canvas.getBoundingClientRect();
+      // FIX 3: cálculo correto com zoom e pan
+      const x=(e.clientX-rect.left-App.state.cx)/App.state.cz;
+      const y=(e.clientY-rect.top-App.state.cy)/App.state.cz;
+      App.nodes.add(id,Math.round(x),Math.round(y));
+    };
+
     c.addEventListener('dragover',e=>e.preventDefault());
     c.addEventListener('dragenter',e=>e.preventDefault());
-    c.addEventListener('drop',e=>{
-      e.preventDefault();const id=e.dataTransfer.getData('text/plain');if(!id)return;
-      const rect=c.getBoundingClientRect();
-      const x=Math.round((e.clientX-rect.left-App.state.cx)/App.state.cz);
-      const y=Math.round((e.clientY-rect.top-App.state.cy)/App.state.cz);
-      App.nodes.add(id,x,y);
-    });
+    c.addEventListener('drop',onDrop);
+    // FIX 1: também no canvas-vp para quando soltar em cima de nós
+    const vp=document.getElementById('canvas-vp');
+    if(vp){
+      vp.addEventListener('dragover',e=>e.preventDefault());
+      vp.addEventListener('dragenter',e=>e.preventDefault());
+      vp.addEventListener('drop',onDrop);
+    }
   },
   upTf(){
     document.getElementById('canvas-vp').style.transform=`translate(${App.state.cx}px,${App.state.cy}px) scale(${App.state.cz})`;
@@ -806,12 +860,21 @@ nodes:{
     if(!div){
       div=document.createElement('div');div.id='n-'+node.uid;div.className='cnode';
       div.addEventListener('mousedown',e=>{
-        if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;
-        if(e.target.closest('.nd-act'))return;
-        e.stopPropagation();this.select(node.uid);
+        // FIX 2: ignorar qualquer elemento interativo (não só INPUT/SELECT/TEXTAREA)
+        if(e.target.closest('.nd-act,.nd-prop-in,input,select,textarea,button'))return;
+        e.stopPropagation();
+        // FIX: Se em modo connect, finalizar conexão
+        if(App.connections._connecting){App.connections.finishConnect(node.uid);return;}
+        this.select(node.uid);
         if(App.state.tool==='select'){
           const rect=div.getBoundingClientRect();
-          App.state._drag={uid:node.uid,offX:(e.clientX-rect.left)/App.state.cz,offY:(e.clientY-rect.top)/App.state.cz,sx:node.x,sy:node.y};
+          // FIX 6: usar App.drag separado do state
+          App.drag.active=true;
+          App.drag.uid=node.uid;
+          App.drag.offX=(e.clientX-rect.left)/App.state.cz;
+          App.drag.offY=(e.clientY-rect.top)/App.state.cz;
+          App.drag.sx=node.x;
+          App.drag.sy=node.y;
         }
       });
       vp.appendChild(div);
@@ -820,19 +883,26 @@ nodes:{
     div.classList.toggle('sel',node.uid===App.state.selId);
     const has=!!node.script;
     const propsHTML=Object.entries(node.props).slice(0,4).map(([k,v])=>`<div class="nd-prop-row"><span class="nd-prop-lbl">${k}</span><input class="nd-prop-in" value="${v}" onchange="App.nodes.setProp(${node.uid},'${k}',this.value)" onclick="event.stopPropagation()"/></div>`).join('');
-    div.innerHTML=`<div class="nd-head"><div class="nd-ico" style="background:${node.color}20;color:${node.color}">${node.icon}</div><div class="nd-ta"><div class="nd-name">${node.props.Name||node.type}</div><div class="nd-type">${node.type}</div></div><div class="nd-acts"><div class="nd-act" title="Conectar a outro node" onclick="App.connections._connecting&&App.connections._fromUid!=${node.uid}?App.connections.finishConnect(${node.uid}):App.connections.startConnect(${node.uid})" style="color:var(--blue)">🔗</div><div class="nd-act" title="Abrir Script" onclick="App.scripts.openFor(${node.uid})">📜</div><div class="nd-act" title="Duplicar" onclick="App.nodes.duplicate(${node.uid})">⧉</div><div class="nd-act danger" title="Remover" onclick="App.nodes.remove(${node.uid})">✕</div></div></div><div class="nd-body">${propsHTML}<div class="nd-sbadge ${has?'has':''}" onclick="App.scripts.openFor(${node.uid})">${has?'✓ Script definido — clique para editar':'＋ Adicionar Script'}</div></div>`;
+    div.innerHTML=`<div class="nd-head"><div class="nd-ico" style="background:${node.color}20;color:${node.color}">${node.icon}</div><div class="nd-ta"><div class="nd-name">${node.props.Name||node.type}</div><div class="nd-type">${node.type}</div></div><div class="nd-acts"><div class="nd-act" title="Abrir Script" onclick="App.scripts.openFor(${node.uid})">📜</div><div class="nd-act" title="Duplicar" onclick="App.nodes.duplicate(${node.uid})">⧉</div><div class="nd-act danger" title="Remover" onclick="App.nodes.remove(${node.uid})">✕</div></div></div><div class="nd-body">${propsHTML}<div class="nd-sbadge ${has?'has':''}" onclick="App.scripts.openFor(${node.uid})">${has?'✓ Script definido — clique para editar':'＋ Adicionar Script'}</div></div>`;
   },
   dragMove(e){
-    const d=App.state._drag;if(!d)return;
+    const d=App.drag;if(!d||!d.active)return;
     const node=App.state.nodes.find(n=>n.uid===d.uid);if(!node)return;
-    const c=document.getElementById('inf-canvas');const rect=c.getBoundingClientRect();
-    let nx=Math.round((e.clientX-rect.left)/App.state.cz-App.state.cx/App.state.cz-d.offX);
-    let ny=Math.round((e.clientY-rect.top)/App.state.cz-App.state.cy/App.state.cz-d.offY);
+    const c=document.getElementById('inf-canvas');
+    const rect=c.getBoundingClientRect();
+    // FIX 3: cálculo correto — separar etapas para evitar erro com zoom+pan
+    const rawX=(e.clientX-rect.left)/App.state.cz;
+    const rawY=(e.clientY-rect.top)/App.state.cz;
+    let nx=rawX-App.state.cx/App.state.cz-d.offX;
+    let ny=rawY-App.state.cy/App.state.cz-d.offY;
     if(App.state.gridSnap){nx=Math.round(nx/24)*24;ny=Math.round(ny/24)*24}
+    else{nx=Math.round(nx);ny=Math.round(ny)}
     node.x=nx;node.y=ny;
     const div=document.getElementById('n-'+node.uid);
     if(div){div.style.left=nx+'px';div.style.top=ny+'px'}
-    App.props.upPos(node);App.minimap.render();
+    App.props.upPos&&App.props.upPos(node);
+    App.minimap.render();
+    if(App.state.showConn)App.connections.render();
   },
   setProp(uid,key,val){
     const node=App.state.nodes.find(n=>n.uid===uid);if(!node)return;
@@ -852,7 +922,7 @@ nodes:{
     App.state.nodes=App.state.nodes.filter(n=>n.uid!==uid);
     if(App.state.selId===uid){App.state.selId=null;App.props.render()}
     this.upCount();
-    App.connections.removeAll(uid);if(!silent&&node)History.push({desc:'Del '+node.type,undo:()=>{App.state.nodes.push(node);this.renderOne(node);this.upCount()},redo:()=>this.remove(uid,true)});
+    if(!silent&&node)History.push({desc:'Del '+node.type,undo:()=>{App.state.nodes.push(node);this.renderOne(node);this.upCount()},redo:()=>this.remove(uid,true)});
     App.autosave.schedule();
   },
   deleteSelected(){if(App.state.selId)this.remove(App.state.selId)},
@@ -914,95 +984,12 @@ minimap:{
 },
 
 connections:{
-  // ── Adiciona conexão entre dois nodes ──
-  add(fromUid,toUid){
-    if(fromUid===toUid)return;
-    const exists=App.state.connections.find(c=>c.from===fromUid&&c.to===toUid);
-    if(exists)return;
-    App.state.connections.push({from:fromUid,to:toUid});
-    this.render();
-    App.autosave.schedule();
-    toast('🔗 Conectado!','i');
-  },
-  // ── Remove conexão ──
-  remove(fromUid,toUid){
-    App.state.connections=App.state.connections.filter(c=>!(c.from===fromUid&&c.to===toUid));
-    this.render();
-    App.autosave.schedule();
-  },
-  // ── Remove todas as conexões de um node ──
-  removeAll(uid){
-    App.state.connections=App.state.connections.filter(c=>c.from!==uid&&c.to!==uid);
-    this.render();
-  },
-  // ── Toggle visibilidade ──
-  toggle(){App.state.showConn=!App.state.showConn;this.render();toast(App.state.showConn?'🔗 Conexões visíveis':'🔗 Conexões ocultas','i')},
-  // ── Posição de saída de um node (lado direito, centro) ──
-  _getPort(uid,side='out'){
-    const node=App.state.nodes.find(n=>n.uid===uid);
-    if(!node)return null;
-    const el=document.getElementById('n-'+uid);
-    const w=el?el.offsetWidth:220;
-    const h=el?el.offsetHeight:80;
-    if(side==='out')return{x:node.x+w,y:node.y+h/2};
-    return{x:node.x,y:node.y+h/2};
-  },
-  // ── Renderiza todas as conexões no SVG ──
+  toggle(){App.state.showConn=!App.state.showConn;this.render()},
   render(){
-    const svg=document.getElementById('conn-svg');
-    if(!svg)return;
-    svg.innerHTML='';
-    if(!App.state.showConn)return;
-    if(!App.state.connections||!App.state.connections.length)return;
-    const ns=new Map(App.state.nodes.map(n=>[n.uid,n]));
-    App.state.connections.forEach(conn=>{
-      const a=this._getPort(conn.from,'out');
-      const b=this._getPort(conn.to,'in');
-      if(!a||!b)return;
-      const nodeA=ns.get(conn.from);
-      const color=(nodeA&&nodeA.color)||'var(--acc)';
-      const mx=(a.x+b.x)/2;
-      // Bezier curve
-      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-      path.setAttribute('d',`M${a.x},${a.y} C${mx},${a.y} ${mx},${b.y} ${b.x},${b.y}`);
-      path.setAttribute('fill','none');
-      path.setAttribute('stroke',color);
-      path.setAttribute('stroke-width','2');
-      path.setAttribute('stroke-dasharray','6 3');
-      path.setAttribute('opacity','0.7');
-      path.style.cursor='pointer';
-      path.title=`Clique para remover conexão`;
-      path.addEventListener('click',()=>{
-        if(confirm('Remover esta conexão?'))this.remove(conn.from,conn.to);
-      });
-      // Arrow dot at destination
-      const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
-      dot.setAttribute('cx',b.x);dot.setAttribute('cy',b.y);dot.setAttribute('r','4');
-      dot.setAttribute('fill',color);dot.setAttribute('opacity','0.8');
-      svg.appendChild(path);
-      svg.appendChild(dot);
-    });
-  },
-  // ── Inicia modo de conexão (clica em node A depois node B) ──
-  _connecting:false,
-  _fromUid:null,
-  startConnect(uid){
-    this._connecting=true;
-    this._fromUid=uid;
-    document.getElementById('inf-canvas').style.cursor='crosshair';
-    toast('🔗 Clique em outro node para conectar (ESC cancela)','i');
-  },
-  finishConnect(uid){
-    if(!this._connecting)return false;
-    if(uid!==this._fromUid)this.add(this._fromUid,uid);
-    this._connecting=false;
-    this._fromUid=null;
-    document.getElementById('inf-canvas').style.cursor='';
-    return true;
-  },
-  cancelConnect(){
-    this._connecting=false;this._fromUid=null;
-    document.getElementById('inf-canvas').style.cursor='';
+    const svg=document.getElementById('conn-svg');if(!App.state.showConn){svg.innerHTML='';return}
+    let lines='';const ns=App.state.nodes;
+    for(let i=0;i<ns.length;i++)for(let j=i+1;j<ns.length;j++)if(ns[i].color===ns[j].color){const x1=ns[i].x+110,y1=ns[i].y+60,x2=ns[j].x+110,y2=ns[j].y+60,mx=(x1+x2)/2;lines+=`<path class="conn-line" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"/>`}
+    svg.innerHTML=lines;
   }
 },
 
@@ -1194,7 +1181,7 @@ const PP={
       const wrap=document.createElement('div');wrap.className='sb-block';
       const typeColor={LocalScript:'#1a8cff',Script:'#3ecf8e',ModuleScript:'#9b42ff'}[blk.type]||'#6b7594';
       wrap.innerHTML=`
-      <div class="sb-block-head" onclick="this.querySelector('.sb-chevron').classList.toggle('open');this.nextElementSibling.classList.toggle('open')"><span class="sb-chevron">▶</span><span class="sb-block-title">${blk.name}</span><span class="sb-block-type" style="background:${typeColor}18;color:${typeColor};border:1px solid ${typeColor}33">${blk.type}</span><span class="sb-block-copy" title="Copiar este bloco" onclick="event.stopPropagation();PP.copyBlock(${i},'${node.type}')">📋</span></div><div class="sb-block-body"><div class="sb-explain">${blk.vars.map(v=>`<div class="sb-explain-row"><span class="sb-explain-var">${v.n}</span><span class="sb-explain-desc">${v.d}</span></div>`).join('')}</div><div class="sb-where">📍 Cole em: ${blk.where}</div><div class="sb-code">${syntaxHL(blk.code)}</div><div class="sb-block-actions"><button class="btn btn-ghost btn-sm" style="flex:1" onclick="PP.copyBlock(${i},'${node.type}')">📋 Copiar</button><button class="btn btn-blue btn-sm" style="flex:1" onclick="PP.injectToNode(${node.uid},${i},'${node.type}')">💉 Usar</button></div></div>`;
+      <div class="sb-block-head" onclick="(function(c){if(c)c.classList.toggle('open')})(this.querySelector('.sb-chevron'));(function(el){if(el)el.classList.toggle('open')})(this.nextElementSibling)"><span class="sb-chevron">▶</span><span class="sb-block-title">${blk.name}</span><span class="sb-block-type" style="background:${typeColor}18;color:${typeColor};border:1px solid ${typeColor}33">${blk.type}</span><span class="sb-block-copy" title="Copiar este bloco" onclick="event.stopPropagation();PP.copyBlock(${i},'${node.type}')">📋</span></div><div class="sb-block-body"><div class="sb-explain">${blk.vars.map(v=>`<div class="sb-explain-row"><span class="sb-explain-var">${v.n}</span><span class="sb-explain-desc">${v.d}</span></div>`).join('')}</div><div class="sb-where">📍 Cole em: ${blk.where}</div><div class="sb-code">${syntaxHL(blk.code)}</div><div class="sb-block-actions"><button class="btn btn-ghost btn-sm" style="flex:1" onclick="PP.copyBlock(${i},'${node.type}')">📋 Copiar</button><button class="btn btn-blue btn-sm" style="flex:1" onclick="PP.injectToNode(${node.uid},${i},'${node.type}')">💉 Usar</button></div></div>`;
       body.appendChild(wrap);
     });
   },
@@ -2019,128 +2006,17 @@ App.scripts={
   openEditorFor(uid){SE.openFor(uid)},
   openGlobal(){
     if(!App.state.nodes.length){toast('⚠️ Adicione elementos primeiro!','w');return}
-    const L=[];
-    const nodes=App.state.nodes;
-    const conns=App.state.connections||[];
-
-    // ── Cabeçalho ──
-    L.push('-- ═══════════════════════════════════════════');
-    L.push('--  RoForger Studio — Projeto Completo');
-    L.push('--  '+nodes.length+' sistemas · '+new Date().toLocaleString('pt-BR'));
-    L.push('--  Cole em: ServerScriptService');
-    L.push('-- ═══════════════════════════════════════════');
-    L.push('');
-
-    // ── Sistema de eventos interno (se houver conexões) ──
-    if(conns.length){
-      L.push('-- ── Sistema de Eventos Internos ──────────────');
-      L.push('local Events = {}');
-      L.push('function Events:Fire(name, ...)');
-      L.push('  if not self[name] then return end');
-      L.push('  for _, fn in ipairs(self[name]) do fn(...) end');
-      L.push('end');
-      L.push('function Events:On(name, callback)');
-      L.push('  self[name] = self[name] or {}');
-      L.push('  table.insert(self[name], callback)');
-      L.push('end');
-      L.push('');
-    }
-
-    // ── Verificação de objetos necessários ──
-    const workspaceRefs=[];
-    nodes.forEach(n=>{
-      if(n.script){
-        const matches=n.script.match(/workspace[:\.][\w]+\(?["']?([\w]+)/g)||[];
-        matches.forEach(m=>{
-          const name=m.replace(/workspace[:\.][\w]+\(?["']?/,'').replace(/["']/g,'');
-          if(name&&name.length>2&&!workspaceRefs.includes(name))workspaceRefs.push(name);
-        });
-      }
-    });
-    if(workspaceRefs.length){
-      L.push('-- ── Verificação de Objetos no Workspace ──────');
-      L.push('local function checkWorkspace(name)');
-      L.push('  local obj = workspace:FindFirstChild(name)');
-      L.push('  if not obj then');
-      L.push('    warn("[RoForger] OBJETO NÃO ENCONTRADO: " .. name)');
-      L.push('    warn("[RoForger] Crie este objeto no Workspace do Roblox Studio")');
-      L.push('    return false');
-      L.push('  end');
-      L.push('  return true');
-      L.push('end');
-      L.push('');
-      L.push('-- Verificando objetos necessários...');
-      workspaceRefs.forEach(ref=>{
-        L.push('checkWorkspace("'+ref+'")');
-      });
-      L.push('');
-    }
-
-    // ── Gerar código de cada node em ordem topológica ──
-    // Nodes sem conexões de entrada primeiro
-    const hasIncoming=new Set(conns.map(c=>c.to));
-    const roots=nodes.filter(n=>!hasIncoming.has(n.uid));
-    const rest=nodes.filter(n=>hasIncoming.has(n.uid));
-    const ordered=[...roots,...rest];
-
-    ordered.forEach(n=>{
-      L.push('-- ─── '+n.icon+' '+(n.props.Name||n.type)+' ─────────────');
-      // Configurações do node como comentário
-      const cfgLines=Object.entries(n.props).filter(([k,v])=>k!=='Name'&&v!==undefined).map(([k,v])=>`--   ${k} = ${v}`);
-      if(cfgLines.length){L.push('-- Configurações:');cfgLines.forEach(c=>L.push(c));}
-      // Script seguro com FindFirstChild onde necessário
-      if(n.script){
-        // Substituir WaitForChild por verificação segura
-        const safeScript=n.script
-          .replace(/workspace:WaitForChild\("(\w+)"\)/g,
-            (m,name)=>`(function()\n  local obj = workspace:FindFirstChild("${name}")\n  if not obj then warn("[RoForger] '${name}' não encontrado no Workspace!"); return nil end\n  return obj\nend)()`);
-        L.push(safeScript);
-      } else {
-        L.push('print("[RoForger] '+(n.props.Name||n.type)+' inicializado")');
-      }
-      // Conexões de saída: disparar evento
-      const outConns=conns.filter(c=>c.from===n.uid);
-      if(outConns.length){
-        outConns.forEach(c=>{
-          const target=nodes.find(x=>x.uid===c.to);
-          if(target)L.push('Events:Fire("'+target.type+'_trigger")');
-        });
-      }
-      // Conexões de entrada: escutar evento
-      const inConns=conns.filter(c=>c.to===n.uid);
-      if(inConns.length){
-        const src=nodes.find(x=>x.uid===inConns[0].from);
-        if(src){
-          L.push('Events:On("'+n.type+'_trigger", function()');
-          L.push('  print("[RoForger] '+( n.props.Name||n.type)+' acionado por fluxo")');
-          L.push('end)');
-        }
-      }
-      L.push('');
-    });
-
-    // ── Resumo de objetos necessários ──
-    if(workspaceRefs.length){
-      L.push('');
-      L.push('-- ═══════════════════════════════════════════');
-      L.push('-- OBJETOS NECESSÁRIOS NO WORKSPACE:');
-      workspaceRefs.forEach(r=>L.push('--   ✦ '+r));
-      L.push('-- Crie estes objetos no Roblox Studio');
-      L.push('-- ═══════════════════════════════════════════');
-    }
-
-    const code=L.join('\n');
-    document.getElementById('gmodal-pre').innerHTML=syntaxHL(code);
-    window._globalScript=code;
-    openM('m-global');
+    const L=['-- RoForger Studio — Projeto Completo','-- '+App.state.nodes.length+' sistemas · '+new Date().toLocaleString('pt-BR'),'-- 📍 Cole em ServerScriptService ou StarterPlayerScripts',''];
+    App.state.nodes.forEach(n=>{L.push('-- ─── '+n.icon+' '+(n.props.Name||n.type)+' ───');if(n.script)L.push(n.script);else L.push('print("[RoForger] '+(n.props.Name||n.type)+' ativo")');L.push('')});
+    const code=L.join('\n');document.getElementById('gmodal-pre').innerHTML=syntaxHL(code);window._globalScript=code;openM('m-global');
   },
   async copyGlobal(){try{await navigator.clipboard.writeText(window._globalScript||'');document.getElementById('gcopy-ok').style.display='block';toast('✓ Copiado!');setTimeout(()=>document.getElementById('gcopy-ok').style.display='none',2000)}catch(e){}}
 };
 
 App.project={
   clear(){if(!App.state.nodes.length)return;if(!confirm('Limpar canvas?'))return;App.state.nodes.forEach(n=>{const d=document.getElementById('n-'+n.uid);if(d)d.remove()});App.state.nodes=[];App.state.selId=null;App.props.render();App.nodes.upCount();App.autosave.save()},
-  exportJSON(){const d=JSON.stringify({v4:true,nodes:App.state.nodes,connections:App.state.connections||[],fx:App.state.savedFx,c:{x:App.state.cx,y:App.state.cy,z:App.state.cz}},null,2);const b=new Blob([d],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='roforger-projeto.json';a.click();toast('📤 Exportado!')},
-  importJSON(){const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);App.state.nodes.forEach(n=>{const el=document.getElementById('n-'+n.uid);if(el)el.remove()});App.state.nodes=d.nodes||[];App.state.connections=d.connections||[];App.state.savedFx=d.fx||[];App.state.nc=Math.max(...(App.state.nodes.map(n=>n.uid)||[0]),0)+1;if(d.c){App.state.cx=d.c.x||0;App.state.cy=d.c.y||0;App.state.cz=d.c.z||1}App.state.nodes.forEach(n=>App.nodes.renderOne(n));App.nodes.upCount();App.canvas.upTf();toast('📥 Importado! '+App.state.nodes.length+' elementos','i')}catch(err){toast('Arquivo inválido','e')}};reader.readAsText(file)};input.click()}
+  exportJSON(){const d=JSON.stringify({v4:true,nodes:App.state.nodes,fx:App.state.savedFx,c:{x:App.state.cx,y:App.state.cy,z:App.state.cz}},null,2);const b=new Blob([d],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='roforger-projeto.json';a.click();toast('📤 Exportado!')},
+  importJSON(){const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const d=JSON.parse(ev.target.result);App.state.nodes.forEach(n=>{const el=document.getElementById('n-'+n.uid);if(el)el.remove()});App.state.nodes=d.nodes||[];App.state.savedFx=d.fx||[];App.state.nc=Math.max(...(App.state.nodes.map(n=>n.uid)||[0]),0)+1;if(d.c){App.state.cx=d.c.x||0;App.state.cy=d.c.y||0;App.state.cz=d.c.z||1}App.state.nodes.forEach(n=>App.nodes.renderOne(n));App.nodes.upCount();App.canvas.upTf();toast('📥 Importado! '+App.state.nodes.length+' elementos','i')}catch(err){toast('Arquivo inválido','e')}};reader.readAsText(file)};input.click()}
 };
 
 App.autosave={
@@ -2150,7 +2026,7 @@ App.autosave={
   save(){
     if(!App.state.nodes.length&&!App.state.savedFx.length)return;
     try{
-      const data=JSON.stringify({v4:true,nodes:App.state.nodes,connections:App.state.connections||[],fx:App.state.savedFx,nc:App.state.nc,c:{x:App.state.cx,y:App.state.cy,z:App.state.cz}});
+      const data=JSON.stringify({v4:true,nodes:App.state.nodes,fx:App.state.savedFx,nc:App.state.nc,c:{x:App.state.cx,y:App.state.cy,z:App.state.cz}});
       const projKey=(function(){try{const p=JSON.parse(sessionStorage.getItem('rf_current_project'));return p&&p.id?'roforger-proj-'+p.id:null;}catch(e){return null;}})();
       if(projKey)localStorage.setItem(projKey,data);
       localStorage.setItem('roforger-v4',data);
@@ -2166,7 +2042,7 @@ App.loadFromStorage=function(){
     if(!raw)return;
     const d=JSON.parse(raw);
     if(!d||!d.nodes||!d.nodes.length)return;
-    App.state.nodes=d.nodes;App.state.connections=d.connections||[];App.state.savedFx=d.fx||[];
+    App.state.nodes=d.nodes;App.state.savedFx=d.fx||[];
     App.state.nc=d.nc||(Math.max(...d.nodes.map(n=>n.uid),0)+1);
     if(d.c){App.state.cx=d.c.x||0;App.state.cy=d.c.y||0;App.state.cz=d.c.z||1}
     App.state.nodes.forEach(n=>App.nodes.renderOne(n));App.nodes.upCount();App.canvas.upTf();
@@ -2185,7 +2061,7 @@ App.shortcuts={
       if(ctrl&&e.key==='d'){e.preventDefault();App.nodes.duplicateSelected()}
       if(ctrl&&e.key==='s'){e.preventDefault();App.autosave.save();toast('💾 Salvo localmente!')}
       if(e.key==='Delete'||e.key==='Backspace')App.nodes.deleteSelected();
-      if(e.key==='Escape'){App.connections.cancelConnect();App.nodes.deselect();Cmd.close();closeM('m-script');closeM('m-global')}
+      if(e.key==='Escape'){App.nodes.deselect();Cmd.close();closeM('m-script');closeM('m-global')}
     });
   }
 };
@@ -2486,10 +2362,7 @@ mouse.Button1Down:Connect(function()
 
     -- Raycast
     local unitRay = workspace.CurrentCamera:ScreenPointToRay(mouse.X, mouse.Y)
-    local params = RaycastParams.new()
-    params.FilterDescendantsInstances = {char}
-    params.FilterType = Enum.RaycastFilterType.Exclude
-    local result = workspace:Raycast(unitRay.Origin, unitRay.Direction * 500, params)
+    local result = workspace:Raycast(unitRay.Origin, unitRay.Direction * 500)
     if result and RE then
         RE:FireServer(result.Instance, DAMAGE)
     end

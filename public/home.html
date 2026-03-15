@@ -218,6 +218,7 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
 @media(max-width:700px){
   #sidebar{position:fixed;left:-210px;top:0;bottom:0;z-index:100;transition:left .25s ease}
   #sidebar.open{left:0}
+  #sb-overlay{display:block!important}
   #sb-toggle{display:flex}
   #content{padding:14px}
   .stats-row{grid-template-columns:repeat(2,1fr)}
@@ -286,9 +287,6 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
       </div>
       <div class="sb-item" onclick="switchView('docs',this)">
         <span class="sb-item-ico">📖</span> Docs
-      </div>
-      <div class="sb-item" onclick="window.location.href='/learn.html'">
-        <span class="sb-item-ico">🎓</span> Aprender Scripting
       </div>
       <div class="sb-item" onclick="switchView('updates',this)" id="nav-updates">
         <span class="sb-item-ico">📋</span> Atualizações
@@ -369,7 +367,17 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
           <div class="sec-l"></div>
         </div>
         <div class="quick-grid">
-          <div class="quick-card" onclick="openNewModal()">
+          <div class="quick-card" onclick="openNewModal('scripts')">
+            <div class="quick-icon">📜</div>
+            <div class="quick-label">Scripts</div>
+            <div class="quick-sub">Canvas + Lua + Efeitos</div>
+          </div>
+          <div class="quick-card" onclick="openNewModal('world')">
+            <div class="quick-icon">🌍</div>
+            <div class="quick-label">Mundo</div>
+            <div class="quick-sub">Partes + Export .RBXM</div>
+          </div>
+          <div class="quick-card" onclick="openNewModal('scripts')" style="display:none">
             <div class="qc-ico" style="background:rgba(255,77,26,.12)">⚡</div>
             <div class="qc-info">
               <div class="qc-title">Novo Projeto</div>
@@ -389,11 +397,6 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
               <div class="qc-title">Templates</div>
               <div class="qc-sub">Projetos pré-montados</div>
             </div>
-          </div>
-          <div class="quick-card" onclick="window.location.href='/learn.html'">
-            <div class="quick-icon">🎓</div>
-            <div class="quick-label">Aprender</div>
-            <div class="quick-sub">Quizzes e exercícios de Lua</div>
           </div>
           <div class="quick-card" onclick="switchView('docs',null)">
             <div class="qc-ico" style="background:rgba(0,255,157,.1)">📖</div>
@@ -525,16 +528,31 @@ html,body{height:100%;font-family:'Rajdhani',sans-serif;background:var(--bg);col
 
 <!-- Modal: Novo Projeto -->
 <div class="overlay" id="m-new" onclick="if(event.target===this)closeModal('m-new')">
-  <div class="msheet" onclick="event.stopPropagation()">
+  <div class="msheet" onclick="event.stopPropagation()" style="max-width:480px">
     <div class="mbar"></div>
     <div class="mt">NOVO PROJETO</div>
-    <div class="ms">// Configure seu projeto RoForger</div>
+    <div class="ms">// Escolha o tipo de projeto</div>
+
+    <!-- Seleção de tipo -->
+    <div id="np-type-select" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0">
+      <div class="np-type-card" id="nptc-scripts" onclick="selectProjType('scripts')" style="background:rgba(255,77,26,.08);border:2px solid rgba(255,77,26,.4);border-radius:10px;padding:16px 12px;cursor:pointer;text-align:center;transition:all .15s">
+        <div style="font-size:28px;margin-bottom:8px">📜</div>
+        <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">Projeto Scripts</div>
+        <div style="font-size:10px;color:var(--dim);line-height:1.5">Canvas visual, scripts Lua,<br>efeitos, sons, animações</div>
+      </div>
+      <div class="np-type-card" id="nptc-world" onclick="selectProjType('world')" style="background:rgba(26,140,255,.06);border:2px solid rgba(26,140,255,.2);border-radius:10px;padding:16px 12px;cursor:pointer;text-align:center;transition:all .15s">
+        <div style="font-size:28px;margin-bottom:8px">🌍</div>
+        <div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">Projeto Mundo</div>
+        <div style="font-size:10px;color:var(--dim);line-height:1.5">Criar partes, exportar<br>.RBXM para o Studio</div>
+      </div>
+    </div>
+
     <div class="field">
       <label>Nome do Projeto</label>
       <input id="np-name" placeholder="MeuJogoEpico" maxlength="40"/>
     </div>
-    <div class="field">
-      <label>Tipo</label>
+    <div class="field" id="np-gametype-wrap">
+      <label>Tipo de Jogo</label>
       <select id="np-type">
         <option>Game</option><option>Simulator</option><option>RPG</option>
         <option>Battle Royale</option><option>Tower Defense</option>
@@ -739,8 +757,8 @@ function switchView(name, el) {
 }
 
 // ── Sidebar mobile ──
-function toggleSidebar() { const sb=document.getElementById('sidebar'),ov=document.getElementById('sb-overlay'); sb.classList.toggle('open'); if(ov) ov.style.display=sb.classList.contains('open')?'block':'none'; }
-function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); const ov=document.getElementById('sb-overlay'); if(ov) ov.style.display='none'; }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+function closeSidebar()  { document.getElementById('sidebar').classList.remove('open'); }
 
 // ── PWA Install ──
 let _pwaPrompt = null;
@@ -800,13 +818,30 @@ async function installApp() {
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-function openNewModal() {
+function openNewModal(defaultType) {
   if (!HS.user) { doLogin(); return; }
   document.getElementById('emojiRow').innerHTML = EMOJIS.map(e =>
     `<span class="emoji-opt${e === HS.emoji ? ' sel' : ''}" onclick="selEmoji(this,'${e}')">${e}</span>`
   ).join('');
   document.getElementById('np-name').value = '';
+  HS.projType = defaultType || 'scripts';
+  selectProjType(HS.projType);
   openModal('m-new');
+}
+function selectProjType(type) {
+  HS.projType = type;
+  const cs = document.getElementById('nptc-scripts');
+  const cw = document.getElementById('nptc-world');
+  if(cs) {
+    cs.style.background = type==='scripts' ? 'rgba(255,77,26,.15)' : 'rgba(255,77,26,.06)';
+    cs.style.borderColor = type==='scripts' ? 'var(--acc)' : 'rgba(255,77,26,.2)';
+    cs.style.transform = type==='scripts' ? 'scale(1.02)' : '';
+  }
+  if(cw) {
+    cw.style.background = type==='world' ? 'rgba(26,140,255,.15)' : 'rgba(26,140,255,.06)';
+    cw.style.borderColor = type==='world' ? '#1a8cff' : 'rgba(26,140,255,.2)';
+    cw.style.transform = type==='world' ? 'scale(1.02)' : '';
+  }
 }
 function selEmoji(el, e) {
   document.querySelectorAll('.emoji-opt').forEach(x => x.classList.remove('sel'));
@@ -823,6 +858,8 @@ async function createProject() {
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
     updatedAt: Date.now(), createdAt: Date.now()
   };
+  const projType = HS.projType || 'scripts';
+  proj.projType = projType;
   closeModal('m-new');
   if (HS.fbReady && HS.user) {
     const { db, collection, addDoc } = window._fb;
@@ -856,8 +893,12 @@ function openProject(id) {
   const proj = HS.projects.find(p => p.id === id);
   if (!proj) return;
   sessionStorage.setItem('rf_current_project', JSON.stringify(proj));
-  window.location.href = '/editor.html';
-}
-</script>
+  const type = proj.projType || 'scripts';
+  if (type === 'world') {
+    window.location.href = '/editor-world.html';
+  } else {
+    window.location.href = '/editor-scripts.html';
+  }
+}</script>
 </body>
 </html>

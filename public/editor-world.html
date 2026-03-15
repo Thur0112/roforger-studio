@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#050810"/>
+<title>RoForger — Editor de Mundo</title>
+<link rel="manifest" href="/manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@400;600&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#050810;--card:#0c1020;--card2:#111828;
+  --acc:#1a8cff;--acc2:#42b3ff;--acc-glow:rgba(26,140,255,.25);
+  --green:#00ff9d;--orange:#ff4d1a;--purple:#9b42ff;--yellow:#ffd600;
+  --txt:#e8eaf0;--dim:#6b7594;--mid:#9ba3c0;--dark:#363a5c;
+  --brd:rgba(255,255,255,.07);--r:8px;--tr:.15s ease;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:13px;overflow:hidden}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── Layout ─── */
+#app{display:flex;flex-direction:column;height:100vh}
+#topbar{height:44px;background:rgba(5,8,16,.98);border-bottom:1px solid rgba(26,140,255,.25);display:flex;align-items:center;padding:0 12px;gap:8px;flex-shrink:0}
+#topbar-logo{font-family:'Orbitron',monospace;font-size:12px;font-weight:900;color:var(--acc);letter-spacing:2px}
+#topbar-logo span{color:var(--acc2)}
+#main-tabs{display:flex;gap:2px;flex:1;justify-content:center;overflow-x:auto}
+.main-tab{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;color:var(--dim);transition:all var(--tr);white-space:nowrap;border:1px solid transparent;font-family:'JetBrains Mono',monospace}
+.main-tab:hover{color:var(--txt);background:rgba(255,255,255,.05)}
+.main-tab.active{color:var(--txt);background:rgba(26,140,255,.12);border-color:rgba(26,140,255,.3)}
+#editor-body{display:flex;flex:1;overflow:hidden}
+.tab-view{display:none;flex:1;overflow:hidden}
+.tab-view.active{display:flex}
+
+/* ─── Sidebar ─── */
+.e-sidebar{width:200px;background:var(--card);border-right:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.e-sidebar-head{padding:10px 12px 8px;border-bottom:1px solid var(--brd);flex-shrink:0}
+.e-sidebar-title{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.e-sidebar-search{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--brd);border-radius:6px;padding:5px 8px;color:var(--txt);font-size:10px;font-family:'JetBrains Mono',monospace}
+.e-sidebar-body{flex:1;overflow-y:auto;padding:4px 0}
+.e-cat{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dark);padding:10px 12px 3px}
+.e-item{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:grab;color:var(--mid);font-size:11px;font-weight:600;transition:all var(--tr);border-left:2px solid transparent}
+.e-item:hover{background:rgba(255,255,255,.04);color:var(--txt)}
+
+/* ─── Canvas ─── */
+.e-canvas-wrap{flex:1;position:relative;overflow:hidden;background:#03050a}
+#world-canvas-wrap{background:#030810;background-image:radial-gradient(rgba(26,140,255,.06) 1px,transparent 1px);background-size:28px 28px}
+#world-vp{position:absolute;top:0;left:0;transform-origin:0 0}
+.world-part{position:absolute;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;transition:box-shadow .1s;box-sizing:border-box}
+.world-part:hover{filter:brightness(1.2)}
+.world-part.sel{z-index:10}
+
+/* ─── Toolbar ─── */
+.canvas-tb{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px;background:rgba(8,12,24,.95);border:1px solid var(--brd);border-radius:8px;padding:4px 6px;z-index:10}
+.ctb-btn{padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;color:var(--dim);transition:all var(--tr);font-family:'JetBrains Mono',monospace;border:none;background:none}
+.ctb-btn:hover{color:var(--txt);background:rgba(255,255,255,.06)}
+.ctb-btn.active{color:var(--txt);background:rgba(26,140,255,.15)}
+.ctb-sep{width:1px;background:var(--brd);margin:0 2px}
+
+/* ─── Right panel ─── */
+.e-right{width:240px;background:var(--card);border-left:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden}
+.right-section{border-bottom:1px solid var(--brd);overflow:hidden;display:flex;flex-direction:column}
+.right-section-head{padding:7px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;cursor:pointer}
+.right-section-title{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.right-section-body{overflow-y:auto;flex:1;padding:8px 10px}
+
+/* ─── Props ─── */
+.prop-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.prop-lbl{font-size:10px;color:var(--dim);flex-shrink:0}
+.prop-val{font-size:10px;font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,.06);border:1px solid var(--brd);border-radius:4px;padding:2px 6px;color:var(--txt);width:95px;text-align:right}
+.prop-select{font-size:10px;font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,.06);border:1px solid var(--brd);border-radius:4px;padding:2px 4px;color:var(--txt);max-width:110px}
+.section-hd{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:8px 0 4px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:all var(--tr)}
+.btn-acc{background:linear-gradient(135deg,var(--acc),#0f5fa0);color:#fff}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--mid);border:1px solid var(--brd)}
+.btn-ghost:hover{background:rgba(255,255,255,.1);color:var(--txt)}
+.btn-orange{background:linear-gradient(135deg,var(--orange),#c93300);color:#fff}
+.btn-sm{padding:4px 10px;font-size:10px}
+.btn-full{width:100%;justify-content:center;margin-bottom:4px}
+
+/* ─── Hierarchy ─── */
+.hier-item{display:flex;align-items:center;gap:6px;padding:4px 8px 4px 20px;font-size:11px;cursor:pointer;color:var(--mid);transition:all var(--tr);border-left:2px solid transparent}
+.hier-item:hover{background:rgba(255,255,255,.04);color:var(--txt)}
+.hier-item.sel{background:rgba(26,140,255,.08);color:var(--txt);border-left-color:var(--acc)}
+.hier-root{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:11px;font-weight:700;color:var(--acc2)}
+
+/* ─── Toast ─── */
+#toastWrap{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
+.toast-item{background:#0a0f20;border-radius:8px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;box-shadow:0 4px 20px rgba(0,0,0,.6);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.toast-s{border:1px solid rgba(0,255,157,.35);color:#00ff9d}
+.toast-e{border:1px solid rgba(255,77,26,.4);color:#ff4d1a}
+.toast-i{border:1px solid rgba(26,140,255,.35);color:#42b3ff}
+.toast-w{border:1px solid rgba(255,214,0,.3);color:#ffd600}
+
+/* ─── Autosave ─── */
+#autosave-ind{position:fixed;bottom:10px;right:12px;background:rgba(26,140,255,.08);border:1px solid rgba(26,140,255,.2);color:var(--acc2);font-size:9px;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:10px;opacity:0;transition:opacity .3s;pointer-events:none}
+
+/* ─── Templates tab ─── */
+.tpl-card{background:var(--card2);border:1px solid var(--brd);border-radius:10px;padding:16px;cursor:pointer;transition:all var(--tr)}
+.tpl-card:hover{border-color:var(--acc);transform:translateY(-1px)}
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:16px}
+
+/* ─── Responsive ─── */
+@media(max-width:700px){
+  .e-sidebar{width:160px}
+  .e-right{width:200px}
+}
+</style>
+</head>
+<body>
+<div id="toastWrap"></div>
+<div id="autosave-ind">💾 Salvo</div>
+
+<div id="app">
+  <div id="topbar">
+    <div id="topbar-logo">RO<span>FORGER</span></div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim)">// 🌍 <span id="proj-name-lbl">Mundo</span></div>
+    <div id="main-tabs">
+      <div class="main-tab active" onclick="switchTab('partes',this)">🧱 Partes</div>
+      <div class="main-tab" onclick="switchTab('biblioteca',this)">📚 Biblioteca</div>
+      <div class="main-tab" onclick="switchTab('hierarquia',this)">🌳 Hierarquia</div>
+      <div class="main-tab" onclick="switchTab('templates',this)">🎮 Templates</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-shrink:0">
+      <button class="btn btn-ghost btn-sm" onclick="W.exportJSON()">📤 JSON</button>
+      <button class="btn btn-ghost btn-sm" onclick="W.importJSON()">📥 Importar</button>
+      <button class="btn btn-orange btn-sm" onclick="W.exportRBXM()">📦 .RBXM</button>
+      <button class="btn btn-ghost btn-sm" onclick="goHome()">🏠</button>
+    </div>
+  </div>
+
+  <div id="editor-body">
+
+    <!-- ════ TAB: PARTES ════ -->
+    <div class="tab-view active" id="tv-partes">
+      <!-- Left: quick actions + shapes -->
+      <div class="e-sidebar">
+        <div class="e-sidebar-head">
+          <div class="e-sidebar-title">Criar Parte</div>
+        </div>
+        <div class="e-sidebar-body" id="partes-lib"></div>
+      </div>
+
+      <!-- Center: Canvas -->
+      <div class="e-canvas-wrap" id="world-canvas-wrap">
+        <canvas id="world-bg-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+        <div class="canvas-tb">
+          <div class="ctb-btn active" id="wtb-sel" onclick="W.setTool('select',this)">↖ Sel</div>
+          <div class="ctb-btn" id="wtb-move" onclick="W.setTool('move',this)">✥ Mover</div>
+          <div class="ctb-btn" id="wtb-pan" onclick="W.setTool('pan',this)">✋ Pan</div>
+          <div class="ctb-sep"></div>
+          <div class="ctb-btn" onclick="W.zoom(.1)">+</div>
+          <div id="world-zoom-lbl" style="font-size:9px;color:var(--dim);min-width:34px;text-align:center;padding:4px 0;font-family:'JetBrains Mono',monospace">100%</div>
+          <div class="ctb-btn" onclick="W.zoom(-.1)">−</div>
+          <div class="ctb-btn" onclick="W.resetView()">⊡</div>
+          <div class="ctb-sep"></div>
+          <div class="ctb-btn" id="wtb-grid" onclick="W.toggleGrid()" title="Grid">⊞ Grid</div>
+          <div class="ctb-sep"></div>
+          <select id="world-view-sel" onchange="W.setView(this.value)" style="background:rgba(255,255,255,.05);border:1px solid var(--brd);color:var(--txt);font-size:9px;padding:3px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace">
+            <option value="top">Cima (XZ)</option>
+            <option value="front">Frente (XY)</option>
+            <option value="side">Lateral (ZY)</option>
+          </select>
+          <div class="ctb-sep"></div>
+          <div class="ctb-btn" onclick="W.deleteSelected()" title="Deletar">🗑</div>
+          <div class="ctb-btn" onclick="W.duplicateSelected()" title="Duplicar">⧉</div>
+          <div style="margin-left:4px;font-size:9px;color:var(--dark);font-family:'JetBrains Mono',monospace" id="world-count">0 partes</div>
+        </div>
+        <div id="world-vp"></div>
+        <div id="autosave-canvas-ind" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(26,140,255,.08);border:1px solid rgba(26,140,255,.2);color:var(--acc2);font-size:9px;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:10px;opacity:0;transition:opacity .3s;pointer-events:none">💾 Salvo</div>
+      </div>
+
+      <!-- Right panel -->
+      <div class="e-right">
+        <!-- Props section -->
+        <div class="right-section" style="flex:1">
+          <div class="right-section-head">
+            <div class="right-section-title">⚙ Propriedades</div>
+            <div id="sel-part-name" style="font-size:9px;color:var(--acc2);font-family:'JetBrains Mono',monospace"></div>
+          </div>
+          <div class="right-section-body" id="world-props-body">
+            <div style="color:var(--dim);font-size:11px;text-align:center;padding:20px 0;font-family:'JetBrains Mono',monospace">Selecione uma parte</div>
+          </div>
+        </div>
+        <!-- Export section -->
+        <div style="padding:10px;border-top:1px solid var(--brd);flex-shrink:0;display:flex;flex-direction:column;gap:5px">
+          <button class="btn btn-orange btn-sm btn-full" onclick="W.exportRBXM()">📦 Exportar .RBXM</button>
+          <button class="btn btn-ghost btn-sm btn-full" onclick="W.exportJSON()">📤 JSON</button>
+          <button class="btn btn-ghost btn-sm btn-full" onclick="W.importJSON()">📥 Importar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: BIBLIOTECA ════ -->
+    <div class="tab-view" id="tv-biblioteca">
+      <div class="e-sidebar">
+        <div class="e-sidebar-head">
+          <div class="e-sidebar-title">Categorias</div>
+          <input class="e-sidebar-search" placeholder="Buscar..." oninput="W.lib.filter(this.value)"/>
+        </div>
+        <div class="e-sidebar-body" id="lib-cat-nav"></div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px">
+        <div id="lib-content-title" style="font-family:'Orbitron',monospace;font-size:13px;color:var(--txt);margin-bottom:12px">📚 Biblioteca de Partes</div>
+        <div id="lib-content-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px"></div>
+      </div>
+      <div class="e-right">
+        <div class="right-section" style="flex:1">
+          <div class="right-section-head"><div class="right-section-title">Preview</div></div>
+          <div class="right-section-body" id="lib-preview">
+            <div style="color:var(--dim);font-size:11px;text-align:center;padding:20px 0">Selecione um item</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: HIERARQUIA ════ -->
+    <div class="tab-view" id="tv-hierarquia">
+      <div style="flex:1;display:flex;overflow:hidden">
+        <!-- Tree esquerda -->
+        <div style="width:260px;border-right:1px solid var(--brd);overflow-y:auto;background:var(--card)">
+          <div style="padding:10px 12px;border-bottom:1px solid var(--brd)">
+            <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)">EXPLORADOR DE MUNDO</div>
+          </div>
+          <div class="hier-root"><span>🌍</span><span>World</span><span style="margin-left:auto;font-size:9px;color:var(--dark)" id="hier-count-lbl">0 obj</span></div>
+          <div id="hierarchy-tree"></div>
+        </div>
+        <!-- Detalhes centro -->
+        <div style="flex:1;padding:16px;overflow-y:auto">
+          <div id="hier-detail">
+            <div style="color:var(--dim);font-size:12px;font-family:'JetBrains Mono',monospace">Selecione um objeto na hierarquia</div>
+          </div>
+        </div>
+        <!-- Roblox Explorer -->
+        <div style="width:220px;border-left:1px solid var(--brd);background:var(--card);overflow-y:auto">
+          <div style="padding:10px 12px;border-bottom:1px solid var(--brd)">
+            <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)">ROBLOX STUDIO</div>
+          </div>
+          <div id="roblox-tree"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TAB: TEMPLATES ════ -->
+    <div class="tab-view" id="tv-templates" style="overflow-y:auto;flex-direction:column">
+      <div style="padding:20px 16px 8px">
+        <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--txt);margin-bottom:4px">🎮 TEMPLATES DE MUNDO</div>
+        <div style="font-size:12px;color:var(--dim)">// Comece com um mundo base pronto</div>
+      </div>
+      <div class="tpl-grid" id="tpl-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module" src="/shared.js"></script>
+<script>
+// ════════════════════════════════════════════════
+//  RoForger World Editor
+// ════════════════════════════════════════════════
+
+function toast(msg, type='s') {
+  const w = document.getElementById('toastWrap');
+  const d = document.createElement('div');
+  const icons = {s:'✔',e:'✖',w:'⚠',i:'ℹ'};
+  d.className = 'toast-item toast-'+(type||'i');
+  d.textContent = (icons[type]||'ℹ')+' '+msg;
+  w.appendChild(d);
+  setTimeout(()=>d.remove(),3000);
+}
+function goHome() { window.location.href = '/home.html'; }
+
+try {
+  const p = JSON.parse(sessionStorage.getItem('rf_current_project'));
+  if(p) document.getElementById('proj-name-lbl').textContent = p.name || 'Mundo';
+} catch(e){}
+
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tv-'+id)?.classList.add('active');
+  if(el) el.classList.add('active');
+  if(id==='biblioteca') W.lib.renderAll();
+  if(id==='hierarquia') W.renderHierarchy();
+  if(id==='templates') W.renderTemplates();
+}
+
+// ════════════════════════════════════════════════
+//  WORLD LIBRARY DATA
+// ════════════════════════════════════════════════
+const WORLD_LIB = [
+  {cat:'Básico', items:[
+    {id:'part',       icon:'🟦', name:'Part',        color:'#4d8fff', w:4, h:1, d:4,  mat:'SmoothPlastic', brickColor:'Medium stone grey'},
+    {id:'platform',   icon:'⬛', name:'Plataforma',  color:'#4d8fff', w:10,h:1, d:10, mat:'SmoothPlastic', brickColor:'Dark stone grey'},
+    {id:'wedge',      icon:'📐', name:'Wedge',       color:'#888',    w:4, h:4, d:4,  mat:'SmoothPlastic', brickColor:'Medium stone grey'},
+    {id:'cylinder',   icon:'🔵', name:'Cilindro',    color:'#888',    w:2, h:4, d:2,  mat:'SmoothPlastic', brickColor:'Medium stone grey'},
+    {id:'spawn',      icon:'🚀', name:'SpawnLocation',color:'#00ff9d',w:6, h:1, d:6,  mat:'SmoothPlastic', brickColor:'Bright green'},
+    {id:'floor',      icon:'⬜', name:'Chão',        color:'#4d8fff', w:50,h:1, d:50, mat:'Grass',         brickColor:'Bright green'},
+  ]},
+  {cat:'Estruturas', items:[
+    {id:'house',      icon:'🏠', name:'Casa',        color:'#f5c542', w:12,h:8, d:10, mat:'SmoothPlastic', brickColor:'Bright yellow'},
+    {id:'shop',       icon:'🏪', name:'Loja',        color:'#ff8c42', w:12,h:8, d:8,  mat:'SmoothPlastic', brickColor:'Bright orange'},
+    {id:'portal',     icon:'🌀', name:'Portal',      color:'#9b42ff', w:4, h:8, d:1,  mat:'Neon',          brickColor:'Bright violet'},
+    {id:'stand',      icon:'📦', name:'Stand',       color:'#f5c542', w:4, h:3, d:4,  mat:'Wood',          brickColor:'Bright yellow'},
+    {id:'wall',       icon:'🧱', name:'Parede',      color:'#888',    w:1, h:6, d:10, mat:'SmoothPlastic', brickColor:'Dark stone grey'},
+    {id:'pillar',     icon:'🏛', name:'Pilar',       color:'#aaa',    w:2, h:8, d:2,  mat:'Marble',        brickColor:'White'},
+    {id:'tower',      icon:'🗼', name:'Torre',       color:'#888',    w:6, h:16,d:6,  mat:'SmoothPlastic', brickColor:'Dark stone grey'},
+    {id:'bridge',     icon:'🌉', name:'Ponte',       color:'#8B5E3C', w:20,h:1, d:4,  mat:'Wood',          brickColor:'Reddish brown'},
+  ]},
+  {cat:'Interativos', items:[
+    {id:'egg',        icon:'🥚', name:'Egg',         color:'#ff79c6', w:3, h:4, d:3,  mat:'Neon',          brickColor:'Hot pink'},
+    {id:'chest',      icon:'📦', name:'Baú',         color:'#f5c542', w:4, h:3, d:3,  mat:'Wood',          brickColor:'Bright yellow'},
+    {id:'checkpoint', icon:'🏁', name:'Checkpoint',  color:'#00ff9d', w:2, h:6, d:2,  mat:'Neon',          brickColor:'Lime green'},
+    {id:'button',     icon:'🔴', name:'Botão',       color:'#ff4d1a', w:2, h:1, d:2,  mat:'SmoothPlastic', brickColor:'Bright red'},
+    {id:'lootbox',    icon:'🎁', name:'Loot Box',    color:'#9b42ff', w:3, h:3, d:3,  mat:'Neon',          brickColor:'Bright violet'},
+    {id:'npc',        icon:'🤖', name:'NPC',         color:'#1a8cff', w:2, h:5, d:2,  mat:'SmoothPlastic', brickColor:'Bright blue'},
+    {id:'reward',     icon:'⭐', name:'Reward',      color:'#ffd600', w:2, h:2, d:2,  mat:'Neon',          brickColor:'Bright yellow'},
+    {id:'pad',        icon:'🔹', name:'TeleportPad', color:'#1a8cff', w:4, h:1, d:4,  mat:'Neon',          brickColor:'Bright blue'},
+  ]},
+  {cat:'Decoração', items:[
+    {id:'tree',       icon:'🌲', name:'Árvore',      color:'#3b6d11', w:4, h:8, d:4,  mat:'Grass',         brickColor:'Earth green'},
+    {id:'rock',       icon:'🪨', name:'Pedra',       color:'#666',    w:3, h:2, d:3,  mat:'SmoothPlastic', brickColor:'Dark stone grey'},
+    {id:'lamp',       icon:'💡', name:'Lampião',     color:'#ffd600', w:1, h:6, d:1,  mat:'Neon',          brickColor:'Bright yellow'},
+    {id:'fence',      icon:'🪜', name:'Cerca',       color:'#8B5E3C', w:6, h:2, d:1,  mat:'Wood',          brickColor:'Reddish brown'},
+    {id:'sign',       icon:'📋', name:'Placa',       color:'#8B5E3C', w:3, h:3, d:.5, mat:'Wood',          brickColor:'Reddish brown'},
+    {id:'water',      icon:'💧', name:'Água',        color:'#1a8cff', w:10,h:1, d:10, mat:'SmoothPlastic', brickColor:'Bright blue', transparent:0.5},
+    {id:'bush',       icon:'🌿', name:'Arbusto',     color:'#3b6d11', w:3, h:2, d:3,  mat:'Grass',         brickColor:'Earth green'},
+    {id:'flower',     icon:'🌸', name:'Flor',        color:'#ff79c6', w:1, h:1, d:1,  mat:'SmoothPlastic', brickColor:'Hot pink'},
+  ]},
+  {cat:'Efeitos Neon', items:[
+    {id:'neon_fire',  icon:'🔥', name:'Fogo Neon',   color:'#ff4d1a', w:2, h:2, d:2,  mat:'Neon',          brickColor:'Bright red'},
+    {id:'glow',       icon:'⚡', name:'Glow',        color:'#9b42ff', w:2, h:2, d:2,  mat:'Neon',          brickColor:'Bright violet'},
+    {id:'aura',       icon:'🌟', name:'Aura',        color:'#ffd600', w:3, h:3, d:3,  mat:'Neon',          brickColor:'Bright yellow', transparent:0.4},
+    {id:'neon_ring',  icon:'⭕', name:'Anel Neon',   color:'#00ff9d', w:4, h:.5,d:4,  mat:'Neon',          brickColor:'Lime green'},
+  ]},
+];
+
+// ════════════════════════════════════════════════
+//  WORLD EDITOR CORE
+// ════════════════════════════════════════════════
+const W = {
+  parts: [],
+  _nc: 1,
+  _sel: null,
+  _cx: 0, _cy: 0, _cz: 1,
+  _tool: 'select',
+  _grid: true,
+  _view: 'top',
+  _drag: {active:false},
+  _pan:  {active:false},
+  _inited: false,
+
+  init() {
+    if(this._inited) return;
+    this._inited = true;
+    this.buildSidebar();
+    this.canvas.init();
+    this.load();
+    this.updateCount();
+  },
+
+  // ─── Sidebar ───
+  buildSidebar() {
+    const sb = document.getElementById('partes-lib');
+    if(!sb) return;
+    WORLD_LIB.forEach(cat => {
+      const catEl = document.createElement('div');
+      catEl.className = 'e-cat';
+      catEl.textContent = cat.cat;
+      sb.appendChild(catEl);
+      cat.items.forEach(item => {
+        const d = document.createElement('div');
+        d.className = 'e-item';
+        d.draggable = true;
+        d.innerHTML = `<span style="font-size:14px;flex-shrink:0">${item.icon}</span><div><div style="font-size:11px">${item.name}</div></div>`;
+        d.style.borderLeftColor = 'transparent';
+        d.onmouseenter = () => d.style.borderLeftColor = item.color;
+        d.onmouseleave = () => d.style.borderLeftColor = 'transparent';
+        d.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', item.id);
+          e.dataTransfer.effectAllowed = 'copy';
+          const g = document.createElement('div');
+          g.style.cssText = 'position:fixed;top:-999px;background:#0f1629;color:#e8eaf0;padding:5px 10px;border-radius:6px;font-size:10px;border:1px solid '+item.color+';font-family:JetBrains Mono,monospace';
+          g.textContent = item.icon + ' ' + item.name;
+          document.body.appendChild(g);
+          e.dataTransfer.setDragImage(g, 0, 0);
+          setTimeout(() => g.remove(), 0);
+        });
+        d.addEventListener('dblclick', () => W.addPart(item.id, 200, 200));
+        sb.appendChild(d);
+      });
+    });
+  },
+
+  // ─── Get lib item ───
+  _getItem(id) {
+    for(const cat of WORLD_LIB) {
+      const i = cat.items.find(x => x.id === id);
+      if(i) return i;
+    }
+    return null;
+  },
+
+  // ─── Add part ───
+  addPart(libId, x=200, y=200) {
+    const lib = this._getItem(libId); if(!lib || lib.template) return;
+    const part = {
+      uid: this._nc++, libId, name:lib.name, icon:lib.icon, color:lib.color,
+      x, y,
+      w:lib.w||4, h:lib.h||1, d:lib.d||4,
+      posX:Math.round(x/16), posY:0, posZ:Math.round(y/16),
+      material:lib.mat||'SmoothPlastic',
+      brickColor:lib.brickColor||'Medium stone grey',
+      transparency:lib.transparent||0,
+      anchored:true, canCollide:libId!=='water',
+    };
+    this.parts.push(part);
+    this.renderPart(part);
+    this.select(part.uid);
+    this.updateCount();
+    this.save();
+    toast(lib.icon + ' ' + lib.name + ' adicionado', 'i');
+  },
+
+  // ─── Render part on canvas ───
+  renderPart(part) {
+    const vp = document.getElementById('world-vp');
+    if(!vp) return;
+    let el = document.getElementById('wp-'+part.uid);
+    if(!el) {
+      el = document.createElement('div');
+      el.id = 'wp-'+part.uid;
+      el.className = 'world-part';
+      el.addEventListener('mousedown', e => {
+        if(e.button !== 0) return;
+        e.stopPropagation();
+        W.select(part.uid);
+        if(W._tool==='select'||W._tool==='move') {
+          const rect = el.getBoundingClientRect();
+          W._drag = {active:true, uid:part.uid, offX:(e.clientX-rect.left)/W._cz, offY:(e.clientY-rect.top)/W._cz, sx:part.x, sy:part.y};
+        }
+      });
+      vp.appendChild(el);
+    }
+    const PX = 16;
+    const pw = Math.max(part.w * PX, 20);
+    const pd = Math.max(part.d * PX, 20);
+    const sel = W._sel === part.uid;
+    el.style.cssText = `position:absolute;left:${part.x}px;top:${part.y}px;width:${pw}px;height:${pd}px;background:${part.color}30;border:${sel?2:1}px solid ${sel?part.color:part.color+'66'};box-shadow:${sel?'0 0 0 2px '+part.color+'44,0 4px 20px '+part.color+'22':''};border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;z-index:${sel?10:1};opacity:${part.transparency>0?1-part.transparency*.6:1}`;
+    el.innerHTML = `<span style="font-size:${Math.min(pw,pd)>40?14:10}px;opacity:.8">${part.icon}</span>`;
+    el.title = `${part.name} — ${part.w}×${part.h}×${part.d} studs`;
+  },
+
+  dragMove(e) {
+    const d = W._drag; if(!d.active) return;
+    const part = W.parts.find(p=>p.uid===d.uid); if(!part) return;
+    const wrap = document.getElementById('world-canvas-wrap');
+    const rect = wrap.getBoundingClientRect();
+    let nx = (e.clientX-rect.left-W._cx)/W._cz - d.offX;
+    let ny = (e.clientY-rect.top -W._cy)/W._cz - d.offY;
+    if(W._grid) { nx=Math.round(nx/16)*16; ny=Math.round(ny/16)*16; }
+    else { nx=Math.round(nx); ny=Math.round(ny); }
+    part.x=nx; part.y=ny;
+    part.posX=Math.round(nx/16); part.posZ=Math.round(ny/16);
+    const el = document.getElementById('wp-'+part.uid);
+    if(el) { el.style.left=nx+'px'; el.style.top=ny+'px'; }
+    W.renderProps(part.uid);
+  },
+
+  select(uid) {
+    W._sel = uid;
+    W.parts.forEach(p => W.renderPart(p));
+    W.renderProps(uid);
+    W.renderHierarchy();
+  },
+
+  renderProps(uid) {
+    const el = document.getElementById('world-props-body');
+    const nameLbl = document.getElementById('sel-part-name');
+    if(!el) return;
+    const part = W.parts.find(p=>p.uid===uid);
+    if(!part) {
+      el.innerHTML = '<div style="color:var(--dim);font-size:11px;text-align:center;padding:20px 0;font-family:\'JetBrains Mono\',monospace">Selecione uma parte</div>';
+      if(nameLbl) nameLbl.textContent = '';
+      return;
+    }
+    if(nameLbl) nameLbl.textContent = part.icon + ' ' + part.name;
+    const MATS = ['SmoothPlastic','Plastic','Wood','Grass','Marble','Neon','Metal','DiamondPlate','Slate','Brick','Sand','WoodPlanks','Ice','Fabric'];
+    el.innerHTML = `
+      <div style="font-size:10px;font-weight:700;color:${part.color};margin-bottom:8px">${part.icon} ${part.name}</div>
+      <div class="section-hd">Identidade</div>
+      <div class="prop-row"><span class="prop-lbl">Nome</span><input class="prop-val" value="${part.name}" onchange="W.setProp(${part.uid},'name',this.value)" style="width:105px"/></div>
+      <div class="section-hd">Posição (Studs)</div>
+      <div class="prop-row"><span class="prop-lbl">X</span><input class="prop-val" type="number" value="${part.posX}" onchange="W.setProp(${part.uid},'posX',this.value)"/></div>
+      <div class="prop-row"><span class="prop-lbl">Y</span><input class="prop-val" type="number" value="${part.posY}" onchange="W.setProp(${part.uid},'posY',this.value)"/></div>
+      <div class="prop-row"><span class="prop-lbl">Z</span><input class="prop-val" type="number" value="${part.posZ}" onchange="W.setProp(${part.uid},'posZ',this.value)"/></div>
+      <div class="section-hd">Tamanho</div>
+      <div class="prop-row"><span class="prop-lbl">Largura X</span><input class="prop-val" type="number" value="${part.w}" step="0.5" onchange="W.setProp(${part.uid},'w',this.value)"/></div>
+      <div class="prop-row"><span class="prop-lbl">Altura Y</span><input class="prop-val" type="number" value="${part.h}" step="0.5" onchange="W.setProp(${part.uid},'h',this.value)"/></div>
+      <div class="prop-row"><span class="prop-lbl">Profund. Z</span><input class="prop-val" type="number" value="${part.d}" step="0.5" onchange="W.setProp(${part.uid},'d',this.value)"/></div>
+      <div class="section-hd">Aparência</div>
+      <div class="prop-row"><span class="prop-lbl">Material</span><select class="prop-select" onchange="W.setProp(${part.uid},'material',this.value)">${MATS.map(m=>`<option value="${m}" ${part.material===m?'selected':''}>${m}</option>`).join('')}</select></div>
+      <div class="prop-row"><span class="prop-lbl">BrickColor</span><input class="prop-val" value="${part.brickColor}" onchange="W.setProp(${part.uid},'brickColor',this.value)" style="width:105px"/></div>
+      <div class="prop-row"><span class="prop-lbl">Transparência</span><input class="prop-val" type="number" min="0" max="1" step="0.1" value="${part.transparency}" onchange="W.setProp(${part.uid},'transparency',this.value)"/></div>
+      <div class="section-hd">Física</div>
+      <div class="prop-row"><span class="prop-lbl">Anchored</span><input type="checkbox" ${part.anchored?'checked':''} onchange="W.setProp(${part.uid},'anchored',this.checked)"/></div>
+      <div class="prop-row"><span class="prop-lbl">CanCollide</span><input type="checkbox" ${part.canCollide?'checked':''} onchange="W.setProp(${part.uid},'canCollide',this.checked)"/></div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:4px">
+        <button class="btn btn-ghost btn-sm btn-full" onclick="W.duplicateSelected()">⧉ Duplicar</button>
+        <button class="btn btn-ghost btn-sm btn-full" style="color:var(--orange);border-color:rgba(255,77,26,.3)" onclick="W.deleteSelected()">🗑 Apagar</button>
+      </div>`;
+  },
+
+  setProp(uid, key, val) {
+    const part = W.parts.find(p=>p.uid===uid); if(!part) return;
+    if(key==='anchored'||key==='canCollide') part[key]=val;
+    else if(['w','h','d','posX','posY','posZ','transparency'].includes(key)) { part[key]=parseFloat(val)||0; }
+    else part[key]=val;
+    if(key==='posX') part.x = part.posX*16;
+    if(key==='posZ') part.y = part.posZ*16;
+    W.renderPart(part);
+    W.save();
+  },
+
+  deleteSelected() {
+    if(!W._sel) return;
+    const el = document.getElementById('wp-'+W._sel); if(el) el.remove();
+    W.parts = W.parts.filter(p=>p.uid!==W._sel);
+    W._sel = null;
+    W.renderProps(null);
+    W.renderHierarchy();
+    W.updateCount();
+    W.save();
+    toast('🗑 Parte removida', 'w');
+  },
+
+  duplicateSelected() {
+    if(!W._sel) return;
+    const orig = W.parts.find(p=>p.uid===W._sel); if(!orig) return;
+    const copy = {...orig, uid:W._nc++, x:orig.x+20, y:orig.y+20, name:orig.name+'_copy'};
+    W.parts.push(copy);
+    W.renderPart(copy);
+    W.select(copy.uid);
+    W.updateCount();
+    W.save();
+    toast('⧉ Duplicado!', 'i');
+  },
+
+  updateCount() {
+    const el = document.getElementById('world-count');
+    if(el) el.textContent = W.parts.length + ' partes';
+    const el2 = document.getElementById('hier-count-lbl');
+    if(el2) el2.textContent = W.parts.length + ' obj';
+  },
+
+  setTool(t, el) {
+    W._tool = t;
+    document.querySelectorAll('[id^="wtb-"]').forEach(b=>b.classList.remove('active'));
+    if(el) el.classList.add('active');
+    const wrap = document.getElementById('world-canvas-wrap');
+    if(wrap) wrap.style.cursor = t==='pan'?'grab':'';
+  },
+
+  setView(v) { W._view = v; W.parts.forEach(p=>W.renderPart(p)); },
+  toggleGrid() { W._grid=!W._grid; document.getElementById('wtb-grid')?.classList.toggle('active',W._grid); W.canvas.drawGrid(); },
+  zoom(d) { W._cz=Math.min(Math.max(W._cz+d,.15),4); W.canvas.upTf(); },
+  resetView() { W._cx=0; W._cy=0; W._cz=1; W.canvas.upTf(); },
+
+  // ─── Canvas ───
+  canvas: {
+    init() {
+      const wrap = document.getElementById('world-canvas-wrap');
+      const vp = document.getElementById('world-vp');
+      if(!wrap||vp._rfWInited) return;
+      vp._rfWInited = true;
+
+      wrap.addEventListener('dragover', e=>e.preventDefault());
+      wrap.addEventListener('dragenter', e=>e.preventDefault());
+      wrap.addEventListener('drop', e=>{
+        e.preventDefault();
+        const id = e.dataTransfer.getData('text/plain'); if(!id) return;
+        const rect = wrap.getBoundingClientRect();
+        const x = (e.clientX-rect.left-W._cx)/W._cz;
+        const y = (e.clientY-rect.top -W._cy)/W._cz;
+        W.addPart(id, Math.round(x), Math.round(y));
+      });
+
+      wrap.addEventListener('mousedown', e=>{
+        if(e.target===wrap||e.target===vp) W.select(null);
+        if(W._tool==='pan'||e.button===1) {
+          W._pan={active:true,sx:e.clientX,sy:e.clientY,ox:W._cx,oy:W._cy};
+          wrap.style.cursor='grabbing'; e.preventDefault();
+        }
+      });
+      document.addEventListener('mousemove', e=>{
+        if(W._pan.active){W._cx=W._pan.ox+(e.clientX-W._pan.sx);W._cy=W._pan.oy+(e.clientY-W._pan.sy);W.canvas.upTf();}
+        if(W._drag.active) W.dragMove(e);
+      });
+      document.addEventListener('mouseup', ()=>{
+        if(W._pan.active){W._pan.active=false;if(document.getElementById('world-canvas-wrap'))document.getElementById('world-canvas-wrap').style.cursor=W._tool==='pan'?'grab':'';}
+        if(W._drag.active){W._drag.active=false;W.save();}
+      });
+      wrap.addEventListener('wheel', e=>{
+        e.preventDefault();
+        const d=e.deltaY<0?.1:-.1,rect=wrap.getBoundingClientRect();
+        const mx=e.clientX-rect.left,my=e.clientY-rect.top,prev=W._cz;
+        W._cz=Math.min(Math.max(W._cz+d,.15),4);
+        W._cx=mx-(mx-W._cx)*(W._cz/prev);W._cy=my-(my-W._cy)*(W._cz/prev);
+        W.canvas.upTf();
+      },{passive:false});
+
+      this.drawGrid();
+      window.addEventListener('resize', ()=>this.drawGrid());
+    },
+
+    upTf() {
+      const vp = document.getElementById('world-vp');
+      if(vp) vp.style.transform=`translate(${W._cx}px,${W._cy}px) scale(${W._cz})`;
+      const lbl = document.getElementById('world-zoom-lbl');
+      if(lbl) lbl.textContent = Math.round(W._cz*100)+'%';
+      this.drawGrid();
+    },
+
+    drawGrid() {
+      const canvas = document.getElementById('world-bg-canvas');
+      const wrap = document.getElementById('world-canvas-wrap');
+      if(!canvas||!wrap) return;
+      canvas.width=wrap.offsetWidth;
+      canvas.height=wrap.offsetHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      if(!W._grid) return;
+      const gs=32*W._cz;
+      const ox=((W._cx%gs)+gs)%gs,oy=((W._cy%gs)+gs)%gs;
+      ctx.strokeStyle='rgba(26,140,255,0.08)';ctx.lineWidth=.5;
+      for(let x=ox;x<canvas.width;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
+      for(let y=oy;y<canvas.height;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
+      ctx.strokeStyle='rgba(26,140,255,0.2)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(W._cx,0);ctx.lineTo(W._cx,canvas.height);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,W._cy);ctx.lineTo(canvas.width,W._cy);ctx.stroke();
+    }
+  },
+
+  // ─── Hierarchy ───
+  renderHierarchy() {
+    const tree = document.getElementById('hierarchy-tree');
+    if(!tree) return;
+    tree.innerHTML = '';
+    W.parts.forEach(part => {
+      const d = document.createElement('div');
+      d.className = 'hier-item' + (W._sel===part.uid?' sel':'');
+      d.innerHTML = `<span>${part.icon}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${part.name}</span><span style="font-size:9px;color:var(--dark)">${part.w}×${part.h}×${part.d}</span>`;
+      d.onclick = () => { W.select(part.uid); switchTab('partes', document.querySelector('.main-tab')); };
+      d.ondblclick = () => {
+        const n = prompt('Renomear:', part.name);
+        if(n&&n.trim()){part.name=n.trim();W.renderHierarchy();W.renderProps(part.uid);W.renderPart(part);}
+      };
+      d.oncontextmenu = e => {
+        e.preventDefault();
+        if(confirm(`Deletar "${part.name}"?`)){
+          const el=document.getElementById('wp-'+part.uid);if(el)el.remove();
+          W.parts=W.parts.filter(p=>p.uid!==part.uid);
+          if(W._sel===part.uid){W._sel=null;W.renderProps(null);}
+          W.renderHierarchy();W.updateCount();W.save();
+        }
+      };
+      tree.appendChild(d);
+    });
+    // Also render the Roblox tree
+    const rt = document.getElementById('roblox-tree');
+    if(rt) {
+      const treeData = [
+        {icon:'🎮',name:'Game',depth:0},
+        {icon:'📡',name:'ReplicatedStorage',depth:1},
+        {icon:'🖥',name:'ServerScriptService',depth:1},
+        {icon:'🌍',name:'Workspace',depth:1, children: W.parts.map(p=>({icon:p.icon,name:p.name,depth:2,leaf:true}))},
+        {icon:'👤',name:'StarterPlayer',depth:1},
+      ];
+      let html = '';
+      const renderRT = (items) => {
+        items.forEach(item => {
+          html += `<div class="ftree-item" style="padding-left:${12+item.depth*12}px;font-size:${item.leaf?9:10}px;color:${item.leaf?'var(--dim)':'var(--mid)'}">${item.icon} ${item.name}</div>`;
+          if(item.children) renderRT(item.children);
+        });
+      };
+      renderRT(treeData);
+      rt.innerHTML = html;
+    }
+    W.updateCount();
+  },
+
+  // ─── Library tab ───
+  lib: {
+    _currentCat: 'Básico',
+    renderAll() {
+      const nav = document.getElementById('lib-cat-nav');
+      if(!nav||nav.dataset.built) return;
+      nav.dataset.built = '1';
+      WORLD_LIB.forEach(cat => {
+        const d = document.createElement('div');
+        d.className = 'e-item';
+        d.style.borderLeftColor='transparent';
+        d.innerHTML = `<span style="font-size:14px">${cat.items[0].icon}</span><div>${cat.cat}<div style="font-size:9px;color:var(--dim)">${cat.items.length} itens</div></div>`;
+        d.onmouseenter=()=>d.style.borderLeftColor='var(--acc)';
+        d.onmouseleave=()=>d.style.borderLeftColor='transparent';
+        d.onclick=()=>W.lib.showCat(cat.cat);
+        nav.appendChild(d);
+      });
+      W.lib.showCat('Básico');
+    },
+    showCat(catName) {
+      this._currentCat = catName;
+      const grid = document.getElementById('lib-content-grid');
+      const title = document.getElementById('lib-content-title');
+      if(!grid) return;
+      const cat = WORLD_LIB.find(c=>c.cat===catName)||WORLD_LIB[0];
+      if(title) title.textContent = cat.items[0].icon + ' ' + cat.cat;
+      grid.innerHTML = '';
+      cat.items.forEach(item => {
+        const d = document.createElement('div');
+        d.style.cssText=`background:var(--card2);border:1px solid ${item.color}33;border-radius:8px;padding:12px;cursor:pointer;transition:all .15s;text-align:center`;
+        d.innerHTML=`<div style="font-size:28px;margin-bottom:6px">${item.icon}</div><div style="font-size:11px;font-weight:700;color:var(--txt)">${item.name}</div><div style="font-size:9px;color:var(--dim);margin-top:2px">${item.w}×${item.h}×${item.d}</div>`;
+        d.onmouseenter=()=>{d.style.borderColor=item.color;d.style.background='rgba(255,255,255,.04)';};
+        d.onmouseleave=()=>{d.style.borderColor=item.color+'33';d.style.background='var(--card2)';};
+        d.onclick=()=>{
+          W.addPart(item.id, 200+Math.random()*100, 200+Math.random()*100);
+          switchTab('partes', document.querySelectorAll('.main-tab')[0]);
+          toast(item.icon+' '+item.name+' adicionado', 'i');
+        };
+        grid.appendChild(d);
+      });
+    },
+    filter(v) {
+      const grid = document.getElementById('lib-content-grid');
+      if(!grid) return;
+      const all = WORLD_LIB.flatMap(c=>c.items);
+      const items = v ? all.filter(i=>i.name.toLowerCase().includes(v.toLowerCase())) : (WORLD_LIB.find(c=>c.cat===this._currentCat)||WORLD_LIB[0]).items;
+      grid.innerHTML='';
+      items.forEach(item=>{
+        const d=document.createElement('div');
+        d.style.cssText=`background:var(--card2);border:1px solid ${item.color}33;border-radius:8px;padding:12px;cursor:pointer;text-align:center`;
+        d.innerHTML=`<div style="font-size:24px">${item.icon}</div><div style="font-size:10px;font-weight:700;color:var(--txt);margin-top:4px">${item.name}</div>`;
+        d.onclick=()=>W.addPart(item.id,200,200);
+        grid.appendChild(d);
+      });
+    }
+  },
+
+  // ─── Templates ───
+  renderTemplates() {
+    const grid = document.getElementById('tpl-grid');
+    if(!grid||grid.dataset.built) return;
+    grid.dataset.built='1';
+    const TEMPLATES = [
+      {id:'obby',    icon:'🏃', name:'Mapa Obby',       desc:'Plataformas progressivas com checkpoints', color:'#ff4d1a'},
+      {id:'lobby',   icon:'🏛', name:'Lobby Central',   desc:'Área de spawn com 4 portais temáticos', color:'#1a8cff'},
+      {id:'simulator',icon:'🐣',name:'Simulador',       desc:'Área de farm com eggs e rewards', color:'#f5c542'},
+      {id:'tycoon',  icon:'🏭', name:'Tycoon',          desc:'Área de construção com spawner', color:'#ff8c42'},
+      {id:'arena',   icon:'⚔',  name:'Battle Arena',    desc:'Arena PvP com spawns opostos', color:'#ff4d1a'},
+      {id:'island',  icon:'🏝', name:'Ilha Flutuante',  desc:'Ilha com decoração natural', color:'#00ff9d'},
+      {id:'dungeon', icon:'🏰', name:'Masmorra',        desc:'Corredor com obstáculos e baú', color:'#9b42ff'},
+      {id:'city',    icon:'🏙', name:'Cidade',          desc:'Ruas com lojas e NPCs', color:'#42b3ff'},
+    ];
+    TEMPLATES.forEach(tpl => {
+      const d = document.createElement('div');
+      d.className = 'tpl-card';
+      d.style.borderColor = tpl.color+'33';
+      d.innerHTML=`<div style="font-size:32px;margin-bottom:8px">${tpl.icon}</div><div style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px">${tpl.name}</div><div style="font-size:10px;color:var(--dim);line-height:1.5">${tpl.desc}</div><button class="btn btn-sm" style="background:${tpl.color}22;color:${tpl.color};border:1px solid ${tpl.color}44;margin-top:10px;width:100%;justify-content:center">Carregar Template</button>`;
+      d.querySelector('button').onclick=(e)=>{e.stopPropagation();W.loadTemplate(tpl.id);};
+      grid.appendChild(d);
+    });
+  },
+
+  loadTemplate(id) {
+    if(W.parts.length && !confirm('Carregar template? O mundo atual será substituído.')) return;
+    W.parts=[];
+    const vp=document.getElementById('world-vp'); if(vp) vp.innerHTML='';
+    W._nc=1; W._sel=null;
+    const TPLS = {
+      obby:[
+        {libId:'floor',x:0,y:0,w:20,h:1,d:10,name:'Chão'},
+        {libId:'platform',x:50,y:30,w:8,h:1,d:4,name:'Platform_1'},
+        {libId:'platform',x:110,y:50,w:6,h:1,d:4,name:'Platform_2'},
+        {libId:'platform',x:160,y:20,w:8,h:1,d:4,name:'Platform_3'},
+        {libId:'platform',x:220,y:60,w:6,h:1,d:4,name:'Platform_4'},
+        {libId:'checkpoint',x:280,y:30,w:2,h:6,d:2,name:'Checkpoint_1'},
+        {libId:'spawn',x:-60,y:30,w:6,h:1,d:6,name:'Spawn'},
+      ],
+      lobby:[
+        {libId:'floor',x:-100,y:-100,w:50,h:1,d:50,name:'Lobby_Floor'},
+        {libId:'spawn',x:350,y:350,w:6,h:1,d:6,name:'Spawn'},
+        {libId:'portal',x:100,y:50,w:4,h:8,d:1,name:'Portal_1'},
+        {libId:'portal',x:550,y:50,w:4,h:8,d:1,name:'Portal_2'},
+        {libId:'portal',x:100,y:600,w:4,h:8,d:1,name:'Portal_3'},
+        {libId:'portal',x:550,y:600,w:4,h:8,d:1,name:'Portal_4'},
+        {libId:'npc',x:350,y:200,w:2,h:5,d:2,name:'NPC_Guia'},
+      ],
+      simulator:[
+        {libId:'floor',x:0,y:0,w:40,h:1,d:40,name:'Sim_Floor'},
+        {libId:'spawn',x:280,y:280,w:6,h:1,d:6,name:'Spawn'},
+        {libId:'egg',x:100,y:100,w:3,h:4,d:3,name:'Egg_1'},
+        {libId:'egg',x:200,y:100,w:3,h:4,d:3,name:'Egg_2'},
+        {libId:'egg',x:300,y:200,w:3,h:4,d:3,name:'Egg_3'},
+        {libId:'chest',x:500,y:300,w:4,h:3,d:3,name:'Chest_1'},
+        {libId:'reward',x:50,y:500,w:2,h:2,d:2,name:'Reward_1'},
+        {libId:'shop',x:530,y:50,w:12,h:8,d:8,name:'Loja'},
+      ],
+      arena:[
+        {libId:'floor',x:-50,y:-50,w:50,h:1,d:50,name:'Arena_Floor'},
+        {libId:'wall',x:-50,y:-50,w:1,h:6,d:50,name:'Parede_N'},
+        {libId:'wall',x:750,y:-50,w:1,h:6,d:50,name:'Parede_S'},
+        {libId:'wall',x:-50,y:-50,w:50,h:6,d:1,name:'Parede_L'},
+        {libId:'wall',x:-50,y:750,w:50,h:6,d:1,name:'Parede_O'},
+        {libId:'spawn',x:50,y:50,w:6,h:1,d:6,name:'Spawn_Red'},
+        {libId:'spawn',x:580,y:580,w:6,h:1,d:6,name:'Spawn_Blue'},
+        {libId:'chest',x:340,y:340,w:4,h:3,d:3,name:'Loot_Center'},
+      ],
+      island:[
+        {libId:'floor',x:0,y:0,w:30,h:1,d:30,name:'Ilha',brickColor:'Earth green',material:'Grass'},
+        {libId:'spawn',x:200,y:200,w:6,h:1,d:6,name:'Spawn'},
+        {libId:'tree',x:50,y:50,w:4,h:8,d:4,name:'Arvore_1'},
+        {libId:'tree',x:380,y:60,w:4,h:8,d:4,name:'Arvore_2'},
+        {libId:'tree',x:60,y:380,w:4,h:8,d:4,name:'Arvore_3'},
+        {libId:'rock',x:250,y:100,w:3,h:2,d:3,name:'Pedra_1'},
+        {libId:'lamp',x:280,y:60,w:1,h:6,d:1,name:'Lampiao'},
+        {libId:'water',x:-80,y:-80,w:100,h:1,d:100,name:'Mar'},
+      ],
+    };
+    const tpl = TPLS[id]||TPLS.obby;
+    tpl.forEach(data=>{
+      const lib=W._getItem(data.libId);if(!lib) return;
+      const part={uid:W._nc++,libId:data.libId,name:data.name||lib.name,icon:lib.icon,color:lib.color,x:data.x,y:data.y,w:data.w||lib.w,h:data.h||lib.h,d:data.d||lib.d,posX:Math.round((data.x||0)/16),posY:0,posZ:Math.round((data.y||0)/16),material:data.material||lib.mat||'SmoothPlastic',brickColor:data.brickColor||lib.brickColor||'Medium stone grey',transparency:data.transparent||lib.transparent||0,anchored:true,canCollide:data.libId!=='water'};
+      W.parts.push(part);W.renderPart(part);
+    });
+    W.renderHierarchy();W.updateCount();W.save();
+    switchTab('partes',document.querySelectorAll('.main-tab')[0]);
+    toast('🌍 Template carregado! '+W.parts.length+' partes','s');
+  },
+
+  // ─── Save / Load ───
+  save() {
+    try { localStorage.setItem('rf_world_editor_v1', JSON.stringify({parts:W.parts,nc:W._nc})); } catch(e){}
+    const ind = document.getElementById('autosave-canvas-ind');
+    if(ind){ind.style.opacity='1';setTimeout(()=>ind.style.opacity='0',1500);}
+  },
+
+  load() {
+    try {
+      const raw = localStorage.getItem('rf_world_editor_v1');
+      if(!raw) return;
+      const d = JSON.parse(raw);
+      if(!d||!d.parts) return;
+      W.parts=d.parts;W._nc=d.nc||Math.max(...d.parts.map(p=>p.uid),0)+1;
+      W.parts.forEach(p=>W.renderPart(p));
+      W.renderHierarchy();W.updateCount();
+    } catch(e){}
+  },
+
+  exportJSON() {
+    const d = JSON.stringify({version:'rf-world-v1',parts:W.parts},null,2);
+    const b=new Blob([d],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='roforger-world.json';a.click();
+    toast('📤 JSON exportado!','s');
+  },
+
+  importJSON() {
+    const input=document.createElement('input');input.type='file';input.accept='.json';
+    input.onchange=e=>{
+      const file=e.target.files[0];if(!file) return;
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        try {
+          const d=JSON.parse(ev.target.result);if(!d.parts)throw new Error();
+          const vp=document.getElementById('world-vp');if(vp)vp.innerHTML='';
+          W.parts=d.parts;W._nc=Math.max(...d.parts.map(p=>p.uid),0)+1;
+          W.parts.forEach(p=>W.renderPart(p));
+          W.renderHierarchy();W.updateCount();W.save();
+          toast('📥 Importado! '+W.parts.length+' partes','s');
+        } catch(err){toast('Arquivo inválido','e');}
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  },
+
+  exportRBXM() {
+    if(!W.parts.length){toast('⚠️ Adicione partes primeiro!','w');return;}
+    const matEnum={SmoothPlastic:256,Plastic:256,Wood:512,Grass:1280,Marble:784,Neon:1632,Metal:1088,DiamondPlate:1616,Slate:800,Brick:816,Sand:1584,WoodPlanks:528,Ice:1536};
+    const colId={'Medium stone grey':194,'Dark stone grey':199,'Bright yellow':24,'Bright orange':25,'Bright red':21,'Bright blue':23,'Bright green':37,'Earth green':28,'Lime green':119,'Hot pink':104,'Bright violet':110,'White':1,'Black':26,'Reddish brown':192};
+    let xml=`<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">\n  <Meta name="ExplicitAutoJoints">true</Meta>\n  <External>null</External>\n  <External>nil</External>\n  <Item class="Model" referent="RBX0">\n    <Properties><string name="Name">RoForger_World</string></Properties>\n`;
+    W.parts.forEach((p,i)=>{
+      const cls=p.libId==='spawn'?'SpawnLocation':p.libId==='wedge'?'WedgePart':'Part';
+      const ry=(p.posY||0)+p.h/2;
+      xml+=`    <Item class="${cls}" referent="RBX${i+1}">\n      <Properties>\n        <string name="Name">${p.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</string>\n        <CoordinateFrame name="CFrame"><X>${p.posX||0}</X><Y>${ry}</Y><Z>${p.posZ||0}</Z><R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12><R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>\n        <Vector3 name="size"><X>${p.w}</X><Y>${p.h}</Y><Z>${p.d}</Z></Vector3>\n        <token name="Material">${matEnum[p.material]||256}</token>\n        <BrickColor name="BrickColor">${colId[p.brickColor]||194}</BrickColor>\n        <float name="Transparency">${p.transparency||0}</float>\n        <bool name="Anchored">${p.anchored?'true':'false'}</bool>\n        <bool name="CanCollide">${p.canCollide?'true':'false'}</bool>\n      </Properties>\n    </Item>\n`;
+    });
+    xml+=`  </Item>\n</roblox>`;
+    const b=new Blob([xml],{type:'text/xml'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='RoForger_World.rbxm';a.click();
+    toast('📦 .RBXM exportado! Arraste no Roblox Studio.','s');
+  }
+};
+
+// ─── Init ───
+window.addEventListener('load', () => {
+  W.init();
+  W.renderTemplates();
+});
+
+document.addEventListener('keydown', e=>{
+  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if(e.key==='Delete') W.deleteSelected();
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();W.save();toast('💾 Salvo!');}
+  if((e.ctrlKey||e.metaKey)&&e.key==='d'){e.preventDefault();W.duplicateSelected();}
+  if(e.key==='Escape'){W.select(null);}
+});
+</script>
+</body>
+</html>
